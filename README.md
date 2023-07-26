@@ -1,4 +1,4 @@
-<img src="png.png"  width="30%"/>
+<img src="img.png"  width="30%"/>
 
 ## Modern Java IN ACTION
 
