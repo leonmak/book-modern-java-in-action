@@ -67,7 +67,7 @@ inventory.sort(comparing(Apple::getWeight));
 
 ### 2.1 Java's place in the programming language ecosystem
 
-<img src="img.png"  width="60%"/>
+<img src="img.png"  width="80%"/>
 
 - 잘 설계된 객체지향 언어로 시작
 - 작은 규모의 동시성 지원 - thread, lock
@@ -76,7 +76,7 @@ inventory.sort(comparing(Apple::getWeight));
 - 프로그래머들이 점차 Big Data를 다루기 시작
     - multicore computer, 대용량 데이터를 다룰 수 있는 언어 필요
     - Google의 map-reduce, SQL 대비 Java는 불편
-    - **Java 8부터 문제를 해결하기 시작**
+    - **Java 8부터 이에 집중하기 시작**
 
 ### 2.2 Concept 1 : Stream processing
 
