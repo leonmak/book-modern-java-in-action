@@ -128,6 +128,101 @@ cat file1 file2 | tr "[A-Z]" "[a-z]" | sort | tail -3
 
 ## 3. Functions In Java
 
+- function = method = **value (Java 8)**
+- Value : first-class
+    - 42 : int 타입의 값
+    - "Hello" : String 타입의 값
+    - <42, "Hello"> : HashMap<Integer, String> 타입의 값
+- Value : second-class
+    - method, class
+    - 값의 구조만 표현
+
+### 3.1 Methods and lambdas as first-class citizens
+
+<img src="img_2.png"  width="60%"/>
+
+- Java 8은 method를 값으로 취급 (Streams의 근간)
+- method reference '::' : 이 메서드를 값으로 취급하라는 뜻
+    - `File::isHidden` : `File` 클래스의 `isHidden()` 메서드를 값으로 취급
+
+````
+// Java 8 이전
+File[] hiddenFiles = new File(".").listFiles(new FileFilter() {
+   public boolean accept(File file) {
+    return file.isHidden(); // filtering hidden files
+   }
+});
+
+// Java 8
+File[] hiddenFiles = new File(".").listFiles(File::isHidden);
+````
+
+#### LAMDAS : anonymous functions
+
+- `(int x) -> x + 1` : int 타입의 x를 전달해서, x + 1을 반환하는 함수
+- "함수를 first-class value"로서 취급
+
+### 3.2 Passing code: an example
+
+````
+// Java 8 이전
+public static List<Apple> filterGreenApples(List<Apple> inventory) {
+  List<Apple> result = new ArrayList<>();
+    for (Apple apple: inventory){
+      if (GREEN.equals(apple.getColor())) {
+        result.add(apple);
+      }
+    }
+    
+  return result;
+}
+
+public static List<Apple> filterHeavyApples(List<Apple> inventory) {
+  List<Apple> result = new ArrayList<>();
+    for (Apple apple: inventory){
+      if (apple.getWeight() > 150) {
+        result.add(apple);
+      }
+    }
+    
+  return result;
+}
+
+// Java 8
+
+public static boolean isGreenApple(Apple apple) {
+  return GREEN.equals(apple.getColor());
+}
+public static boolean isHeavyApple(Apple apple) {
+  return apple.getWeight() > 150;
+}
+
+static List<Apple> filterApples(List<Apple> inventory, Predicate<Apple> p) {
+  List<Apple> result = new ArrayList<>();
+    for (Apple apple: inventory){
+      if (p.test(apple)) {
+        result.add(apple);
+      }
+    }
+    
+  return result;
+}
+
+filterApples(inventory, Apple::isGreenApple); 
+filterApples(inventory, Apple::isHeavyApple);
+````
+
+### 3.3 From passing methods to lambdas
+
+- `File::isHidden` 과 같이 메서드를 선언하고, 메서드명을 전달하는 것이 귀찮음
+- 익명 함수, 람다 : 메서드 선언과 이름을 생략하게 함
+
+````
+filterApples(inventory, (Apple a) -> GREEN.equals(a.getColor()) );
+filterApples(inventory, (Apple a) -> a.getWeight() > 150 );
+filterApples(inventory, (Apple a) -> a.getWeight() < 80 || RED.equals(a.getColor()) );
+````
+
 ## 4. Streams
 
 ## 5. Default methods and Java M
