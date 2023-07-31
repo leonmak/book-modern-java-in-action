@@ -225,9 +225,79 @@ filterApples(inventory, (Apple a) -> a.getWeight() < 80 || RED.equals(a.getColor
 
 ## 4. Streams
 
+````
+// Java 8 이전
+Map<Currency, List<Transaction>> transactionsByCurrencies =
+    new HashMap<>();
+    
+for (Transaction transaction : transactions) {
+  if(transactoin.getPrice() > 1000) {
+    Currency currency = transaction.getCurrency();
+    List<Transaction> transactionsForCurrency = transactionsByCurrencies.get(currency);
+    
+    if (transactionsForCurrency == null) {
+      transactionsForCurrency = new ArrayList<>();
+      transactionsByCurrencies.put(currency, transactionsForCurrency);
+    }
+    
+    transactionsForCurrency.add(transaction);
+  }
+
+}
+
+// java 8 이후
+import static java.util.stream.Collectors.groupingBy;
+Map<Currency, List<Transaction>> transactionsByCurrencies =
+    transactions.stream()
+                .filter((Transaction t) -> t.getPrice() > 1000)
+                .collect(groupingBy(Transaction::getCurrency));
+````
+
+- extarnal iteration : for-each loop
+- internal iteration : Streams API
+- Streams API를 사용하면, external iteration보다 더 간결하고 가독성이 좋음
+    - data 작업은 API 내부적으로 처리됨
+
+### 4.1 Multithreading is difficult
+
+<img src="img_3.png"  width="70%"/>
+
+- multithreaded code는 어렵고 복잡함
+
+#### Java 8 은 Streams API로 해결
+
+- `java.util.stream`
+- 공통 작업을 정의
+    - e.g. `filtering`, `extracting`, `grouping`, ...
+- 별렬 작업을 정의
+    1. `forking step` : 각 CPU에게 작업을 반씩 할당
+    2. `filter` : 각 CPU의 작업
+    3. `joint resultsl` : 각 CPU의 작업을 합침
+
+<img src="img_4.png"  width="70%"/>
+
+#### Collection vs Streams API
+
+- 둘다 data item sequence를 다룸
+- Collection : data item을 저장하고, 접근
+- Streams API : data item을 계산
+
+````
+import static java.util.stream.Collectors.toList;
+
+List<Idol> aespaMembers = inventory.stream()
+                        .filter((Idol idol) -> idol.getTeamName().equals("AESPA"))
+                        .collect(toList());
+                        
+// parallel Streams API
+List<Idol> aespaMembers = inventory.parallelStream()
+                        .filter((Idol idol) -> idol.getTeamName().equals("AESPA"))
+                        .collect(toList());
+````
+
 ## 5. Default methods and Java M
 
-## 6. Other good iedas from functional programming
+## 6. Other good ideas from functional programming
 
 ## 7. Summary
 
