@@ -4,7 +4,7 @@
 2. Why is Java still changing?
 3. Functions In Java
 4. Streams
-5. Default methods and Java M
+5. Default methods and Java modules
 6. Other good iedas from functional programming
 7. Summary
 
@@ -295,9 +295,36 @@ List<Idol> aespaMembers = inventory.parallelStream()
                         .collect(toList());
 ````
 
-## 5. Default methods and Java M
+## 5. Default methods and Java modules
+
+- Java 8 이전 : interface 수정이 어려움
+    - interface를 수정한다는 것 = 구현한 모든 class가 수정되어야함
+- Java 8 : default method 추가
+    - 진화(수정) 가능한 interface 생성 가능
+- Java 9 : 패키지들로 구서된 `module`을 제공
+    - visibility와 namespace 를 넘어 제어하기 쉬워짐
+
+````
+List<Idol> aespMembers = inventory.stream()
+                        .filter((Idol idol) -> idol.getTeamName().equals("AESPA"))
+                        .collect(toList());
+                        
+List<Idol> aespMembers = inventory.parallelStream()
+                        .filter((Idol idol) -> idol.getTeamName().equals("AESPA"))
+                        .collect(toList());
+````
+
+- Java 8 이전에는 `List<T>`에 `stream()`, `parallelStream()`이 없음
+    - `List<T>`에 새로운 메서드가 추가되면 기존의 구현체들에 compile error
+- Java 8 : `default` 키워드를 사용하여 기존의 구현체들에 영향을 주지 않고 새로운 메서드 추가 가능
+    - interface 내에서 구현하고, 구현체들은 사용만함
+    - e.g. `Collection.sort`
+        - 구현체들은 구현 필요없이 사용만하면 됨
+        - 이전 버전들은 `Collections.sort`를 구현하지 않으면 compile error
 
 ## 6. Other good ideas from functional programming
+
+
 
 ## 7. Summary
 
