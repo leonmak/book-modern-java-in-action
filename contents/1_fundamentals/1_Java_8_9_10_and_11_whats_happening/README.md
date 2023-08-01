@@ -324,8 +324,47 @@ List<Idol> aespMembers = inventory.parallelStream()
 
 ## 6. Other good ideas from functional programming
 
+- method와 lamda를 first-class value로 취급
+- function이나 method를 병렬적으로 실행하는 것
 
+### `Optional<T>` class : null을 다루는 방법
+
+- vlalue를 가질수도 있고 안가질수도있는 container object
+- 잘 쓰면 NPE 예방 가능
+- value가 없는 경우를 다루는 method를 제공해서 NPE 를 피할 수 있음
+
+### (structural) pattern matching
+
+````
+f(0) = 1
+f(n) = n * f(n-1) otherwise
+````
+
+- Java 8에서 완벽히는 아니지만, 구현 가능
+
+#### Scala programming language
+
+````
+def simplifyExpression(expr: Expr): Expr = expr match {
+  case BinOp("+", e, Number(0)) => e
+  case BinOp("-", e, Number(0)) => e
+  case BinOp("*", e, Number(1)) => e
+  case BinOp("/", e, Number(1)) => e
+  case _ => expr
+}
+````
+
+- Java `switch`는 기본형과 String에 제한됨
+- Java `switch` 문의 확장
 
 ## 7. Summary
+
+- Java도 진화해야함
+- Java 8은 새로운 컨셉과 기능으로 프로그램을 간결하게 작성하도록 해줌
+- Java 8 이전에는 Multicore processor를 완벽히 지원 못함
+- Funtion을 first-class value로 취급해서 메서드에 인자로 전달
+- Streams API는 Stream 의 item을 병렬로 처리 가능
+- Java 9은 module을 제공하고, 인터페이스를 변경않고 기능을 추가할 수 있게 해줌
+- null을 다루는 방법과 pattern matching
 
 
