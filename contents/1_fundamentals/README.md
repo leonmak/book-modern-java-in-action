@@ -6,5 +6,5 @@
 
 1. [Java 8, 9, 10, and 11 : what's happening?](1_Java_8_9_10_and_11_whats_happening/README.md)
 2. [Passing code with behavior parameterization](2_Passing_code_with_behavior_parameterization/README.md)
-3. Lambda expressions
+3. [Lambda expressions](3_Lambda_expressions/README.md)
 
