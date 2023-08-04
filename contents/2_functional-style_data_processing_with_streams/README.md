@@ -8,6 +8,6 @@
 - parallel stream
 
 4. [Introducing streams](4_introducing_streams/README.md)
-5. Working with streams
+5. [Working with streams](5_working_with_streams/README.md)
 6. Collecting data with streams
 7. Parallel data processing and performance
