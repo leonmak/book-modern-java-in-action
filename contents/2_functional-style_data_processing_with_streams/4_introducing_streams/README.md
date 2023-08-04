@@ -96,8 +96,8 @@ NEWJEANS = [MINZI, HANI, ...], ...
 > - Apache Commons Collection, lamdaj
 
 
-<summary>실습 코드 : Streams 예제에 사용할 클래스 `Member`</summary>
 <details>
+<summary>실습 코드 : Streams 예제에 사용할 클래스 `Member`</summary>
     
 ````java
 
