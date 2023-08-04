@@ -22,5 +22,12 @@ public class Main {
         );
 
         System.out.println("memberList = " + memberList);
+
+        List<String> memberNameAdult = memberList.stream()
+                .filter(member -> member.getAge() >= 20)
+                .map(Member::getName)
+                .limit(3).toList();
+
+        System.out.println("memberNameAdult = " + memberNameAdult);
     }
 }

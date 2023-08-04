@@ -98,7 +98,7 @@ NEWJEANS = [MINZI, HANI, ...], ...
 
 <details>
 <summary>실습 코드 : Streams 예제에 사용할 클래스 `Member`</summary>
-    
+
 ````java
 
 public class Member {
@@ -174,9 +174,53 @@ List<Member> memberList = Arrays.asList(
         , new Member("minzi", Member.Team.NEW_JEANS, false, 20)
 );
 ````
+
 </details>
 
 ## 2. Getting started with streams
+
+- `java.util.stream.Stream`
+- `stream()` : Stream 반환
+
+#### stream의 정의
+
+- Sequence of elements
+    - 특정한 타입의 element를 순서를 가지고 보유
+    - Collection은 element를 저장하고, 접근하는 것에 초점
+    - Stream은 element를 계산하는 것에 초점 (filter, sorted, map, collect)
+- Source
+    - Collection, array, I/O resources에 의해 사용됨
+- Data-processing operations
+    - database같은 연산 제공
+    - functional-programming language의 기능 제공
+    - filter, sorted, map, collect 등
+    - 병렬 연산 가능
+
+#### stream의 특징
+
+- Pipelining
+    - stream이 스스로 stream을 반환
+    - 연산이 chain되어 있음
+    - laziness, short-circuiting
+- Internal iteration
+    - stream이 내부적으로 iteration을 처리
+
+<img src="img.png"  width="70%"/>
+
+````
+import static java.util.stream.Collectors.toList;
+
+List<String> memberNameAdult = members.stream()
+                                      .filter(member -> member.getAge() >= 20)
+                                      .map(Member::getName)
+                                      .limit(3)
+                                      .collect(toList()); // pipeline 시작, 결과를 List로 반환
+````
+
+- `filter` : stream의 특정 element를 제외, lamda를 받음
+- `map` : stream의 element를 특정 값으로 변환, lamda를 받음
+- `limit` : stream의 크기를 제한
+- `collect` : stream의 결과를 반환 타입으로 변환
 
 ## 3. Streams vs collections
 
