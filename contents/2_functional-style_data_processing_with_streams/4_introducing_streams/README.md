@@ -275,6 +275,74 @@ List<String> memberNameList = members.stream()
 
 ## 4. Stream operations
 
+<img src="img_4.png"  width="60%"/>
+
+- `java.util.stream.Stream` interface에 정의되어있는 operation
+- intermediate operations
+    - stream을 반환, pipeline을 구성하는 데 사용
+    - `filter`, `map`, `limit`
+- terminal operations
+    - pipeline을 실행하고 닫음
+    - `collect`
+- builder pattern과 유사
+
+### 4.1 Intermediate operations
+
+- return type : stream
+- operation들이 서로 연결되어 query를 만들게 함
+- lazy : terminal operation이 호출되기 전까지 실행되지 않음
+- loop fusion : 연속된 operation들이 하나의 loop로 병합됨
+
+````
+List<String> aespaMemberName3 = memberList.stream().filter(member -> {
+                                                    System.out.println("filter: " + member.getName());
+                                                    return member.getTeam() == Member.Team.AESPA;
+                                                  }).map(member -> {
+                                                    System.out.println("map: " + member.getName());
+                                                    return member.getName();
+                                                  }).limit(2).toList();
+System.out.println("aespaMemberName3 = " + aespaMemberName3);
+````
+
+````log
+filter: karina
+map: karina
+filter: winter
+map: winter
+aespaMemberName3 = [karina, winter]
+````
+
+### 4.2 Terminal operations
+
+- stream pipeline으로부터 결과를 생성
+- result는 Stream만 아니면 됨 (void, int, List, Map 등)
+
+````
+aespaMemberName3.stream().forEach(memberName -> System.out.println("memberName = " + memberName));
+````
+
+### 4.3 Working with streams
+
+- data source : query 실행 대상 e.g. collection, array, I/O resource
+- intermediate operations chain : pipe line 구성
+- terminal operation : pipeline 실행, 결과 생성
+
 ## 5. Road map
 
+- 여기서는 Stream의 usecase만 확인함
+- Chapter 6에서 collector에 세부적으로 다룸
+
 ## 6. Summary
+
+- Streams :  elements의 sequence
+    - data source로부터 생성됨
+    - data-processing operations을 통해 처리됨
+- Streams은 internal iteration을 통해 element에 접근
+    - `filter`, `map`, `sorted`
+- stream operation의 2 종류
+    - intermediate operations : chain 형식으로 구성
+        - e.g. `filter`, `map`, `sorted`
+    - terminal operations : pipeline을 실행하고 stream을 닫음, 결과를 반환
+        - e.g. `collect`, `forEach`
+- stream의 element는 **lazily**하게 연산함
+

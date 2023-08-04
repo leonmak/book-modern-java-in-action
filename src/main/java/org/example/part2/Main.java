@@ -28,10 +28,25 @@ public class Main {
         }
 
         // internal iteration
-        List<String> aespaMemberName2 = memberList.stream()
-                .filter(member -> member.getTeam() == Member.Team.AESPA)
-                .map(Member::getName)
-                .toList();
+        List<String> aespaMemberName2 = memberList.stream().filter(member -> member.getTeam() == Member.Team.AESPA).map(Member::getName).toList();
 
+        System.out.println("=====================================\n\n\n");
+
+        // Intermediate operation
+
+        List<String> aespaMemberName3 = memberList.stream().filter(member -> {
+            System.out.println("filter: " + member.getName());
+            return member.getTeam() == Member.Team.AESPA;
+        }).map(member -> {
+            System.out.println("map: " + member.getName());
+            return member.getName();
+        }).limit(2).toList();
+
+        System.out.println("aespaMemberName3 = " + aespaMemberName3);
+        System.out.println("=====================================\n\n\n");
+
+        // Terminal operation
+
+        aespaMemberName3.stream().forEach(memberName -> System.out.println("memberName = " + memberName));
     }
 }
