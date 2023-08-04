@@ -7,7 +7,7 @@
 - collector
 - parallel stream
 
-1. Introducing streams
-2. Working with streams
-3. Collecting data with streams
-4. Parallel data processing and performance
+4. [Introducing streams](4_introducing_streams/README.md)
+5. Working with streams
+6. Collecting data with streams
+7. Parallel data processing and performance
