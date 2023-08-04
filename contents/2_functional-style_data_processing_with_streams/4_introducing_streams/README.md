@@ -224,16 +224,16 @@ List<String> memberNameAdult = members.stream()
 
 ## 3. Streams vs collections
 
-<img src="img_1.png"  width="80%"/>
+<img src="img_3.png"  width="80%"/>
 
-| Collection                                       | 특성              | Stream                                                                         |
-|--------------------------------------------------|-----------------|--------------------------------------------------------------------------------|
-| in-memory data structure<br/>모든 element를 메모리에 적재 | 메모리             | 고정된 자료구조 <br/>필요한 경우에만 element 연산                                              |
+| Collection                                       |       특성        | Stream                                                                         |
+|--------------------------------------------------|:---------------:|--------------------------------------------------------------------------------|
+| in-memory data structure<br/>모든 element를 메모리에 적재 |       메모리       | 고정된 자료구조 <br/>필요한 경우에만 element 연산                                              |
 | 가능                                               | element 추가 / 제거 | 불가능                                                                            |
-| element 추가 전                                     | 연산 시점           | 필요한 시점에만 연산                                                                    |
-| supplier-driven : 모든 값들이 미리 계산되어 메모리에 저장         | 특징              | producer-comsumer : consumer는 소비만 하면 됨<br/>demand-driven :consumer가 필요한 순간에 연산 |
+| element 추가 전                                     |      연산 시점      | 필요한 시점에 연산                                                                     |
+| supplier-driven : 모든 값들이 미리 계산되어 메모리에 저장         |       특징        | producer-comsumer : consumer는 소비만 하면 됨<br/>demand-driven :consumer가 필요한 순간에 연산 |
 | 불가능에 가까움                                         | 무한한 개수의 element | 가능                                                                             |
-| external iteration : iterator를 사용해 element에 접근   | iteration       | internal iteration : stream이 element에 접근<br/>stream은 element를 저장하지 않음          |
+| external iteration : iterator를 사용해 element에 접근   |    iteration    | internal iteration : stream이 element에 접근<br/>stream은 element를 저장하지 않음          |
 
 ### 3.1 Traversable only once
 
