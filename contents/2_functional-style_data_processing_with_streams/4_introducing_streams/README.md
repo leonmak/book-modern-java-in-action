@@ -224,6 +224,55 @@ List<String> memberNameAdult = members.stream()
 
 ## 3. Streams vs collections
 
+<img src="img_1.png"  width="80%"/>
+
+| Collection                                       | 특성              | Stream                                                                         |
+|--------------------------------------------------|-----------------|--------------------------------------------------------------------------------|
+| in-memory data structure<br/>모든 element를 메모리에 적재 | 메모리             | 고정된 자료구조 <br/>필요한 경우에만 element 연산                                              |
+| 가능                                               | element 추가 / 제거 | 불가능                                                                            |
+| element 추가 전                                     | 연산 시점           | 필요한 시점에만 연산                                                                    |
+| supplier-driven : 모든 값들이 미리 계산되어 메모리에 저장         | 특징              | producer-comsumer : consumer는 소비만 하면 됨<br/>demand-driven :consumer가 필요한 순간에 연산 |
+| 불가능에 가까움                                         | 무한한 개수의 element | 가능                                                                             |
+| external iteration : iterator를 사용해 element에 접근   | iteration       | internal iteration : stream이 element에 접근<br/>stream은 element를 저장하지 않음          |
+
+### 3.1 Traversable only once
+
+````
+List<Member> member = Arrays.asList(KARINA, WINTER, NINGNING, GISELLE);
+Stream<Member> memberStream = member.stream();
+s.forEach(System.out::println); // stream의 모든 element를 출력
+s.forEach(System.out::println); // java.lang.IllegalStateException: stream has already been operated upon or closed
+````
+
+- stream은 한 번만 탐색 가능
+    - iterator와 비슷
+- consumed : 탐색이 완료됨
+
+### 3.2 External vs internal iteration
+
+<img src="img_2.png"  width="80%"/>
+
+````
+// external iteration
+List<String> memberNameList = new ArrayList<>();
+Iterator<Member> iterator = members.iterator();
+
+while (iterator.hasNext()) {
+  Member member = iterator.next();
+  memberNameList.add(member.getName()); 
+}
+
+// internal iteration
+List<String> memberNameList = members.stream()
+                                     .map(Member::getName)
+                                     .collect(toList());
+````
+
+- internal interation의 장점
+    - 병렬로 실행할 수 있음
+    - 더 효율적인 순서로 실행할 수 있음
+    - 이미 API에 안에서 최적화되어 있음
+
 ## 4. Stream operations
 
 ## 5. Road map
