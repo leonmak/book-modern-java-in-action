@@ -125,6 +125,9 @@ public class Main5 {
         memberList.stream()
                 .filter(member -> member.getTeam() == Member.Team.NEW_JEANS)
                 .findFirst()
-                .ifPresent(member -> System.out.println("NEW_JEANS leader is" + member));
+                .ifPresent(member -> System.out.println("NEW_JEANS leader is" + member));\
+
+        // quiz 5.3 Reducing
+        Integer sum = memberList.stream().map(m -> 1).reduce(0, Integer::sum);
     }
 }
