@@ -166,6 +166,63 @@ List<Member> aespaTwoMember = memberList.stream()
 
 ## 3. Mapping
 
+- SQL `SELECT` 절에 컬럼을 지정하는 것과 유사
+- `map()`, `flatMap()`
+
+### 3.1 Applying a function to each element of a stream
+
+- `map()` : function을 인수로 받아서 새로운 stream을 반환
+    - function을 각 element에 적용한 결과로 구성된 stream 반환
+
+````
+List<String> memberNamesAespa = memberList.stream()
+                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
+                                        .map(Member::getName)
+                                        .toList();
+
+// 멤버 이름의 글자수 출력
+List<Integer> memberNameLengthAespa = memberList.stream()
+                                                .filter(member -> member.getTeam() == Member.Team.AESPA)
+                                                .map(Member::getName)
+                                                .map(String::length)
+                                                .toList();
+````
+
+### 3.2 Flattening streams
+
+- `flatMap()` : function을 인수로 받아서 새로운 stream을 반환
+    - function을 각 element에 적용한 결과로 구성된 stream 반환
+    - **각 function의 결과 stream을 하나의 stream으로 연결**
+
+````
+// 아래 words 배열에서 중복을 제거한 문자열을 반환하려함
+// reuslt = ["H", "e", "l", "o", "W", "r", "d"]
+String[] words = {"Hello", "World"};
+````
+
+#### ATTEMPT USING MAP AND ARAYS.STREAM
+
+````
+// 실패
+List<Stream<String>> wordUnique = words.stream()
+                                        .map(word -> word.split(""))        
+                                        .map(Arrays::stream)
+                                        .distinct()
+                                        .toList();
+````
+
+#### USING FLATMAP
+
+<img src="img_2.png"  width="70%"/>
+
+````
+List<String> wordUnique = words.stream()
+                                .map(word -> word.split(""))
+                                .flatMap(Arrays::stream)
+                                .distinct()
+                                .toList();
+````
+
 ## 4. Finding and matching
 
 ## 5. Reducing

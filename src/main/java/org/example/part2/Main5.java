@@ -3,6 +3,8 @@ package org.example.part2;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 public class Main5 {
 
     public static void main(String[] args) {
@@ -50,6 +52,42 @@ public class Main5 {
                 .skip(2)
                 .toList();
         System.out.println("aespaTwoMember2 = " + aespaTwoMember2 + "\n\n\n");
+
+        // Mapping
+
+        // map
+
+        List<String> memberNamesAespa = memberList.stream()
+                .filter(member -> member.getTeam() == Member.Team.AESPA)
+                .map(Member::getName)
+                .toList();
+
+        System.out.println("memberNamesAespa = " + memberNamesAespa + "\n\n\n");
+
+        List<Integer> memberNameLengthAespa = memberList.stream()
+                .filter(member -> member.getTeam() == Member.Team.AESPA)
+                .map(Member::getName)
+                .map(String::length)
+                .toList();
+
+        System.out.println("memberNameLengthAespa = " + memberNameLengthAespa + "\n\n\n");
+
+
+        // quiz 5.2 Mapping
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
+
+        List<Integer> result = numbers.stream().map(n -> (int) Math.pow(n, 2)).toList();
+        System.out.println("result = " + result);
+
+        List<Integer> numbers1 = Arrays.asList(1, 2, 3);
+        List<Integer> numbers2 = Arrays.asList(3, 4);
+
+        List<int[]> pairs = numbers1.stream()
+                .flatMap(i ->
+                        numbers2.stream()
+                                .filter(j -> (i + j) % 3 == 0)
+                                .map(j -> new int[]{i, j}))
+                .collect(toList());
 
     }
 }
