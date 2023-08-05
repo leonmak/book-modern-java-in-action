@@ -27,8 +27,16 @@ public class Member {
         return name;
     }
 
-    public boolean isDebut() {
+    public boolean getIsDebut() {
         return isDebut;
+    }
+
+    public boolean checkIsNotChild() {
+        return age >= 10;
+    }
+
+    public boolean checkIsAdult() {
+        return age >= 20;
     }
 
     public Team getTeam() {
@@ -39,10 +47,15 @@ public class Member {
         return age;
     }
 
+    public Boolean unknownTeam() {
+        return this.team == null;
+    }
+
     public enum Team {
         NEW_JEANS, AESPA, RED_VELVET, IVE
 
     }
+
 
     @Override
     public String toString() {

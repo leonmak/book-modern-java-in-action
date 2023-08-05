@@ -1,7 +1,9 @@
 package org.example.part2;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -89,5 +91,40 @@ public class Main5 {
                                 .map(j -> new int[]{i, j}))
                 .collect(toList());
 
+        List<int[]> pairs2 = new ArrayList<>();
+        for (int i : numbers1) {
+            for (int j : numbers2) {
+                pairs2.add(new int[]{i, j});
+            }
+        }
+
+        // Finding and matching
+
+        if (memberList.stream().anyMatch(Member::getIsDebut)) {
+            System.out.println("there is a debut member");
+        }
+
+        if (memberList.stream().allMatch(Member::checkIsNotChild)) {
+            System.out.println("there is no child member");
+        }
+
+        // NONE MATCH
+        if (memberList.stream().noneMatch(Member::unknownTeam)) {
+            System.out.println("there is no unknown team member");
+        }
+
+        // findAny
+
+        memberList.stream()
+                .filter(member -> member.getTeam() == Member.Team.AESPA)
+                .filter(Member::checkIsAdult)
+                .findAny()
+                .ifPresent(member -> System.out.println("member = " + member));
+
+        // findFirst
+        memberList.stream()
+                .filter(member -> member.getTeam() == Member.Team.NEW_JEANS)
+                .findFirst()
+                .ifPresent(member -> System.out.println("NEW_JEANS leader is" + member));
     }
 }

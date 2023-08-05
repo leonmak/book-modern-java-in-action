@@ -223,7 +223,97 @@ List<String> wordUnique = words.stream()
                                 .toList();
 ````
 
+````
+List<int[]> pairs = numbers1.stream()
+                            .flatMap(i ->
+                                    numbers2.stream()
+                                            .filter(j -> (i + j) % 3 == 0)
+                                            .map(j -> new int[]{i, j}))
+                            .collect(toList());
+
+List<int[]> pairs2 = new ArrayList<>();
+for (int i : numbers1) {
+    for (int j : numbers2) {
+        pairs2.add(new int[]{i, j});
+    }
+}
+````
+
 ## 4. Finding and matching
+
+- `allMatch()`, `anyMatch()`, `nonMatch()`, `findFirst()`, `findAny()`
+- short-circuiting operation : **stream의 일부 element만 확인하고 전체 stream을 확인하지 않아도 되는 operation**
+    - 큰 사이즈의 stream에서는 성능 향상에 도움이 됨
+
+### 4.1 Checking to see if a predicate matches at least one element
+
+- `anyMatch()` : `Predicate`에 부합하는 element가 하나라도 있으면 `true` 반환
+- terminal operation
+
+````
+if(memberList.stream().anyMatch(Member::getIsDebut)) {
+  System.out.println("there is a debut member");
+}
+````
+
+### 4.2 Checking to see if a predicate matches all elements
+
+- `allMatch()` : `Predicate`에 부합하는 element가 모두 있으면 `true` 반환
+
+````
+if(memberList.stream().allMatch(Member::checkIsNotChild)) {
+  System.out.println("there is a not child member");
+}
+````
+
+#### NONEMATCH
+
+- `noneMatch()` : `Predicate`에 부합하는 element가 하나도 없으면 `true` 반환
+
+````
+if (memberList.stream().noneMatch(Member::unknownTeam)) {
+  System.out.println("there is no unknown team member");
+}
+````
+
+### 4.3 Finding an element
+
+- `findAny()` : stream에서 임의의 element를 반환
+- short-circuiting operation
+    - 조건에 맞는 element를 찾으면 바로 반환하고 stream을 종료
+
+````
+memberList.stream()
+        .filter(member -> member.getTeam() == Member.Team.AESPA)
+        .filter(Member::checkIsAdult)
+        .findAny()
+        .ifPresent(member -> System.out.println("member = " + member));
+````
+
+#### OPTIONAL IN A NUTSHELL
+
+- `java.util.Optional` : `null`이 아닌 값을 포함하거나, 아니면 아무것도 포함하지 않을 수 있는 container object
+- `isPresent()` : `Optional`이 값을 포함하면 `true` 반환
+- `ifPresent(Consumer)` : `Optional`이 값을 포함하면 `Consumer`를 실행
+- `get()` : `Optional`이 값을 포함하면 값을 반환, 아니면 `NoSuchElementException` 발생
+- `orElse(T)` : `Optional`이 값을 포함하면 값을 반환, 아니면 `T`를 반환
+
+### 4.4  Finding the first element
+
+`findFirst()` : stream에서 첫 번째 element를 반환
+
+````
+memberList.stream()
+        .filter(member -> member.getTeam() == Member.Team.NEW_JEANS)
+        .findFirst()
+        .ifPresent(member -> System.out.println("NEW_JEANS leader is" + member));
+````
+
+#### `findFirst()` vs `findAny()`
+
+- `findAny()` : 조건에 부합하는 어떤 element든 상관 X, 병렬 처리에 유용
+- `findFirst()` : stream의 첫 번째 element를 반환, 병렬 처리에 유용 X
+    - 병렬에서는 첫번쨰 요소를 알기가 힘듦
 
 ## 5. Reducing
 
