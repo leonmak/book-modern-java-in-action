@@ -80,6 +80,90 @@ member = NINGNING
 
 ## 2. Slicing a stream (Since Java 9)
 
+- 특정 element를 drop하거나 skip 하는 방법
+
+### 2.1 Slicing using a predicate
+
+- `takeWhile()`, `dropWhile()`
+- **이미 정렬된 stream에서 적합**
+
+#### USING TAKEWHILE
+
+- 크기가 큰 stream에 적합
+- `Predicate` 에 부합한 조건이 아닌게 나올 때까지 요소를 반환
+
+````
+// fitler
+List<Member> aespa1 = memberList.stream().filter(member -> {
+    System.out.println("filter: " + member.getName());
+    return member.getTeam() == Member.Team.AESPA;
+}).toList();
+
+// takeWhile
+List<Member> aespa2 = memberList.stream().takeWhile(member -> {
+    System.out.println("takeWhile: " + member.getName());
+    return member.getTeam() == Member.Team.AESPA;
+}).toList();
+````
+
+```log
+filter: karina
+filter: winter
+filter: gisele
+filter: ningning
+filter: irene
+filter: seulgi
+filter: wendy
+filter: joy
+filter: yeri
+filter: hani
+filter: hyerin
+filter: minzi
+
+takeWhile: karina
+takeWhile: winter
+takeWhile: gisele
+takeWhile: ningning
+takeWhile: irene
+```
+
+#### USING DROPWHILE
+
+- `Predicate` 에 부합한 조건이 나올 때까지 요소를 제외
+- **element가 무한대여도 사용 가능**
+- `takeWhile`과 반대
+
+````
+List<Member> notAespa = memberList.stream().dropWhile(member -> {
+    System.out.println("dropWhile: " + member.getName());
+    return member.getTeam() == Member.Team.AESPA;
+}).toList();
+````
+
+### 2.2 Truncating a stream
+
+- `limit(n)` : size가 n인 stream 반환
+- 순서 정렬에 상관없이 사용 가능
+
+````
+List<Member> aespaTwoMember = memberList.stream()
+                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
+                                        .limit(2)
+                                        .toList();
+````
+
+### 2.3 Skipping elements
+
+- `skip(n)` : 시작 element부터 n개의 element를 버리고 반환
+- n이 stream 사이즈보다 크면 빈 stream 반환
+
+````
+List<Member> aespaTwoMember = memberList.stream()
+                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
+                                        .skip(2)
+                                        .toList();
+````
+
 ## 3. Mapping
 
 ## 4. Finding and matching
