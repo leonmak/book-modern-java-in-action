@@ -1,10 +1,9 @@
 package org.example.part2;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 public class Main5 {
@@ -125,9 +124,102 @@ public class Main5 {
         memberList.stream()
                 .filter(member -> member.getTeam() == Member.Team.NEW_JEANS)
                 .findFirst()
-                .ifPresent(member -> System.out.println("NEW_JEANS leader is" + member));\
+                .ifPresent(member -> System.out.println("NEW_JEANS leader is" + member));
 
         // quiz 5.3 Reducing
         Integer sum = memberList.stream().map(m -> 1).reduce(0, Integer::sum);
+
+        doSolution();
     }
+
+    /*6.1 practice*/
+    private static void doSolution() {
+
+        Trader raoul = new Trader("Raoul", "Cambridge");
+        Trader mario = new Trader("Mario", "Milan");
+        Trader alan = new Trader("Alan", "Cambridge");
+        Trader brian = new Trader("Brian", "Cambridge");
+        List<Transaction> transactions = Arrays.asList(
+                new Transaction(brian, 2011, 300),
+                new Transaction(raoul, 2012, 1000),
+                new Transaction(raoul, 2011, 400),
+                new Transaction(mario, 2012, 710),
+                new Transaction(mario, 2012, 700),
+                new Transaction(alan, 2012, 950));
+
+        // 1. Find all transactions in the year 2011 and sort them by value (small to high).
+        List<Transaction> sol1 = transactions.stream()
+                .filter(t -> t.getYear() == 2011)
+                .sorted(Comparator.comparing(Transaction::getValue))
+                .collect(Collectors.toList());
+        System.out.println("sol1 = " + sol1);
+
+        // 2. What are all the unique cities where the traders work?
+        List<String> sol2 = transactions.stream()
+                .map(t -> t.getTrader().getCity())
+                .distinct()
+                .collect(toList());
+        System.out.println("sol2 = " + sol2);
+
+        // 3. Find all traders from Cambridge and sort them by name.
+        List<Trader> sol3 = transactions.stream()
+                .map(t -> t.getTrader())
+                .filter(trader -> trader.getCity().equals("Cambridge"))
+                .distinct()
+                .sorted(Comparator.comparing(Trader::getName))
+                .collect(toList());
+        System.out.println("sol3 = " + sol3);
+
+        // 4. Return a string of all traders’ names sorted alphabetically.
+        String sol4 = transactions.stream()
+                .map(t -> t.getTrader().getName())
+                .distinct()
+                .sorted()
+                .reduce("", (n1, n2) -> n1 + " " + n2);
+
+        String sol4Better = transactions.stream().map(transaction -> transaction.getTrader().getName())
+                .distinct()
+                .sorted()
+                .collect(joining());
+
+        System.out.println("sol4 = " + sol4);
+
+        // 5. Are any traders based in Milan?
+        Boolean sol5 = transactions.stream()
+                .anyMatch(t -> t.getTrader().getCity().equals("Milan"));
+
+        System.out.println("sol5 = " + sol5);
+
+        // 6. Print the values of all transactions from the traders living in Cambridge.
+        transactions.stream()
+                .forEach(t -> {
+                    if (t.getTrader().getCity().equals("Cambridge"))
+                        System.out.println(t.getValue());
+                });
+        transactions.stream()
+                .filter(t -> t.getTrader().getCity().equals("Cambridge"))
+                .map(Transaction::getValue)
+                .forEach(System.out::println);
+
+        // 7. What’s the highest value of all the transactions?
+        Optional<Integer> sol7 = transactions.stream()
+                .map(Transaction::getValue)
+                .reduce(Integer::max);
+        System.out.println("sol7 = " + sol7.get());
+
+
+        // 8. Find the transaction with the smallest value.
+        Optional<Transaction> sol8 = transactions.stream()
+                .reduce((t1, t2) ->
+                        t1.getValue() < t2.getValue() ? t1 : t2
+                );
+        Optional<Transaction> sol8Better = transactions.stream()
+                .min(Comparator.comparing(Transaction::getValue));
+        System.out.println("sol8 = " + sol8.get());
+
+
+
+
+    }
+
 }

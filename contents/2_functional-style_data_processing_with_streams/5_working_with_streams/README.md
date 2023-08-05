@@ -405,6 +405,161 @@ int sum = numbers.parallelStream().reduce(0, Integer::sum);
 
 ## 6. Putting it all into practice
 
+1. Find all transactions in the year 2011 and sort them by value (small to high).
+2. What are all the unique cities where the traders work?
+3. Find all traders from Cambridge and sort them by name.
+4. Return a string of all traders’ names sorted alphabetically.
+5. Are any traders based in Milan?
+6. Print the values of all transactions from the traders living in Cambridge.
+7. What’s the highest value of all the transactions?
+8. Find the transaction with the smallest value.
+
+### 6.1 The domain: Traders and Transactions
+
+<details>
+<summary>실습 코드 : 예제에 사용할 클래스 `Trader`, `Transaction`</summary>
+
+````java
+public class Trader {
+    private final String name;
+    private final String city;
+
+    public Trader(String n, String c) {
+        this.name = n;
+        this.city = c;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getCity() {
+        return this.city;
+    }
+
+    public String toString() {
+        return "Trader:" + this.name + " in " + this.city;
+    }
+}
+
+
+public class Transaction {
+    private final Trader trader;
+    private final int year;
+    private final int value;
+
+    public Transaction(Trader trader, int year, int value) {
+        this.trader = trader;
+        this.year = year;
+        this.value = value;
+    }
+
+    public Trader getTrader() {
+        return this.trader;
+    }
+
+    public int getYear() {
+        return this.year;
+    }
+
+    public int getValue() {
+        return this.value;
+    }
+
+    public String toString() {
+        return "{" + this.trader + ", " +
+                "year: " + this.year + ", " +
+                "value:" + this.value + "}";
+    }
+}
+
+````
+
+````
+Trader raoul = new Trader("Raoul", "Cambridge");
+    Trader mario = new Trader("Mario", "Milan");
+    Trader alan = new Trader("Alan", "Cambridge");
+    Trader brian = new Trader("Brian", "Cambridge");
+    List<Transaction> transactions = Arrays.asList(
+                                          new Transaction(brian, 2011, 300),
+                                          new Transaction(raoul, 2012, 1000),
+                                          new Transaction(raoul, 2011, 400),
+                                          new Transaction(mario, 2012, 710),
+                                          new Transaction(mario, 2012, 700),
+                                          new Transaction(alan, 2012, 950));
+}
+
+````
+
+</details>
+
+### 6.2 Solutions
+
+````
+// 1. Find all transactions in the year 2011 and sort them by value (small to high).
+List<Transaction> sol1 = transactions.stream()
+                                    .filter(t -> t.getYear() == 2011)
+                                    .sorted(Comparator.comparing(Transaction::getValue))
+                                    .collect(Collectors.toList());
+
+// 2. What are all the unique cities where the traders work?
+List<String> sol2 = transactions.stream()
+                                .map(t -> t.getTrader().getCity())
+                                .distinct()
+                                .collect(toList());
+                                
+// 3. Find all traders from Cambridge and sort them by name.
+List<Trader> sol3 = transactions.stream()
+                                .map(t -> t.getTrader())
+                                .filter(trader -> trader.getCity().equals("Cambridge"))
+                                .distinct()
+                                .sorted(Comparator.comparing(Trader::getName))
+                                .collect(toList());
+                                                       
+// 4. Return a string of all traders’ names sorted alphabetically.
+String sol4 = transactions.stream()
+                          .map(t -> t.getTrader().getName())
+                          .distinct()
+                          .sorted()
+                          .reduce("", (n1, n2) -> n1 + " " + n2);
+
+String sol4Better = transactions.stream().map(transaction -> transaction.getTrader().getName())
+                                        .distinct()
+                                        .sorted()
+                                        .collect(joining());
+
+// 5. Are any traders based in Milan?
+Boolean sol5 = transactions.stream()
+                            .anyMatch(t -> t.getTrader().getCity().equals("Milan"));  
+                            
+// 6. Print the values of all transactions from the traders living in Cambridge.
+transactions.stream()
+            .forEach(t -> {
+                if (t.getTrader().getCity().equals("Cambridge"))
+                    System.out.println(t.getValue());
+            });
+            
+// 가동성 up
+transactions.stream()
+            .filter(t -> t.getTrader().getCity().equals("Cambridge"))
+            .map(Transaction::getValue)
+            .forEach(System.out::println);
+
+// 7. What’s the highest value of all the transactions?
+Optional<Integer> sol7 = transactions.stream()
+                                      .map(Transaction::getValue)
+                                      .reduce(Integer::max);
+
+// 8. Find the transaction with the smallest value.
+Optional<Transaction> sol8 = transactions.stream()
+        .reduce((t1, t2) ->
+                t1.getValue() < t2.getValue() ? t1 : t2
+        );
+        
+Optional<Transaction> sol8Better = transactions.stream()
+                                                .min(Comparator.comparing(Transaction::getValue));
+````
+
 ## 7. Numeric streams
 
 ## 8. Building streams
