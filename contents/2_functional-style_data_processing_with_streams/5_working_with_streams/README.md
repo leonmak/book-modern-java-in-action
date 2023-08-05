@@ -311,9 +311,10 @@ memberList.stream()
 
 #### `findFirst()` vs `findAny()`
 
-- `findAny()` : 조건에 부합하는 어떤 element든 상관 X, 병렬 처리에 유용
-- `findFirst()` : stream의 첫 번째 element를 반환, 병렬 처리에 유용 X
-    - 병렬에서는 첫번쨰 요소를 알기가 힘듦
+| method        | use case                       | parallel       |
+|---------------|--------------------------------|----------------|
+| `findFirst()` | stream의 첫번째 element            | 병렬 실행에 부합하지 않음 |
+| `findAny()`   | 순서에 상관없이 가장 접근이 빠른 첫번쨰 element | 유용             |
 
 ## 5. Reducing
 
