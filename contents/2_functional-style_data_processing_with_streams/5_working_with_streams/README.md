@@ -562,6 +562,153 @@ Optional<Transaction> sol8Better = transactions.stream()
 
 ## 7. Numeric streams
 
+````
+int ageTotal = members.stream()
+                       .map(Member::getAge)
+                        .reduce(0, Integer::sum);  
+````
+
+- `reduce`로 합계를 구하면,
+    - unboxing 필요
+    - 가독성 별로
+- **primitive stream specializations** : number로 된 Stream에 특화
+
+### 7.1 Primitive stream specialization
+
+- `IntStream`, `DoubleStream`, `LongStream`
+- boxing 비용 없음
+- numberic stream을 다루는 특화된 메서드 제공 e.g. `sum()`, `max()`, `min()`, `average()`
+- object stream으로 다시 convert 가능
+
+#### MAPPING TO A NUMERIC STREAM
+
+- `mapToInt()`, `mapToDouble()`, `mapToLong()`
+- specialized stream을 리턴
+
+````
+int ageTotal = members.stream() // Return : Stream<Member>
+                       .mapToInt(Member::getAge) // Return : IntStream, not Stream<Integer>
+                       .sum();  
+````
+
+#### COMVERTING BACK TO A STREAM OF OBJECTS
+
+- nonspecialized stream으로 다시 convert 가능
+- `boxed()`
+
+````
+IntStream intStream = members.stream()
+                             .mapToInt(Member::getAge);
+Stream<Integer> stream = intStream.boxed();
+````
+
+#### DEFAULT VALUES : OptionalInt
+
+- `OptionalInt`, `OptionalDouble`, `OptionalLong`
+- 각 specialized stream에 대응하는 container
+- 값이 없을 수도 있고, 0일 수도 있음
+
+````
+OptionalInt maxAge = members.stream()
+                            .mapToInt(Member::getAge)
+                            .max();
+
+int maxAge = maxAge.orElse(-1);
+````
+
+### 7,2 Numeric ranges
+
+- `range()`, `rangeClosed()` : 범위를 활용해서 숫자 스트림을 만들 수 있음
+    - `range()` : 배타적
+    - `rangeClosed()` : 배타적 X
+
+````
+IntStream evenNumbers = IntStream.rangeClosed(1, 100)
+                                 .filter(n -> n % 2 == 0);
+                                 
+System.out.println(evenNumbers.count()); // 50개의 짝수 출력
+
+IntStream evenNumbers = IntStream.range(1, 100)
+                                 .filter(n -> n % 2 == 0);
+                                 
+System.out.println(evenNumbers.count()); // 49개의 짝수 출력
+````
+
+### 7.3 Putting numerical streams into practice : Pythagorean triples
+
+#### PYTHAGOREAN TRIPLES
+
+- 피타고라스 정리 : a^2 + b^2 = c^2
+- e.g. (3, 4, 5)일 떄, 3^2 + 4^2 = 5^2
+- 피타고라스 정리를 만족하는 (a, b, c) 쌍은 **무한함**
+
+#### REPRESENTING A TRIPLE
+
+````
+int[] triples = new int[]{3, 4, 5}; // (3, 4, 5)를 표현하는 배열
+````
+
+#### FILTTERING GOOD COMBINATIONS
+
+(a, b)가 주어졌을 때, 올바른 조합인지 확인하는 방법
+
+````
+filter(b -> Math.sqrt(a*a + b*b) % 1 == 0)
+````
+
+#### GENERATING TRIPLES
+
+````
+stream.filter(b -> Math.sqrt(a*a + b*b) % 1 == 0)
+      .map(b -> new int[]{a, b, (int) Math.sqrt(a*a + b*b)});
+````
+
+#### GENERATING B VALUES
+
+````
+IntStream.rangeClosed(1, 100) // return : IntStream
+          .filter(b -> Math.sqrt(a*a + b*b) % 1 == 0)
+          .boxed() // return : Stream<Integer>
+          .map(b -> new int[]{a, b, (int) Math.sqrt(a*a + b*b)}); // return : Stream<int[]>
+````
+
+#### GENERATING A VALUES
+
+````
+Stream<int[]> pythagoreanTriples1 =
+        IntStream.rangeClosed(1, 100).boxed() // return : Stream<Integer> 1, 2, 3, ..., 100
+                 .flatMap(a -> IntStream.rangeClosed(a, 100) // return : IntStream 1, 2, 3, ..., 100
+                                        .filter(b -> Math.sqrt(a*a + b*b) % 1 == 0) // return : IntStream, 피타고라스 정리를 만족하는 b
+                                        .mapToObj(b -> new int[]{a, b, (int) Math.sqrt(a*a + b*b)}));
+````
+
+#### RUNNING THE CODE
+
+````
+pythagoreanTriples1.limit(5)
+                   .forEach(t -> System.out.println(t[0] + ", " + t[1] + ", " + t[2]));
+````
+
+```log
+3, 4, 5
+5, 12, 13
+6, 8, 10
+...
+```
+
+#### CAN WE DO BETTER?
+
+- `pythagoreanTriples1` 은 제곱근 계산 `Math.sqrt(a*a + b*b)`을 2번 하고 있음
+- `maptObj()` -> `filter()` 순서로 변경
+
+````
+Stream<double[]> pythagoreanTriples2 = 
+  IntStream.rangeClosed(1, 100).boxed()
+        .flatMap(a -> IntStream.rangeClosed(a, 100)
+                                .mapToObj(b -> new double[]{a, b, Math.sqrt(a * a + b * b)})
+                                .filter(t -> t[2] % 1 == 0));
+````
+
 ## 8. Building streams
 
 ## 9. Overview

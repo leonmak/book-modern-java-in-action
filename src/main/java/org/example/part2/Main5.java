@@ -2,6 +2,8 @@ package org.example.part2;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -129,7 +131,39 @@ public class Main5 {
         // quiz 5.3 Reducing
         Integer sum = memberList.stream().map(m -> 1).reduce(0, Integer::sum);
 
-        doSolution();
+        // doSolution();
+
+        Stream<int[]> pythagoreanTriples1 =
+                IntStream.rangeClosed(1, 100).boxed()
+                        .flatMap(a ->
+                                IntStream.rangeClosed(a, 100)
+                                        .filter((b) -> {
+                                            double returnVal = Math.sqrt(a * a + b * b);
+                                            System.out.println("filter : " + a + " || " + b + " || " + returnVal);
+                                            return returnVal % 1 == 0;
+                                        })
+                                        .mapToObj((b) -> {
+                                            System.out.println("map : " + a + " || " + b);
+                                            return new int[]{a, b, (int) Math.sqrt(a * a + b * b)};
+                                        })
+                        );
+
+        Stream<double[]> pythagoreanTriples2 =
+                IntStream.rangeClosed(1, 100).boxed()
+                        .flatMap(a ->
+                                IntStream.rangeClosed(a, 100)
+                                        .mapToObj(
+                                                b -> {
+                                                    System.out.println("map : " + a + " || " + b);
+                                                    return new double[]{a, b, Math.sqrt(a * a + b * b)};
+                                                })
+                                        .filter(t -> {
+                                            System.out.println("filter : " + t[0] + " || " + t[1] + " || " + t[2]);
+                                            return t[2] % 1 == 0;
+                                        }));
+
+//        pythagoreanTriples1.limit(5).count();
+        pythagoreanTriples2.limit(5).count();
     }
 
     /*6.1 practice*/
@@ -216,8 +250,6 @@ public class Main5 {
         Optional<Transaction> sol8Better = transactions.stream()
                 .min(Comparator.comparing(Transaction::getValue));
         System.out.println("sol8 = " + sol8.get());
-
-
 
 
     }
