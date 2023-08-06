@@ -1,6 +1,7 @@
 package org.example.part2;
 
 import java.util.*;
+import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -162,8 +163,33 @@ public class Main5 {
                                             return t[2] % 1 == 0;
                                         }));
 
-//        pythagoreanTriples1.limit(5).count();
-        pythagoreanTriples2.limit(5).count();
+        // pythagoreanTriples1.limit(5).count();
+        // pythagoreanTriples2.limit(5).count();
+
+        // Quiz 5.4: Fibonacci tuples series
+        Stream.iterate(new int[]{0, 1}, (e) -> new int[]{e[1], e[0] + e[1]})
+                .limit(20)
+                .forEach(t -> System.out.println("(" + t[0] + "," + t[1] + ")"));
+
+//        Stream.iterate(0, n -> n + 2)
+//                .filter(n -> n < 100) // 무한
+//                .forEach(System.out::println);
+
+        IntSupplier fib = new IntSupplier() {
+            private int previous = 0;
+            private int current = 1;
+
+            @Override
+            public int getAsInt() {
+                int oldPrevious = this.previous;
+                int nextValue = this.previous + this.current;
+                this.previous = this.current;
+                this.current = nextValue;
+                return oldPrevious;
+            }
+        };
+
+        IntStream.generate(fib).limit(10).forEach(System.out::println);
     }
 
     /*6.1 practice*/

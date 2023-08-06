@@ -711,6 +711,176 @@ Stream<double[]> pythagoreanTriples2 =
 
 ## 8. Building streams
 
+### 8.1 Streams from values
+
+- `Stream.of()`
+- 파라미터로 전달된 값들을 가지는 스트림을 만듦
+
+````
+Stream<String> streamAespa = Stream.of("Karina", "Winter", "Giselle", "Ningning");
+stream.map(String::toUpperCase)
+      .forEach(System.out::println);
+      
+Stream<String> emptyStream = Stream.empty();
+````
+
+### 8.2 Streams from nullable (Since Java 9)
+
+- nullable object로부터 stream 생성
+- `Stream.ofNullable()`
+
+````
+String nullalbeStr = System.getProperty("user.nameList");
+Stream<String> stream = nullalbeStr == null ? Stream.empty() : Stream.of(nullalbeStr);
+
+// ofNullable() 사용
+Stream<String> stream = Stream.ofNullable(System.getProperty("user.nameList"));
+
+// flatMap() 이랑 같이 사용
+Stream<String> stream = Stream.of("user.memberAespa", "user.memberRedVelvet", "user.memberNewJeans")
+                              .flatMap(s -> Stream.ofNullable(System.getProperty(s)));
+````
+
+### 8.3 Streams from arrays
+
+- `Arrays.stream()`
+- 배열로부터 stream 생성
+
+````
+int[] numbers = {2, 3, 5, 7, 11, 13};
+int sum = Arrays.stream(numbers).sum();
+````
+
+### 8.4 Streams from files
+
+- Java NIO API : I/O 명령 실행, e.g. 파일 읽기, 쓰기, 삭제 등
+- Streams API 사용시 적합
+- `java.nio.file.Files` 의 메서드들이 stream을 반환
+    - e.g. `Files.list()`, `Files.find()`, `Files.lines()`, `Files.walk()`
+
+````
+/*
+memberNameList.txt 예시
+
+Karina Winter Giselle Ningning
+Wendy Irene Seulgi Joy Yeri
+Karina Giselle
+Irene Seulgi Joy Yeri
+...
+*/
+
+long cntUniqueMemberName = 0;
+try(Stream<String> lines = Files.lines(Paths.get("memberNameList.txt"), Charset.defaultCharset())) {
+    cntUniqueMemberName = lines.flatMap(line -> Arrays.stream(line.split(" ")))
+                               .distinct()
+                               .count();
+} catch (IOException e) {
+    e.printStackTrace();
+}
+
+````
+
+### 8.5 Streams from functions : creating infinite streams!
+
+- `Stream.iterate()`, `Stream.generate()` : function으로부터 stream 생성
+- infinite stream 생성 가능
+- **unbounded** : 계산 범위에 제한이 없음, Collection과의 차이점
+
+#### ITERATE
+
+- `iterate()` : initial value와 `UnaryOperator<T>`를 인자로 받음
+- `UnaryOperator<T>`의 lamda에 이전 element를 넘겨줌
+
+````
+Stream.iterate(0, n -> n + 2)
+      .limit(10)
+      .forEach(System.out::println);
+      
+// since java 9
+// iterate()의 두번째 인자로 Predicate<T>를 받음
+
+Stream.iterate(0, n -> n < 100, n -> n + 2) // 100보다 작은 짝수
+      .forEach(System.out::println); 
+
+// takeWhile() 로 대체 가능
+Stream.iterate(0, n -> n + 2)
+      .takeWhile(n -> n < 100) 
+      .forEach(System.out::println);
+
+// filter()로 불가능
+Stream.iterate(0, n -> n + 2)
+      .filter(n -> n < 100) // 무한
+      .forEach(System.out::println);
+````
+
+#### GENERATE
+
+- `generate()` : `Supplier<T>`를 인자로 받음
+- **`Supplier`는 stateless한 것이 좋음**
+    - stateeful은 병렬 처리에 적합하지 않음
+
+````
+Stream.generate(Math::random)
+      .limit(5)
+      .forEach(System.out::println);
+      
+IntStream numberOnes = IntStream.generate(() -> 1);
+IntStream numberTwos = IntStream.generate(new IntSupplier() {
+    @Override
+    public int getAsInt() {
+        return 2;
+    }
+}); // stateful : 익명 클래스는 field를 가질 수 있음
+````
+
+### staeless vs stateful (e.g. Fibonacci sequence)
+
+- stateless : 이전 element를 알 필요가 없음
+- stateful : 이전 element를 알아야 함
+
+````
+// stateless
+Stream.iterate(new int[]{0, 1}, (e) -> new int[]{e[1], e[0] + e[1]})
+        .limit(20)
+        .forEach(t -> System.out.println("(" + t[0] + "," + t[1] + ")"));
+        
+// stateful
+IntSupplier fib = new IntSupplier(){
+  private int previous = 0;
+  private int current = 1;
+  
+  @Override
+  public int getAsInt(){
+    int oldPrevious = this.previous;
+    int nextValue = this.previous + this.current;
+    this.previous = this.current;
+    this.current = nextValue;
+    return oldPrevious;
+ }
+};
+
+IntStream.generate(fib).limit(10).forEach(System.out::println);
+````
+
 ## 9. Overview
 
+streams은 복잡한 데이터 처리를 간단하게 구현할 수 있게 해줌
+
 ## 10. Summary
+
+- Streams API는 복잡한 data 처리 query를 할 수 있게 해줌
+- filter & slicing : `filter()`, `distinct()`, `takewhile()`(java 9), `dropwhile()`(java 9), `skip()`, `limit()`
+- `takewhile()`과 `dropwhile()`은 정렬 되어있는 Stream에서 `filter()`보다 효율적
+- extract & transform : `map()`, `flatMap()`
+- find & search : `findFirst()`, `findAny()`, `anyMatch()`, `allMatch()`, `noneMatch()`
+- short-circuiting : 탐색이 완료되면 연산을 마치고 stream을 닫음
+- element에 대한 반복적인 연산으로 단일 결과 만들기 : `reduce()` e.g. `sum()`, `max()`, `min()`
+- stateless vs stateful
+    - stateless :  : `filter()`, `map()`
+    - stateful : `reduce()`, `sorted()`, `distinct()`
+- primitive specilization stremas : `IntStream`, `LongStream`, `DoubleStream`
+- Streams는 collection, values, arrays, files, functions로부터 생성 가능
+    - function : `iterate()`, `generate()`
+- infinite stream 생성 가능
+    - 연산이 실행될 때까지 생성을 미루기 때문에 가능
+    - `limit()`으로 제한 가능
