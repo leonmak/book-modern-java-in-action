@@ -85,6 +85,71 @@ List<Transaction> trnsactions = transactionsStream.collect(Collectors.toList());
 
 ## 2. Reducing and summarizing
 
+````
+long howManyMembers1 = memberList.stream().count();
+long howManyMembers2 = memberList.stream().collect(Collectors.counting());
+
+System.out.println("howManyMembers1 = " + howManyMembers1);
+System.out.println("howManyMembers2 = " + howManyMembers2);
+````
+
+### 2.1 Finding maximum and minimum in a stream of values
+
+- `Collectors.maxBy()`, `Collectors.minBy()`
+    - `Comparator`를 인자로 받음
+    - `Comparator`를 이용해 `max` or `min` element를 찾음
+
+````
+Comparator<Member> memberAgeComparator = Comparator.comparingInt(Member::getAge);
+Optional<Member> oldestMember = memberList.stream().collect(Collectors.maxBy(memberAgeComparator));  
+````
+
+### 2.2 Summarization
+
+- `Collectors.summingInt()`, `Collectors.summingLong()`, `Collectors.summingDouble()`
+- `Collectors.averagingInt()`, `Collectors.averagingLong()`, `Collectors.averagingDouble()`
+
+<img src="img_1.png"  width="80%"/>
+
+````
+
+int totalAge = memberList.stream().collect(Collectors.summingInt(Member::getAge));
+double avgAge = memberList.stream().collect(Collectors.averagingDouble(Member::getAge));
+
+// static
+
+IntSummaryStatistics memberStatics = memberList.stream().collect(Collectors.summarizingInt(Member::getAge));
+System.out.println("memberStatics = " + memberStatics);
+````
+
+```console
+memberStatics = IntSummaryStatistics{count=12, sum=271, min=18, average=22.583333, max=28}
+````
+
+### 2.3 Joining strings
+
+- `Collectors.joining()` : 하나의 String 반환
+- 내부적으로 `StringBuilder.append()`, `StringBuilder.toString()` 사용
+
+````
+String allMemberName = memberList.stream()
+                                  .map(Member::getName)
+                                  .collect(Collectors.joining());
+
+System.out.println("allMemberName = " + allMemberName);
+
+String allMemberName2 = memberList.stream()
+                                    .map(Member::getName)
+                                    .collect(Collectors.joining(", "));
+````
+
+```console
+allMemberName = karinawintergiseleningningireneseulgiwendyjoyyerihanihyerinminzi
+allMemberName2 = karina, winter, gisele, ningning, irene, seulgi, wendy, joy, yeri, hani, hyerin, minzi
+````
+
+### 2.4 Generalized summarization with reduction
+
 ## 3. Grouping
 
 ## 4. Partitioning

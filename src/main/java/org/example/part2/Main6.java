@@ -1,7 +1,6 @@
 package org.example.part2;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Main6 {
@@ -18,6 +17,37 @@ public class Main6 {
 
         System.out.println("howManyMembers1 = " + howManyMembers1);
         System.out.println("howManyMembers2 = " + howManyMembers2);
+
+        // max / min
+        Comparator<Member> memberAgeComparator = Comparator.comparingInt(Member::getAge);
+        Optional<Member> oldestMember = memberList.stream().collect(Collectors.maxBy(memberAgeComparator));
+        System.out.println("oldestMember = " + oldestMember);
+
+        // Summarization
+
+        int totalAge = memberList.stream().collect(Collectors.summingInt(Member::getAge));
+        double avgAge = memberList.stream().collect(Collectors.averagingDouble(Member::getAge));
+
+        System.out.println("totalAge = " + totalAge);
+        System.out.println("avgAge = " + avgAge);
+
+        IntSummaryStatistics memberStatics = memberList.stream().collect(Collectors.summarizingInt(Member::getAge));
+        System.out.println("memberStatics = " + memberStatics);
+
+        // Joining Strings
+
+        String allMemberName = memberList.stream()
+                .map(Member::getName)
+                .collect(Collectors.joining());
+
+        System.out.println("allMemberName = " + allMemberName);
+
+        String allMemberName2 = memberList.stream()
+                .map(Member::getName)
+                .collect(Collectors.joining(", "));
+
+        System.out.println("allMemberName2 = " + allMemberName2);
+
 
     }
 }
