@@ -47,10 +47,41 @@ Map<Currency, List<Transaction>> transactionsByCurrencies = transactions.stream(
                                                                         .collect(groupingBy(Transaction::getCurrency));
 ````
 
-- 구현 복잡
-- 가독성 안좋음
-
 ## 1. Collectors in a nutshell
+
+- imperative-style : result를 얻기 위해 **what**에 집중
+    - 중첩 loop, 조건문
+    - 가독성 떨어짐, 수정이 어려움
+- functional-style : result를 얻기 위해 **how**에 집중
+    - e.g. `collect()`의 인자로 `Collector`를 전달
+
+### 1.1  Collectors as advanced reductions
+
+<img src="img.png"  width="80%"/>
+
+- `collect()`
+    - reduction operation : `Collector` 를 인자로 넘길 때
+    - element를 탐색하고 `Collector`가 연산하게 함
+    - `Collector` lamda : reduction operation을 수행할지 정의
+
+#### `Collectors`의 static method
+
+- `Collecotors`는 유용한 static factory method를 제공
+
+````
+List<Transaction> trnsactions = transactionsStream.collect(Collectors.toList());
+````
+
+### 1.2 Predefined collectors
+
+- `Collectors`는 다양한 종류의 유용한 factory method를 제공
+    - e.g. `groupingBy()`, `partitioningBy()` 등
+
+#### 주요 기능
+
+- Reducing, summarizing elements to a single value
+- Grouping elements
+- Partitioning elements
 
 ## 2. Reducing and summarizing
 
