@@ -23,21 +23,21 @@ public class Main5 {
         List<Member> aespa1 = memberList.stream().filter(member -> {
             System.out.println("filter: " + member.getName());
             return member.getTeam() == Member.Team.AESPA;
-        }).toList();
+        }).collect(Collectors.toList());
 
         System.out.println("aespa1 = " + aespa1 + "\n\n\n");
 
         List<Member> aespa2 = memberList.stream().takeWhile(member -> {
             System.out.println("takeWhile: " + member.getName());
             return member.getTeam() == Member.Team.AESPA;
-        }).toList();
+        }).collect(Collectors.toList());
 
         System.out.println("aespa2 = " + aespa2 + "\n\n\n");
 
         List<Member> notAespa = memberList.stream().dropWhile(member -> {
             System.out.println("dropWhile: " + member.getName());
             return member.getTeam() == Member.Team.AESPA;
-        }).toList();
+        }).collect(Collectors.toList());
 
         System.out.println("notAespa = " + notAespa + "\n\n\n");
 
@@ -48,13 +48,13 @@ public class Main5 {
         List<Member> aespaTwoMember1 = memberList.stream()
                 .filter(member -> member.getTeam() == Member.Team.AESPA)
                 .limit(2)
-                .toList();
+                .collect(Collectors.toList());
         System.out.println("aespaTwoMember1 = " + aespaTwoMember1 + "\n\n\n");
 
         List<Member> aespaTwoMember2 = memberList.stream()
                 .filter(member -> member.getTeam() == Member.Team.AESPA)
                 .skip(2)
-                .toList();
+                .collect(Collectors.toList());
         System.out.println("aespaTwoMember2 = " + aespaTwoMember2 + "\n\n\n");
 
         // Mapping
@@ -64,7 +64,7 @@ public class Main5 {
         List<String> memberNamesAespa = memberList.stream()
                 .filter(member -> member.getTeam() == Member.Team.AESPA)
                 .map(Member::getName)
-                .toList();
+                .collect(Collectors.toList());
 
         System.out.println("memberNamesAespa = " + memberNamesAespa + "\n\n\n");
 
@@ -72,7 +72,7 @@ public class Main5 {
                 .filter(member -> member.getTeam() == Member.Team.AESPA)
                 .map(Member::getName)
                 .map(String::length)
-                .toList();
+                .collect(Collectors.toList());
 
         System.out.println("memberNameLengthAespa = " + memberNameLengthAespa + "\n\n\n");
 
@@ -80,7 +80,7 @@ public class Main5 {
         // quiz 5.2 Mapping
         List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5);
 
-        List<Integer> result = numbers.stream().map(n -> (int) Math.pow(n, 2)).toList();
+        List<Integer> result = numbers.stream().map(n -> (int) Math.pow(n, 2)).collect(Collectors.toList());
         System.out.println("result = " + result);
 
         List<Integer> numbers1 = Arrays.asList(1, 2, 3);

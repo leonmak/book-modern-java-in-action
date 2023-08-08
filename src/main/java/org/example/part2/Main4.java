@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main4 {
 
@@ -12,7 +13,7 @@ public class Main4 {
 
         System.out.println("memberList = " + memberList);
 
-        List<String> memberNameAdult = memberList.stream().filter(member -> member.getAge() >= 20).map(Member::getName).limit(3).toList();
+        List<String> memberNameAdult = memberList.stream().filter(member -> member.getAge() >= 20).map(Member::getName).limit(3).collect(Collectors.toList());
 
         System.out.println("memberNameAdult = " + memberNameAdult);
 
@@ -28,7 +29,7 @@ public class Main4 {
         }
 
         // internal iteration
-        List<String> aespaMemberName2 = memberList.stream().filter(member -> member.getTeam() == Member.Team.AESPA).map(Member::getName).toList();
+        List<String> aespaMemberName2 = memberList.stream().filter(member -> member.getTeam() == Member.Team.AESPA).map(Member::getName).collect(Collectors.toList());
 
         System.out.println("=====================================\n\n\n");
 
@@ -40,7 +41,7 @@ public class Main4 {
         }).map(member -> {
             System.out.println("map: " + member.getName());
             return member.getName();
-        }).limit(2).toList();
+        }).limit(2).collect(Collectors.toList());
 
         System.out.println("aespaMemberName3 = " + aespaMemberName3);
         System.out.println("=====================================\n\n\n");
