@@ -2,6 +2,7 @@ package org.example.part2;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main6 {
 
@@ -47,6 +48,18 @@ public class Main6 {
                 .collect(Collectors.joining(", "));
 
         System.out.println("allMemberName2 = " + allMemberName2);
+
+        int totalAges = memberList.stream().collect(Collectors.reducing(0, Member::getAge, (i, j) -> i + j));
+        System.out.println("totalAges = " + totalAges);
+
+        int maxAge = memberList.stream().collect(Collectors.reducing(0, Member::getAge, (i, j) -> i > j ? i : j));
+        System.out.println("maxAge = " + maxAge);
+
+        // Quiz 6.1: Joining strings with reducing
+        String shortName = memberList.stream().map(Member::getName).collect(Collectors.joining());
+        // krinawinter...
+
+        String shortName1 = memberList.stream().map(Member::getName).collect(Collectors.reducing((s1, s2)-> s1 + s2)).get();
 
 
     }

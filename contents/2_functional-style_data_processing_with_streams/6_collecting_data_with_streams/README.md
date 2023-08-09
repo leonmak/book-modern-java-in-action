@@ -88,9 +88,6 @@ List<Transaction> trnsactions = transactionsStream.collect(Collectors.toList());
 ````
 long howManyMembers1 = memberList.stream().count();
 long howManyMembers2 = memberList.stream().collect(Collectors.counting());
-
-System.out.println("howManyMembers1 = " + howManyMembers1);
-System.out.println("howManyMembers2 = " + howManyMembers2);
 ````
 
 ### 2.1 Finding maximum and minimum in a stream of values
@@ -149,6 +146,87 @@ allMemberName2 = karina, winter, gisele, ningning, irene, seulgi, wendy, joy, ye
 ````
 
 ### 2.4 Generalized summarization with reduction
+
+````
+int totalAge = memberList.stream()
+                          .collect(Collectors.reducing(0, Member::getAge
+                                                        , (i, j) -> i + j));
+                                                          
+int maxAge = memberList.stream()
+                       .collect(Collectors.reducing(0, Member::getAge
+                                                     , (i, j) -> i > j ? i : j));
+                                                          
+````
+
+- 1st parameter : reduction의 시작값, stream이 비어있을 때 반환값
+- 2nd parameter : mapping function
+- 3rd parameter : reduction operation
+
+#### Collect vs reduce
+
+````
+Stream<Integer> stream = Arrays.asList(1, 2, 3, 4, 5, 6).stream();
+
+// comile error
+List<Integer> numbers = stream.reduce(new ArrayList<Integer>()
+                                                          ,(List<Integer> l, Integer e) -> {
+                                                            l.add(e);
+                                                            return l; }
+                                                          ,(List<Integer> l1, List<Integer> l2) -> {
+                                                            l1.addAll(l2);
+                                                            return l1; });
+
+````
+
+- 의미적 오류
+    - `Stream.reduce()` : 2개의 value로 하나의 새로운 value를 만듦 (immutable reduction)
+    - `Stream.collect()`: 컨테이너를 변형하여 새로운 컨테이너를 만듦 (mutable reduction)
+- 실질적 오류
+    - `Stream.reduce()` : 병렬 처리 안됨. 스레드가 동시에 동일한 컨테이너에 접근하면서 문제 발생
+    - `Stream.collect()` : 병렬 처리 가능. 가변 컨테이너에 접근함
+
+#### COLLECTION FRAMEWORK FLEXIBILITY: DOING THE SAME OPERATION IN DIFFERENT WAYS
+
+<img src="img_2.png"  width="80%"/>
+
+`Integer.sum()`을 method reference로 사용
+
+````
+// method reference
+int totalAge = memberList.stream()
+                         .collect(Collectors.reducing(0, Member::getAge
+                                                       , Integer::sum));
+
+// mapping function
+int totalAge = memberList.stream()
+                         .map(Member::getAge)
+                         .reduce(0, Integer::sum) // return Optional<Integer>
+                         .get();
+                         
+// more safety with Optional
+int totalAge = memberList.stream()
+                         .map(Member::getAge)
+                         .reduce(Integer::sum)
+                         .orElse(0);
+
+// IntStream
+int totalAge = memberList.stream()
+                         .mapToInt(Member::getAge)
+                         .sum();
+````
+
+#### CHOOSING THE BEST SOLUTION FOR YOUR SITUATION
+
+- Java 8에 추가된 functional-style API는 같은 연산을 다른 성능으로 제공
+- 해당 연산을 수행하는데 가장 특수화된 방법을 선택해야 함 (가독성, 성능 측면에서)
+
+````
+// 성능 : Intstream은 auto-unboxing을 피함
+// 가독성 : 가장 간결
+int totalAge = memberList.stream()
+                         .mapToInt(Member::getAge)
+                         .sum();
+````````
 
 ## 3. Grouping
 
