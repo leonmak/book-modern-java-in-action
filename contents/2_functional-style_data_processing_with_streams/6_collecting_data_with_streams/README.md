@@ -518,6 +518,370 @@ partitionedPrimes = {false=[4, 6, 8, 9, 10, 12, 14, 15, 16, ... ]
 
 ## 5. The Collector interface
 
+````java
+package java.util.stream;
+
+public interface Collector<T, A, R> {
+    Supplier<A> supplier();
+
+    BiConsumer<A, T> accumulator();
+
+    Function<A, R> finisher();
+
+    BinaryOperator<A> combiner();
+
+    Set<Characteristics> characteristics();
+}
+
+public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+    // ...
+}
+````
+
+- Collector interface : reduction operation의 명세
+    - e.g. `toList()`, `groupingBy()`
+- `T` : stream element type
+- `A` : accumulator type
+- `R` : result type
+
+### 5.1 Making sense of the methods declared by Collector interface
+
+<img src="img_6.png"  width="80%"/>
+
+````
+List<Member> members1 = memberList.stream().collect(toList());
+List<Member> members2 = memberList.stream().collect(new ToListCollector<>()); // same as above
+````
+
+#### MAKING A NEW RESULT CONTAINER: THE SUPPLIER METHOD
+
+````java
+public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+    @Override
+    public Supplier<List<T>> supplier() {
+        // return () -> new ArrayList<T>();
+        return ArrayList::new;
+    }
+}
+````
+
+- `supplier()` : collection process 동안 사용할 빈 result container를 생성하는 method
+    - return `Supplier<A>`
+
+#### ADDING AN ELEMENT TO A RESULT CONTAINER: THE ACCUMULATOR METHOD
+
+````java
+public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+    @Override
+    public BiConsumer<List<T>, T> accumulator() {
+        // return (list, item) -> list.add(item);
+        return List::add;
+    }
+}
+````
+
+- `accumulator()` : stream element를 result container에 추가하는 method
+    - return `BiConsumer<A, T>`
+
+#### APPLYING THE FINAL TRANSFORMATION TO THE RESULT CONTAINER: THE FINISHER METHOD
+
+````java
+public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+    @Override
+    public Function<List<T>, List<T>> finisher() {
+        return Function.identity();
+    }
+}
+````
+
+- `finisher()` : 연산 마지막에 호출되어야하는 함수를 반환
+    - return `Function<A, R>`
+
+#### MERGING TWO RESULT CONTAINERS: THE COMBINER METHOD
+
+<img src="img_7.png"  width="80%"/>
+
+````java
+public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+    @Override
+    public BinaryOperator<List<T>> combiner() {
+        return (list1, list2) -> {
+            list1.addAll(list2);
+            return list1;
+        };
+    }
+}
+````
+
+- `combiner()` : 각 subpart의 결과를 합치는 method
+    - return `BinaryOperator<A>`
+    - 병렬 stream에서 사용되는 method
+
+#### THE CHARACTERISTICS METHOD
+
+````java
+    enum Characteristics {
+    CONCURRENT,
+    UNORDERED,
+    IDENTITY_FINISH
+}
+````
+
+- enum `Characteristics` : `Collector`의 characteristics를 정의
+    - `CONCURRENT` : accumulator function이 concurrent하게 수행될 수 있음
+    - `UNORDERED` : stream element의 순서가 보장되지 않음
+    - `IDENTITY_FINISH` : `finisher()`가 `identity` function을 리턴함
+        - 추갖거인 transformation이 필요하지 않음
+
+### 5.2 Putting them all together
+
+```java
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
+
+import static java.util.stream.Collector.Characteristics.*;
+
+public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
+
+    @Override
+    public Supplier<List<T>> supplier() {
+        return ArrayList::new;
+    }
+
+    @Override
+    public BiConsumer<List<T>, T> accumulator() {
+        return List::add;
+    }
+
+    @Override
+    public BinaryOperator<List<T>> combiner() {
+        return (list1, list2) -> {
+            list1.addAll(list2);
+            return list1;
+        };
+    }
+
+    @Override
+    public Function<List<T>, List<T>> finisher() {
+        return Function.identity();
+    }
+
+    @Override
+    public Set<Characteristics> characteristics() {
+        return Collections.unmodifiableSet(EnumSet.of(IDENTITY_FINISH, CONCURRENT));
+    }
+}
+
+```
+
+````
+List<Member> members1 = memberList.stream().collect(toList());
+List<Member> members2 = memberList.stream().collect(new ToListCollector<>()); // same as above
+````
+
+#### PERFORMING A CUSTOM COLLECT WITHOUT CREATING A COLLECTOR IMPLEMENTATION
+
+````
+List<Member> member3 = memberList.stream().collect(ArrayList::new, List::add, List::addAll);
+````
+
+- `Collector`를 구현하지 않고도 custom collector를 사용할 수 있음
+- 가독성은 떨어지나, 코드는 짧음
+- 재사용성이 떨어짐 : `Collector.finisher()`, `Collector.characteristics()`를 구현하지 않음
+
 ## 6. Developing your own collector for better performance
 
+#### 기존 소수 판별 구현
+
+````
+// 1 ~ n 사이의 소수를 true = 소수, false = 소수 아님으로 분류
+public Map<Boolean, List<Integer>> partitionPrimes(int n) {
+  return IntStream.rangeClosed(2, n).boxed()
+                  .collect(partitioningBy(candidate -> isPrime(candidate));
+}
+
+// 소수인지 판별
+public boolean isPrime(int candidate) {
+  int candidateRoot = (int) Math.sqrt((double) candidate);
+  
+  return IntStream.rangeClosed(2, candidateRoot)
+                  .noneMatch(i -> candidate % i == 0);
+}
+````
+
+### 6.1 Divide only by prime numbers
+
+```
+
+// 정렬된 소수 집합 primes를 사용하여 소수인지 판별
+// candidate : 소수인지 판별할 숫자
+public static boolean isPrime(List<Integer> primes, int cadidate){
+  int candidateRoot = (int) Math.sqrt((double) candidate);
+  
+  return primes.stream()
+               .takeWhile(i -> i <= candidateRoot) // candidateRoot보다 작은 소수만 사용
+               .noneMatch(i -> candidate % i == 0); // 소수로 나누어 떨어지는지 확인
+}
+```
+
+- 판별하려는 숫자가 소수로 나누어떨어지는지만 확인하면 됨
+- 소수 집합 primes를 사용하여 소수인지 판별
+
+#### STEP 1 : DEFINING THE COLLECTOR CLASS SIGNATURE
+
+```java
+public class PrimeNumbersCollector implements Collector<Integer // stream element type
+        , Map<Boolean, List<Integer>>  // accumulator의 result type
+        , Map<Boolean, List<Integer>>> { // collector의 result type
+    // ...
+}
+````
+
+#### STEP 2 : IMPLEMENTING THE REDUCTION PROCESS
+
+```java
+
+public class PrimeNumbersCollector implements Collector<Integer
+        , Map<Boolean, List<Integer>>
+        , Map<Boolean, List<Integer>>> {
+
+    @Override
+    public Supplier<Map<Boolean, List<Integer>>> supplier() {
+        return () -> new HashMap<Boolean, List<Integer>>() {{
+            put(true, new ArrayList<>());
+            put(false, new ArrayList<>());
+        }};
+    }
+
+    @Override
+    public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator() {
+        return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
+            acc.get(isPrime(acc.get(true), candidate))
+                    .add(candidate);
+        };
+    }
+}
+````
+
+### STEP 3: MAKING THE COLLECTOR WORK IN PARALLEL (IF POSSIBLE)
+
+```java
+public class PrimeNumbersCollector implements Collector<Integer
+        , Map<Boolean, List<Integer>>
+        , Map<Boolean, List<Integer>>> {
+
+    // ...
+
+    @Override
+    public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
+        return (Map<Boolean, List<Integer>> map1, Map<Boolean, List<Integer>> map2) -> {
+            map1.get(true).addAll(map2.get(true));
+            map1.get(false).addAll(map2.get(false));
+            return map1;
+        };
+
+        // or throw new UnsupportedOperationException(); // 병렬 실행을 막음
+    }
+}
+````
+
+- 순서형 알고리즘이어서 병렬 실행 불가능
+- `UnsupportedOperationException` 발생시켜도 좋음
+
+#### STEP 4: THE FINISHER METHOD AND THE COLLECTOR’S CHARACTERISTIC METHOD
+
+```java
+import java.util.function.BinaryOperator;
+
+public class PrimeNumbersCollector implements Collector<Integer
+        , Map<Boolean, List<Integer>>
+        , Map<Boolean, List<Integer>>> {
+
+    @Override
+    public Supplier<Map<Boolean, List<Integer>>> supplier() {
+        return () -> new HashMap<Boolean, List<Integer>>() {{
+            put(true, new ArrayList<>());
+            put(false, new ArrayList<>());
+        }};
+    }
+
+    @Override
+    public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator() {
+        return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
+            acc.get(isPrime(acc.get(true), candidate))
+                    .add(candidate);
+        };
+    }
+
+    @Override
+    public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
+        return (Map<Boolean, List<Integer>> map1, Map<Boolean, List<Integer>> map2) -> {
+            map1.get(true).addAll(map2.get(true));
+            map1.get(false).addAll(map2.get(false));
+            return map1;
+        };
+    }
+
+    @Override
+    public Function<Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> finisher() {
+        return Function.identity();
+    }
+
+    @Override
+    public Set<Characteristics> characteristics() {
+        return Collections.unmodifiableSet(EnumSet.of(IDENTITY_FINISH));
+    }
+}
+````
+
+```
+public Map<Boolean, List<Integer>> partitionPrimesWithCustomCollector(int n) {
+    return IntStream.rangeClosed(2, n).boxed()
+            .collect(new PrimeNumbersCollector());
+}
+```
+
+### 6.2 Comparing collectors? performances
+
+````
+long fastest = Long.MAX_VALUE;
+
+for (int i = 0; i < 10; i++) {
+    long start = System.nanoTime();
+    partitionPrimes(1_000_00);
+    long duration = (System.nanoTime() - start) / 1_000_000;
+    if (duration < fastest) fastest = duration;
+}
+
+System.out.println("Fastest execution done in " + fastest + " msecs"); // partitionPrimes : 450 msecs | partitionPrimesWithCustomCollector : 6msecs
+
+fastest = Long.MAX_VALUE;
+
+for (int i = 0; i < 10; i++) {
+    long start = System.nanoTime();
+    partitionPrimesWithCustomCollector(1_000_00);
+    long duration = (System.nanoTime() - start) / 1_000_000;
+    if (duration < fastest) fastest = duration;
+}
+System.out.println("Fastest execution done in " + fastest + " msecs"); 
+System.out.println("Fastest execution done in " + fastest + " msecs"); 
+````
+
+```bash
+Fastest execution done in 449 msecs
+Fastest execution done in 8 msecs
+```
+
 ## 7. Summary
+
+- `collect()` : collector를 인자로 받는 terminal operation
+    - collector : stream의 요소를 요약된 결과로 취합
+- 정의되어있는 collector : 최소, 최대, 평균 등
+- `groupingBy()`, `partitioningBy()` : collector를 사용해서 그룹화
+- collector를 사용해서 n-level의 그룹화, 파티션, reduction 가능
+- `Collecotor` 인터페이스를 나만의 Collector로 구현 가능

@@ -215,14 +215,33 @@ public class Main6 {
         Map<Boolean, List<Integer>> partitionedPrimes = partitionPrimes(100);
         System.out.println("partitionedPrimes = " + partitionedPrimes);
 
+        // Collector Interface
+
+        List<Member> members1 = memberList.stream().collect(toList());
+        List<Member> members2 = memberList.stream().collect(new ToListCollector<>());
+
+        System.out.println("members1 = " + members1);
+        System.out.println("members2 = " + members2);
+
+        List<Member> member3 = memberList.stream().collect(ArrayList::new, List::add, List::addAll);
+        System.out.println("member3 = " + member3);
+
     }
 
     private static boolean isPrime(int candidate) {
         return IntStream.range(2, candidate).noneMatch(i -> candidate % i == 0);
     }
 
-    private static Map<Boolean, List<Integer>> partitionPrimes(int n) {
+    public static Map<Boolean, List<Integer>> partitionPrimes(int n) {
         return IntStream.rangeClosed(2, n).boxed()
                 .collect(partitioningBy(candidate -> isPrime(candidate)));
+    }
+
+    public static boolean isPrime(List<Integer> primes, int candidate) {
+        int candidateRoot = (int) Math.sqrt((double) candidate);
+
+        return primes.stream()
+                .takeWhile(i -> i <= candidateRoot) // candidateRoot보다 작은 소수만 사용
+                .noneMatch(i -> candidate % i == 0); // 소수로 나누어 떨어지는지 확인
     }
 }
