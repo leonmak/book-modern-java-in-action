@@ -47,6 +47,25 @@ Map<Currency, List<Transaction>> transactionsByCurrencies = transactions.stream(
                                                                         .collect(groupingBy(Transaction::getCurrency));
 ````
 
+### `Collectors` class static factory method
+
+| factory method                                        | return type             | description                                    | e.g.                                                                                                                 |
+|-------------------------------------------------------|-------------------------|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `toList()`                                            | `List<T>`               | stream의 element를 `List`로 반환                    | `List<member> memberList = memberStream.collect(Collectors.toList());`                                               |
+| `toSet()`                                             | `Set<T>`                | stream의 element를 `Set`로 반환                     | `Set<member> memberSet = memberStream.collect(Collectors.toSet());`                                                  |
+| `toCollection(Supplier<C>)`                           | `C`                     | stream의 element를 `Collection`으로 반환             | `Collection<member> memberCollection = memberStream.collect(Collectors.toCollection(), ArrayList::new);`             |
+| `counting()`                                          | `long`                  | stream의 element의 개수 반환                         | `long howManyMembers = memberStream.collect(Collectors.counting());`                                                 |
+| `summingInt(ToIntFunction<? super T>)`                | `int`                   | stream의 element의 int field의 합 반환               | `int totalAge = memberStream.collect(Collectors.summingInt(Member::getAge));`                                        |
+| `averagingInt(ToIntFunction<? super T>)`              | `double`                | stream의 element의 int field의 평균 반환              | `double avgAge = memberStream.collect(Collectors.averagingInt(Member::getAge));`                                     |
+| `summarizingInt(ToIntFunction<? super T>)`            | `IntSummaryStatistics`  | stream의 element의 int field의 합, 평균, 최대, 최소 반환   | `IntSummaryStatistics memberStatics = memberStream.collect(Collectors.summarizingInt(Member::getAge));`              |
+| `joining()`                                           | `String`                | stream의 element를 `String`으로 연결                 | `String memberNames = memberStream.map(Member::getName).collect(Collectors.joining(", "));`                          |
+| `maxBy(Comparator<? super T>)`                        | `Optional<T>`           | stream의 element의 최대값 반환                        | `Optional<Member> oldestMember = memberStream.collect(Collectors.maxBy(Comparator.comparingInt(Member::getAge)));`   |
+| `minBy(Comparator<? super T>)`                        | `Optional<T>`           | stream의 element의 최소값 반환                        | `Optional<Member> youngestMember = memberStream.collect(Collectors.minBy(Comparator.comparingInt(Member::getAge)));` |
+| `reducing(BinaryOperator<T>)`                         | `T`                     | stream의 element를 `BinaryOperator`로 reducing    | `int totalAge = memberStream.collect(Collectors.reducing(0, Member::getAge, Integer::sum));`                         |
+| `collectingAndThen(Collector<T,A,R>, Function<R,RR>)` | `RR`                    | `Collector`로 reducing 후 `Function` 적용          | `int howManyMembers = memberStream.collect(Collectors.collectingAndThen(Collectors.toList(), List::size));`          |
+| `groupingBy(Function<? super T, ? extends K>)`        | `Map<K, List<T>>`       | stream의 element를 `Function`의 결과로 grouping      | `Map<Team, Member> memberByTeam = memberStream.collect(Collectors.groupingBy(Member::getTeam));`                     |
+| `partitioningBy(Predicate<? super T>)`                | `Map<Boolean, List<T>>` | stream의 element를 `Predicate`의 결과로 partitioning | `Map<Boolean, List<Member>> partitionedMember = memberStream.collect(Collectors.partitioningBy(Member::isKorean));`  |
+
 ## 1. Collectors in a nutshell
 
 - imperative-style : result를 얻기 위해 **what**에 집중
@@ -280,7 +299,7 @@ System.out.println("memberByTeam3 = " + memberByTeam3);
 
 ````
 
-```log
+```console
 memer20ByTeam1 = {AESPA=[...], NEWJEANS=[...]}
 memer20ByTeam2 = {REDVELVET=[], AESPA=[...], NEWJEANS=[...]}
 memerByTeam3 = {REDVELVET=[joy, seulgi, ...], AESPA=[karina, winter, ...], ...}
@@ -302,7 +321,7 @@ Map<Member.Team, Set<String>> teamWithTag
 System.out.println("teamWithTag = " + teamWithTag);
 ````
 
-````log
+````console
 teamWithTag = {REDVELVET=[꽃가루를 날려, SM, ...], AESPA=[블랙맘바, 여자, ..], NEWJEANS=[신인, ..], ...}
 ````
 
@@ -331,7 +350,7 @@ Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAgeLevel
 System.out.println("memberByTeamAndAgeLevel = " + memberByTeamAndAgeLevel);
 ````
 
-```log
+```console
 memberByTeamAndAgeLevel = {REDVELVET={ADULT=[...]}
                           , AESPA={CHILD=[...], ADULT=[...]}
                           , NEWJEANS={CHILD=[...], ADULT=[...]}
@@ -355,7 +374,7 @@ System.out.println("memberOldestByTeam = " + memberOldestByTeam);
 
 ````
 
-```log
+```console
 memberCountByTeam = {REDVELVET=5, AESPA=4, NEWJEANS=5, IVE=6}
 
 memberOldestByTeam = {RED_VELVET=Optional[Member{name='irene', isDebut=true, team=RED_VELVET, age=28}]
@@ -376,7 +395,7 @@ Map<Member.Team, Member> memberOldestByTeam = memberList.stream()
 System.out.println("memberOldestByTeam = " + memberOldestByTeam);
 ````
 
-```log      
+```console      
 memberOldestByTeam = {RED_VELVET=Member{name='irene', isDebut=true, team=RED_VELVET, age=28}
                         , AESPA=Member{name='karina', isDebut=true, team=AESPA, age=23}
                         , NEW_JEANS=Member{name='hani', isDebut=false, team=NEW_JEANS, age=20}}
@@ -419,11 +438,83 @@ Map<Member.Team, Set<Member.AgeLevel>> ageLevelBYTeamCollection = memberList.str
   );
 ````
 
-```log
+```console
 ageLevelByTeam = {RED_VELVET=[ADULT], AESPA=[CHILD, ADULT], NEW_JEANS=[CHILD, ADULT]}
 ````
 
 ## 4. Partitioning
+
+- **paritioning function** 을 조건으로 가지는 grouping
+- paritioning function : return Boolean, true와 false로 그룹을 나눔
+
+````
+Map<Boolean, List<Member>> partitionedMember = memberList.stream()
+  .collect(partitioningBy(Member::isKorean));
+
+System.out.println("partitionedMember = " + partitionedMember);
+
+... 
+List<Member> korean = partitionedMember.get(true);
+
+List<Member> koreanMember1 = partitionedMember.get(true);
+List<Member> notKoreanMember = memberList.stream().filter(m -> !m.isKorean()).collect(toList());
+````
+
+```console
+partitionedMember = {false=[Member{name='gisele', ...}, Member{name='ningning', team=AESPA, ...},...
+                    , true=[Member{name='karina', team=AESPA, ...}, Member{name='winter', team=AESPA, ...}, ...]}
+```
+
+### 4.1 Advantages of partitioning
+
+````
+Map<Boolean, Map<Member.Nation, List<Member>>> partitionedMember1 = memberList.stream()
+        .collect(partitioningBy(Member::isKorean
+                , groupingBy(Member::getNation)));
+
+System.out.println("partitionedMember1 = " + partitionedMember1);
+
+Map<Boolean, Member> partitionedMemberOldest = memberList.stream()
+        .collect(partitioningBy(Member::isKorean
+                , collectingAndThen(maxBy(Comparator.comparingInt(Member::getAge)), Optional::get)));
+
+System.out.println("partitionedMemberOldest = " + partitionedMemberOldest);
+````
+
+```bash
+partitionedMember1 = {false={AUSTRAILIAN=[Member{name='hani', ...}]
+    , AMERICAN=[Member{name='gisele', ...}, Member{name='wendy', ...}]
+    , CHINESE=[Member{name='ningning', ...}]}
+  , true={KOREAN=[...]}}
+  
+partitionedMemberOldest = {false=Member{name='wendy', team=RED_VELVET, isDebut=true, age=27, nation=AMERICAN}
+  , true=Member{name='irene', team=RED_VELVET, isDebut=true, age=28, nation=KOREAN}}
+
+````
+
+### 4.2 Partitioning numbers into prime and nonprime
+
+````
+private static boolean isPrime(int candidate) {
+    return IntStream.range(2, candidate).noneMatch(i -> candidate % i == 0);
+}
+
+private static Map<Boolean, List<Integer>> partitionPrimes(int n) {
+    return IntStream.rangeClosed(2, n).boxed()
+            .collect(partitioningBy(candidate -> isPrime(candidate)));
+}
+
+...
+
+Map<Boolean, List<Integer>> partitionedPrimes = partitionPrimes(100);
+
+System.out.println("partitionedPrimes = " + partitionedPrimes);
+````
+
+```bash
+partitionedPrimes = {false=[4, 6, 8, 9, 10, 12, 14, 15, 16, ... ]
+    , true=[2, 3, 5, 7, 11, 13, 17, 19, 23, ...]}
+````
 
 ## 5. The Collector interface
 

@@ -2,25 +2,25 @@ package org.example.part2;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.*;
 
 public class Main6 {
 
     public static void main(String[] args) {
-        List<Member> memberList = Arrays.asList(new Member("karina", Member.Team.AESPA, true, 23)
-                , new Member("winter", Member.Team.AESPA, true, 23)
-                , new Member("gisele", Member.Team.AESPA, false, 20)
-                , new Member("ningning", Member.Team.AESPA, false, 18)
-                , new Member("irene", Member.Team.RED_VELVET, true, 28)
-                , new Member("seulgi", Member.Team.RED_VELVET, true, 27)
-                , new Member("wendy", Member.Team.RED_VELVET, true, 27)
-                , new Member("joy", Member.Team.RED_VELVET, true, 25)
-                , new Member("yeri", Member.Team.RED_VELVET, true, 22)
-                , new Member("hani", Member.Team.NEW_JEANS, false, 20)
-                , new Member("hyerin", Member.Team.NEW_JEANS, false, 18)
-                , new Member("minzi", Member.Team.NEW_JEANS, false, 20));
+        List<Member> memberList = Arrays.asList(new Member("karina", Member.Team.AESPA, true, 23, Member.Nation.KOREAN)
+                , new Member("winter", Member.Team.AESPA, true, 23, Member.Nation.KOREAN)
+                , new Member("gisele", Member.Team.AESPA, false, 20, Member.Nation.AMERICAN)
+                , new Member("ningning", Member.Team.AESPA, false, 18, Member.Nation.CHINESE)
+                , new Member("irene", Member.Team.RED_VELVET, true, 28, Member.Nation.KOREAN)
+                , new Member("seulgi", Member.Team.RED_VELVET, true, 27, Member.Nation.KOREAN)
+                , new Member("wendy", Member.Team.RED_VELVET, true, 27, Member.Nation.AMERICAN)
+                , new Member("joy", Member.Team.RED_VELVET, true, 25, Member.Nation.KOREAN)
+                , new Member("yeri", Member.Team.RED_VELVET, true, 22, Member.Nation.KOREAN)
+                , new Member("hani", Member.Team.NEW_JEANS, false, 20, Member.Nation.AUSTRAILIAN)
+                , new Member("hyerin", Member.Team.NEW_JEANS, false, 18, Member.Nation.KOREAN)
+                , new Member("minzi", Member.Team.NEW_JEANS, false, 20, Member.Nation.KOREAN));
 
         // counting
 
@@ -186,5 +186,43 @@ public class Main6 {
                 );
 
         System.out.println("ageLevelBYTeamCollection = " + ageLevelBYTeamCollection);
+        System.out.println("\n\n");
+        System.out.println("=========");
+
+        // Partitioning
+        Map<Boolean, List<Member>> partitionedMember = memberList.stream()
+                .collect(partitioningBy(Member::isKorean));
+
+        System.out.println("partitionedMember = " + partitionedMember);
+
+        List<Member> koreanMember1 = partitionedMember.get(true);
+        List<Member> notKoreanMember = memberList.stream().filter(m -> !m.isKorean()).collect(toList());
+
+        Map<Boolean, Map<Member.Nation, List<Member>>> partitionedMember1 = memberList.stream()
+                .collect(partitioningBy(Member::isKorean
+                        , groupingBy(Member::getNation)));
+
+        System.out.println("partitionedMember1 = " + partitionedMember1);
+
+        Map<Boolean, Member> partitionedMemberOldest = memberList.stream()
+                .collect(partitioningBy(Member::isKorean
+                        , collectingAndThen(maxBy(Comparator.comparingInt(Member::getAge)), Optional::get)));
+
+        System.out.println("partitionedMemberOldest = " + partitionedMemberOldest);
+
+
+        // Prime number
+        Map<Boolean, List<Integer>> partitionedPrimes = partitionPrimes(100);
+        System.out.println("partitionedPrimes = " + partitionedPrimes);
+
+    }
+
+    private static boolean isPrime(int candidate) {
+        return IntStream.range(2, candidate).noneMatch(i -> candidate % i == 0);
+    }
+
+    private static Map<Boolean, List<Integer>> partitionPrimes(int n) {
+        return IntStream.rangeClosed(2, n).boxed()
+                .collect(partitioningBy(candidate -> isPrime(candidate)));
     }
 }
