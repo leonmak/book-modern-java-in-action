@@ -138,7 +138,7 @@ IntSummaryStatistics memberStatics = memberList.stream().collect(Collectors.summ
 System.out.println("memberStatics = " + memberStatics);
 ````
 
-```console
+```bash
 memberStatics = IntSummaryStatistics{count=12, sum=271, min=18, average=22.583333, max=28}
 ````
 
@@ -159,7 +159,7 @@ String allMemberName2 = memberList.stream()
                                     .collect(Collectors.joining(", "));
 ````
 
-```console
+```bash
 allMemberName = karinawintergiseleningningireneseulgiwendyjoyyerihanihyerinminzi
 allMemberName2 = karina, winter, gisele, ningning, irene, seulgi, wendy, joy, yeri, hani, hyerin, minzi
 ````
@@ -299,7 +299,7 @@ System.out.println("memberByTeam3 = " + memberByTeam3);
 
 ````
 
-```console
+```bash
 memer20ByTeam1 = {AESPA=[...], NEWJEANS=[...]}
 memer20ByTeam2 = {REDVELVET=[], AESPA=[...], NEWJEANS=[...]}
 memerByTeam3 = {REDVELVET=[joy, seulgi, ...], AESPA=[karina, winter, ...], ...}
@@ -321,7 +321,7 @@ Map<Member.Team, Set<String>> teamWithTag
 System.out.println("teamWithTag = " + teamWithTag);
 ````
 
-````console
+````bash
 teamWithTag = {REDVELVET=[꽃가루를 날려, SM, ...], AESPA=[블랙맘바, 여자, ..], NEWJEANS=[신인, ..], ...}
 ````
 
@@ -350,7 +350,7 @@ Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAgeLevel
 System.out.println("memberByTeamAndAgeLevel = " + memberByTeamAndAgeLevel);
 ````
 
-```console
+```bash
 memberByTeamAndAgeLevel = {REDVELVET={ADULT=[...]}
                           , AESPA={CHILD=[...], ADULT=[...]}
                           , NEWJEANS={CHILD=[...], ADULT=[...]}
@@ -374,7 +374,7 @@ System.out.println("memberOldestByTeam = " + memberOldestByTeam);
 
 ````
 
-```console
+```bash
 memberCountByTeam = {REDVELVET=5, AESPA=4, NEWJEANS=5, IVE=6}
 
 memberOldestByTeam = {RED_VELVET=Optional[Member{name='irene', isDebut=true, team=RED_VELVET, age=28}]
@@ -395,7 +395,7 @@ Map<Member.Team, Member> memberOldestByTeam = memberList.stream()
 System.out.println("memberOldestByTeam = " + memberOldestByTeam);
 ````
 
-```console      
+```bash      
 memberOldestByTeam = {RED_VELVET=Member{name='irene', isDebut=true, team=RED_VELVET, age=28}
                         , AESPA=Member{name='karina', isDebut=true, team=AESPA, age=23}
                         , NEW_JEANS=Member{name='hani', isDebut=false, team=NEW_JEANS, age=20}}
@@ -438,7 +438,7 @@ Map<Member.Team, Set<Member.AgeLevel>> ageLevelBYTeamCollection = memberList.str
   );
 ````
 
-```console
+```bash
 ageLevelByTeam = {RED_VELVET=[ADULT], AESPA=[CHILD, ADULT], NEW_JEANS=[CHILD, ADULT]}
 ````
 
@@ -460,7 +460,7 @@ List<Member> koreanMember1 = partitionedMember.get(true);
 List<Member> notKoreanMember = memberList.stream().filter(m -> !m.isKorean()).collect(toList());
 ````
 
-```console
+```bash
 partitionedMember = {false=[Member{name='gisele', ...}, Member{name='ningning', team=AESPA, ...},...
                     , true=[Member{name='karina', team=AESPA, ...}, Member{name='winter', team=AESPA, ...}, ...]}
 ```

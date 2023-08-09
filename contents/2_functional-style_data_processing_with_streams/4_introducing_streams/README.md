@@ -304,7 +304,7 @@ List<String> aespaMemberName3 = memberList.stream().filter(member -> {
 System.out.println("aespaMemberName3 = " + aespaMemberName3);
 ````
 
-````console
+````bash
 filter: karina
 map: karina
 filter: winter

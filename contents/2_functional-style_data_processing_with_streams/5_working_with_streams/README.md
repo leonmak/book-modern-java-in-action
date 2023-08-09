@@ -68,7 +68,7 @@ members.stream()
         .forEach(System.out::println);
 ````
 
-````console
+````bash
 member = KARINA
 member = WINTER
 member = GISELLE
@@ -106,7 +106,7 @@ List<Member> aespa2 = memberList.stream().takeWhile(member -> {
 }).toList();
 ````
 
-```console
+```bash
 filter: karina
 filter: winter
 filter: gisele
@@ -689,7 +689,7 @@ pythagoreanTriples1.limit(5)
                    .forEach(t -> System.out.println(t[0] + ", " + t[1] + ", " + t[2]));
 ````
 
-```console
+```bash
 3, 4, 5
 5, 12, 13
 6, 8, 10
