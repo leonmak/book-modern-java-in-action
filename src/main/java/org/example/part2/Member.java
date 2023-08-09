@@ -56,6 +56,10 @@ public class Member {
 
     }
 
+    public enum AgeLevel {
+        CHILD, ADULT, SENIOR
+    }
+
 
     @Override
     public String toString() {

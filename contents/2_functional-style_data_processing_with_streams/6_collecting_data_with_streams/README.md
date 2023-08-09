@@ -66,7 +66,7 @@ Map<Currency, List<Transaction>> transactionsByCurrencies = transactions.stream(
 
 #### `Collectors`의 static method
 
-- `Collecotors`는 유용한 static factory method를 제공
+- `collectors`는 유용한 static factory method를 제공
 
 ````
 List<Transaction> trnsactions = transactionsStream.collect(Collectors.toList());
@@ -229,6 +229,199 @@ int totalAge = memberList.stream()
 ````````
 
 ## 3. Grouping
+
+- 1개 이상의 속성으로 그룹화
+- imperative style : 귀찮고, 장황하고, 에러가 발생하기 쉬움
+- functional style : 간결하고, 가독성이 좋고, 에러가 발생하기 어려움, Java 8
+
+<img src="img_3.png"  width="80%"/>
+
+````
+Map<Member.Team, List<Member>> memberByTeam = memberList.stream()
+                                                        .collect(Collectors.groupingBy(Member::getTeam));
+                                                        
+Map<Member.AgeLevel, List<Member>> memberByAgeLevel = memberList.stream()
+                                                                .collect(Collectors.groupingBy(member -> {
+                                                                    if (member.getAge() < 20) {
+                                                                        return Member.AgeLevel.CHILD;
+                                                                    } else if (member.getAge() < 40) {
+                                                                        return Member.AgeLevel.ADULT;
+                                                                    } else {
+                                                                        return Member.AgeLevel.SENIOR;
+                                                                    }
+                                                                }));
+````
+
+- `groupBy()` 에 **classfication function**을 전달
+    - classification function : stream의 element를 분류함
+
+### 3.1 Manipulating grouped elements
+
+`groupBy()`의 두번쨰 파라미터로 group의 필터 조건 전달
+
+````
+Map<Member.Team, List<Member>> member20ByTeam1 = memberList.stream()
+                                                          .filter(member -> member.getAge() == 20)
+                                                          .collect(Collectors.groupingBy(Member::getTeam));
+
+Map<Member.Team, List<Member>> member20ByTeam2 = memberList.stream()
+                                                            .collect(Collectors.groupingBy(Member::getTeam
+                                                              , filtering(member -> member.getAge() == 20
+                                                                , Collectors.toList())));
+
+Map<Member.Team, List<String>> memberByTeam3 = memberList.stream()
+                                                          .collect(groupingBy(Member::getTeam
+                                                          , mapping(Member::getName
+                                                            , toList())));
+
+System.out.println("member20ByTeam1 = " + member20ByTeam1);
+System.out.println("member20ByTeam2 = " + member20ByTeam2);
+System.out.println("memberByTeam3 = " + memberByTeam3);
+
+````
+
+```log
+memer20ByTeam1 = {AESPA=[...], NEWJEANS=[...]}
+memer20ByTeam2 = {REDVELVET=[], AESPA=[...], NEWJEANS=[...]}
+memerByTeam3 = {REDVELVET=[joy, seulgi, ...], AESPA=[karina, winter, ...], ...}
+```
+
+````
+Map<Member.Team, List<String>> teamTags = new HashMap<>();
+teamTags.put(Member.Team.AESPA, Arrays.asList("4인조", "SM", "여자", "블랙맘바"));
+teamTags.put(Member.Team.NEW_JEANS, Arrays.asList("5인조", "신인", "여자"));
+teamTags.put(Member.Team.IVE, Arrays.asList("6인조", "여자", "다국적 그룹"));
+teamTags.put(Member.Team.RED_VELVET, Arrays.asList("5인조", "SM", "여자", "꽃가루를 날려"));
+
+Map<Member.Team, Set<String>> teamWithTag 
+    = memberList.stream()
+                 .collect(groupingBy(Member::getTeam
+                    , flatMapping(member -> teamTags.get(member.getTeam()).stream()
+                      , toSet())));
+
+System.out.println("teamWithTag = " + teamWithTag);
+````
+
+````log
+teamWithTag = {REDVELVET=[꽃가루를 날려, SM, ...], AESPA=[블랙맘바, 여자, ..], NEWJEANS=[신인, ..], ...}
+````
+
+### 3.2 Multilevel grouping
+
+<img src="img_4.png"  width="70%"/>
+
+- outer `groupingBy()` : 1차 그룹
+- inner `groupingBy()` : 2차 그룹
+- **bucket** : 하나의 key에 여러개의 value를 가질 수 있는 자료구조
+    - bucket dpeth를 늘려서 n차 그룹을 만들 수 있음
+
+````
+Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAgeLevel
+        = memberList.stream().collect(groupingBy(Member::getTeam,
+                                              groupingBy(member -> {
+                                                  if (member.getAge() <= 20) {
+                                                      return Member.AgeLevel.CHILD;
+                                                  } else if (member.getAge() < 40) {
+                                                      return Member.AgeLevel.ADULT;
+                                                  } else {
+                                                      return Member.AgeLevel.SENIOR;
+                                                  }
+                                              })
+                                      ));
+System.out.println("memberByTeamAndAgeLevel = " + memberByTeamAndAgeLevel);
+````
+
+```log
+memberByTeamAndAgeLevel = {REDVELVET={ADULT=[...]}
+                          , AESPA={CHILD=[...], ADULT=[...]}
+                          , NEWJEANS={CHILD=[...], ADULT=[...]}
+                          , IVE={CHILD=[...], ADULT=[...]}}
+````
+
+### 3.3 Collecting data in subgroups
+
+````
+Map<Member.Team, Long> memberCountByTeam = memberList.stream()
+  .collect(groupingBy(Member::getTeam, counting()));
+
+System.out.println("memberCountByTeam = " + memberCountByTeam);
+
+// Collectors.maxBy() : Optional<T> 반환, 값이 없으면 Optional이 아니라 null 반환 (주의)
+Map<Member.Team, Optional<Member>> memberOldestByTeam = memberList.stream()
+  .collect(groupingBy(Member::getTeam
+        , maxBy(Comparator.comparingInt(Member::getAge))));
+        
+System.out.println("memberOldestByTeam = " + memberOldestByTeam);
+
+````
+
+```log
+memberCountByTeam = {REDVELVET=5, AESPA=4, NEWJEANS=5, IVE=6}
+
+memberOldestByTeam = {RED_VELVET=Optional[Member{name='irene', isDebut=true, team=RED_VELVET, age=28}]
+                        , AESPA=Optional[Member{name='karina', isDebut=true, team=AESPA, age=23}]
+                        , NEW_JEANS=Optional[Member{name='hani', isDebut=false, team=NEW_JEANS, age=20}]}
+
+````
+
+#### ADAPTING THE COLLECTOR RESULT TO A DIFFERENT TYPE
+
+````
+// groupBy([transform function], [wrapping collector])
+Map<Member.Team, Member> memberOldestByTeam = memberList.stream()
+  .collect(groupingBy(Member::getTeam // classification function
+          , collectingAndThen(maxBy(Comparator.comparingInt(Member::getAge)) // wrapping collector
+                                  , Optional::get))); // transformation function
+
+System.out.println("memberOldestByTeam = " + memberOldestByTeam);
+````
+
+```log      
+memberOldestByTeam = {RED_VELVET=Member{name='irene', isDebut=true, team=RED_VELVET, age=28}
+                        , AESPA=Member{name='karina', isDebut=true, team=AESPA, age=23}
+                        , NEW_JEANS=Member{name='hani', isDebut=false, team=NEW_JEANS, age=20}}
+```
+
+<img src="img_5.png"  width="70%"/>
+
+#### OTHER EXAMPLES OF COLLECTORS USED IN CONJUNCTION WITH GROUPINGBY
+
+````
+Map<Member.Team, Set<Member.AgeLevel>> ageLevelByTeam = memberList.stream()
+  .collect(
+          groupingBy(Member::getTeam, mapping(member -> {
+                      if (member.getAge() < 20) {
+                          return Member.AgeLevel.CHILD;
+                      } else if (member.getAge() < 40) {
+                          return Member.AgeLevel.ADULT;
+                      } else {
+                          return Member.AgeLevel.SENIOR;
+                      }
+                  }, toSet())
+          )
+  );
+System.out.println("ageLevelByTeam = " + ageLevelByTeam);
+
+// HashSet 반환
+
+Map<Member.Team, Set<Member.AgeLevel>> ageLevelBYTeamCollection = memberList.stream()
+  .collect(
+          groupingBy(Member::getTeam, mapping(member -> {
+                      if (member.getAge() < 20) {
+                          return Member.AgeLevel.CHILD;
+                      } else if (member.getAge() < 40) {
+                          return Member.AgeLevel.ADULT;
+                      } else {
+                          return Member.AgeLevel.SENIOR;
+                      }
+                  }, toCollection(HashSet::new))
+          )
+  );
+````
+
+```log
+ageLevelByTeam = {RED_VELVET=[ADULT], AESPA=[CHILD, ADULT], NEW_JEANS=[CHILD, ADULT]}
+````
 
 ## 4. Partitioning
 
