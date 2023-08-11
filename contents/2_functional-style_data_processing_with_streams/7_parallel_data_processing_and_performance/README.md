@@ -235,6 +235,145 @@ SideEffect parallel sum :5188848063192
 
 ## 2. The fork/join framework
 
+<img src="img_2.png"  width="80%"/>
+
+- 병렬화 가능한 task를 재귀적으로 작은 task로 분할하고, 결과를 합치는 프레임워크
+- `ExecutorService`의 구현체
+    - `ForkJoinPool`의 thread pool에게 subtask를 할당
+
+### 2.1 Working with RecursiveTask
+
+- `RecursiveTask<R>`의 subclass를 생성
+    - `R` : task (subtask)의 결과 타입
+
+````
+protected abstract R compute();
+
+...
+
+// pseudo code
+if( task is small enough or no longer divisible ) {
+    sequentially solve the task
+} else {
+    split the task into two subtasks
+    recursively invoke compute() on subtasks
+    combine the results of the subtasks
+}
+````
+
+````java
+public class ForkJoinSumCalculator extends RecursiveTask<Long> { // fork/join framework 사용
+
+    private final long[] numbers; // 합계를 구할 배열
+
+    // subtask의 array 범위
+    private final int start;
+    private final int end;
+
+    // subtask로 분할할 최소 배열 크기
+    public static final long THRESHOLD = 10_000;
+
+    // main task 생성시 사용
+    public ForkJoinSumCalculator(long[] numbers) {
+        this(numbers, 0, numbers.length);
+    }
+
+    // subtask 생성시 사용
+    public ForkJoinSumCalculator(long[] numbers, int start, int end) {
+        this.numbers = numbers;
+        this.start = start;
+        this.end = end;
+    }
+
+    // recursive task의 compute 메서드 구현
+    @Override
+    protected Long compute() {
+        int length = end - start;
+
+        // 기준값보다 작으면 순차적으로 계산
+        if (length <= THRESHOLD) {
+            return computeSequentially();
+        }
+
+        // subtask 생성
+        ForkJoinSumCalculator leftTask = new ForkJoinSumCalculator(numbers, start, start + length / 2);
+        leftTask.fork(); // 비동기 실행
+
+        // subtask 생성
+        ForkJoinSumCalculator rightTask = new ForkJoinSumCalculator(numbers, start + length / 2, end);
+        Long rightResult = rightTask.compute(); // 동기 실행
+        Long leftResult = leftTask.join();//  block : left task의 결과가 나올때까지 기다림
+
+        return leftResult + rightResult;
+    }
+
+    private long computeSequentially() {
+        long sum = 0;
+        for (int i = start; i < end; i++)
+            sum += numbers[i];
+        return sum;
+    }
+}
+
+````
+
+````
+private static Long forkJoinSum(long n) {
+    long[] numbers = LongStream.rangeClosed(1, n).toArray();
+    ForkJoinTask<Long> task = new ForkJoinSumCalculator(numbers);
+    return new ForkJoinPool().invoke(task);
+}
+
+... 
+
+Long result = forkJoinSum(10000000L);
+````
+
+- 같은 app에서 2개 이상의 `ForkJoinPool`을 사용하지 않는 것이 좋음
+- `ForkJoinPool`은 인스턴스화 해서 static field에 관리하는 것이 좋음 (singleton)
+- `new ForkJonPool()` : `Runtime.getRuntime().availableProcessors()` 만큼의 thread를 생성
+
+#### RUNNING THE FORKJOINSUMCALCULATOR
+
+<img src="img_3.png"  width="80%"/>
+
+- 각 thread들이 task의 `compute()` 실행
+- subtask로 이루어진 binary tree 형태로 task들이 생성
+    - 실행이 완료되면 root 노드로 결과가 합쳐짐
+
+### 2.2 Best practices for using the fork/join framework
+
+- `join()`은 blocking operation
+    - 반드시 2개의 subtask가 시작된 후에 호출
+- `invoke()`은 `RecursiveTask` 안에서 사용되면 안됨
+    - 안에서는 `compute()`, `fork()`를 호출
+- sequential code만 `invoke()`를 호출해야함
+- subtask에서 `fork()` : `ForkJoinPool`에 스케쥴
+    - 같은 thread 재활용
+    - thread pool에 불필요한 task 할당 방지
+- fork/join framework를 활용한 parallel computation은 디버깅이 어려움
+    - `compute()`가 `fork()`를 실행한 thread와 다른 thread에서 실행
+- fork/join framework의 multi-core 연산이 sequential보다 빠름을 보장히지 않음
+    - `warm-up`이 필요 (JIT compiler)
+- subtask 분할 기준 필요
+
+### 2.3 Work stealing
+
+- 많은 subtask를 생성하는 것이 일반적으로 성능상 유리
+- 실제 상황에선 Core수 외에 많은 변수가 존재
+    - e.g. I/O bound, CPU bound
+
+#### _work stealing_
+
+<img src="img_4.png.png"  width="80%"/>
+
+- task들이 고르게 분배되지 않는 문제를 해결
+- `ForkJoinPool`의 thread들에게 고르게 task를 할당할 수 있음
+- thread를 doubly linked queue를 가짐
+    - 작업이 완료되면 queue에서 다음 작업을 가져와 실행
+    - 자신의 queue가 비면 다른 thread의 queue에서 작업을 가져와 실행 **(steal)**
+    - 모든 thread의 queue가 빌때까지 반복
+
 ## 3. Spliterator
 
 ## 4. Summary
