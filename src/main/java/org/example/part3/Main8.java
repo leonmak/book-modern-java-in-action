@@ -1,10 +1,68 @@
 package org.example.part3;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main8 {
     public static void main(String[] args) {
-        ch81();
+//        ch81();
+        ch82();
+    }
+
+    private static void ch82() {
+
+        List<String> memberList = new ArrayList<>();
+        memberList.add("Karina");
+        memberList.add("Giselle");
+        memberList.add("Winter");
+        memberList.add("Ningning");
+
+        // ConcurrentModificationException
+//        for (String memberName : memberList) {
+//            if (memberName.equals("Karina")) {
+//                memberList.remove(memberName);
+//            }
+//        }
+
+//        for (Iterator<String> iterator = memberList.iterator();
+//             iterator.hasNext(); ) {
+//            String memberName = iterator.next();
+//            if (memberName.equals("Karina")) {
+//                memberList.remove("Karina");
+//            }
+//        }
+
+        // iterator.remove()를 사용하면 ConcurrentModificationException이 발생하지 않는다.
+        for (Iterator<String> iterator = memberList.iterator();
+             iterator.hasNext(); ) {
+            String memberName = iterator.next();
+            if (memberName.equals("Karina")) {
+                iterator.remove();
+            }
+        }
+
+        // Java 8
+        memberList.removeIf(memberName -> memberName.equals("Karina"));
+
+        memberList = null;
+        memberList = new ArrayList<>();
+        memberList.add("Karina");
+        memberList.add("Giselle");
+        memberList.add("Winter");
+        memberList.add("Ningning");
+        memberList.stream().map(memberName -> "original : " + memberName + " | upper : " + memberName.toUpperCase())
+                .collect(Collectors.toList())
+                .forEach(System.out::println);
+
+//        for (ListIterator<String> iterator = memberList.listIterator(); iterator.hasNext(); ) {
+//            String memberName = iterator.next();
+//            iterator.set("original : " + memberName + " | upper : " + memberName.toUpperCase());
+//        }
+//        System.out.println(memberList);
+
+        // Java 8
+        memberList.replaceAll(memberName -> "original : " + memberName + " | upper : " + memberName.toUpperCase());
+        System.out.println(memberList);
     }
 
     private static void ch81() {

@@ -19,7 +19,7 @@
 - idomatic removal / replacement pattern
 - map을 편리하게 사용하는 방법
 
-## 1. Collection factories
+##                     
 
 ````
 List<String> aespa = new ArrayList<>();
@@ -112,6 +112,86 @@ Map<String, Integer> aespaAge2 = Map.ofEntries(
     - Map element가 많을 때 유용
 
 ## 2. Working with List and Set
+
+Java 8에서 Colelction 스스로 수정하는 method를 추가
+
+- `rmoveIf()` : predicate를 사용하여 element를 제거
+    - `List`, `Set`을 구현한 모든 class에서 사용 가능
+- `replaceAll()` : `UnaryOperator`를 사용하여 element를 대체
+- `sort()` : list를 정렬
+    - `List`를 구현한 모든 class에서 사용 가능
+
+### 2.1 removeIf
+
+````
+List<String> memberList = new ArrayList<>();
+memberList.add("Karina");
+memberList.add("Giselle");
+memberList.add("Winter");
+memberList.add("Ningning");
+
+// ConcurrentModificationException
+for (String memberName : memberList) {
+    if (memberName.equals("Karina")) {
+        memberList.remove(memberName);
+    }
+}
+
+// ConcurrentModificationException : 내부적으로 아래와 같이 동작
+for (Iterator<String> iterator = memberList.iterator();
+     iterator.hasNext(); ) {
+    String memberName = iterator.next();
+    if (memberName.equals("Karina")) {
+        memberList.remove("Karina");
+    }
+}
+
+// Iterator로 제거
+for (Iterator<String> iterator = memberList.iterator();
+     iterator.hasNext(); ) {
+    String memberName = iterator.next();
+    if (memberName.equals("Karina")) {
+        iterator.remove();
+    }
+}
+
+// Java 8
+memberList.removeIf(memberName -> memberName.equals("Karina"));
+````
+
+- `for ~ loop` 은 내부적으로 `Iterator`를 사용
+- `ConcurrentModificationException` 발생
+    - Iterator를 사용하면서, `List` object를 통해 수정하려하기 때문
+- `Iterator`를 사용하여 제거하면 해결
+- Java 8 부터는 `removeIf()`를 사용하여 간단하게 제거 가능
+
+### 2.2 replaceAll
+
+````
+// 새로운 collection을 생성
+memberList.stream().map(memberName -> "original : " + memberName + " | upper : " + memberName.toUpperCase())
+        .collect(Collectors.toList())
+        .forEach(System.out::println);
+````
+
+```bash
+original : Karina | upper : KARINA
+original : Giselle | upper : GISELLE
+original : Winter | upper : WINTER
+original : Ningning | upper : NINGNING
+```
+
+````
+// 기존 collection을 수정
+for (ListIterator<String> iterator = memberList.listIterator();
+ iterator.hasNext(); ) {
+    String memberName = iterator.next();
+    iterator.set("original : " + memberName + " | upper : " + memberName.toUpperCase());
+}
+
+// Java 8
+memberList.replaceAll(memberName -> "original : " + memberName + " | upper : " + memberName.toUpperCase());
+````
 
 ## 3. Working with Map
 
