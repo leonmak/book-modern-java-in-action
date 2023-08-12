@@ -1,5 +1,7 @@
 package org.example.part2;
 
+import java.util.Spliterator;
+
 public class Transaction {
     private final Trader trader;
     private final int year;

@@ -376,4 +376,223 @@ Long result = forkJoinSum(10000000L);
 
 ## 3. Spliterator
 
+- Java 8에 추가된 interface
+- splitable iterator
+- `spliterator()` : `Spliterator`를 반환하는 default method
+
+````java
+package java.util;
+
+public interface Spliterator<T> {
+    boolean tryAdvance(Consumer<? super T> action);
+
+    Spliterator<T> trySplit();
+
+    long estimateSize();
+
+    int characteristics();
+}
+````
+
+- `T` : `Spliterator`가 탐색하는 요소의 타입
+- `tryAdvance()` : `Spliterator`의 요소를 하나씩 소비하면서 탐색
+    - 요소가 남아있으면 `true` 반환
+- `trySplit()` : `Spliterator`의 일부 요소를 분할하여 두번째 `Spliterator`를 생성
+- `estimateSize()` : `Spliterator`가 탐색할 암은 요소 수 반환
+    - 부정확하더라도, 예측 값은 연산에 유용
+
+### 3.1 The splitting process
+
+<img src="img_5.png"  width="80%"/>
+
+1. step 1 : `trySplit()` 호출
+    - `Spliterator`의 일부 요소를 분할하여 두번째 `Spliterator`를 생성
+2. step 2 : 분할한 `Spliterator`에 대해서 `trySplit()` 호출
+3. step 3 : null을 반환할 때까지 반복해서 `trySplit()` 호출
+4. step 4 분할 종료, `trySplit()` return null
+    - 더이상 분할 불가능
+
+#### THE SPLITERATOR CHARACTERISTICS
+
+- `Spliterator`의 `characteristics()`
+- return : int 타입의 `Spliterator`의 특성을 정의하는 상수
+- 리턴 값으로 유용하게 연산에 사용 (최적화)
+
+| Characteristics | Description                                               |
+|-----------------|-----------------------------------------------------------|
+| `ORDERED`       | 요소들이 정렬되어 있음                                              |
+| `DISTINCT`      | 요소들이 중복되지 않음 <br/>`x.equals(y) == false`                  |
+| `SORTED`        | 요소들이 정렬되어 있음                                              |
+| `SIZED`         | `estimateSize()`가 정확한 값을 반환함<br/>사이즈를 아는 source로부터 생성됨    |
+| `NONNULL`       | `null` 요소를 가질 수 없음                                        |
+| `IMMUTABLE`     | 요소들이 immutable                                            |
+| `CONCURRENT`    | `Spliterator`의 소스를 동시에 수정할 수 있음<br/>동기화 작업 추가구현 없이        |
+| `SUBSIZED`      | `trySplit()`으로 생성된 `Spliterator`는 `SIZED`와 `SUBSIZED`를 가짐 |
+
+### 3.2 Implementing your own Spliterator
+
+- String의 단어 (어절) 수를 세는 예제
+
+````
+private static int countWordsIteratively(String s) {
+    int counter = 0;
+    boolean lastSpace = true;
+    for (char c : s.toCharArray()) {
+        if (Character.isWhitespace(c)) {
+            lastSpace = true;
+        } else {
+            if (lastSpace) counter++;
+            lastSpace = false;
+        }
+    }
+    return counter;
+}
+
+...
+
+final String SENTENCE =
+    " Nel mezzo del cammin di nostra vita " +
+            "mi ritrovai in una selva oscura" +
+            " ché la dritta via era smarrita ";
+System.out.println("Found " + countWordsIteratively(SENTENCE) + " words");
+````
+
+#### REWRITING THE WORDCOUNTER IN FUNCTIONAL STYLE
+
+````
+Stream<Character> stream = IntStream.range(0, SENTENCE.length())
+        .mapToObj(SENTENCE::charAt); // SENTENCE -> IntStream -> Stream<Character>
+````
+
+<img src="img_6.png"  width="70%"/>
+
+````java
+public class WordCounter {
+    private final int counter; // immutable
+    private final boolean lastSpace; // immutable
+
+    public WordCounter(int counter, boolean lastSpace) {
+        this.counter = counter;
+        this.lastSpace = lastSpace;
+    }
+
+    // iterative algorithm
+    public WordCounter accumulate(Character c) {
+        if (Character.isWhitespace(c)) {
+            return lastSpace ? this : new WordCounter(counter, true);
+        } else {
+            return lastSpace ? new WordCounter(counter + 1, false) : this;
+        }
+    }
+
+    public WordCounter combine(WordCounter wordCounter) {
+        return new WordCounter(counter + wordCounter.counter, wordCounter.lastSpace);
+    }
+
+    public int getCounter() {
+        return counter;
+    }
+}
+````
+
+- `accumulate()` : `Spliterator`의 요소를 하나씩 탐색하면서 `WordCounter`의 상태를 바꿈
+- `combine()` : 두 `WordCounter`를 결합
+
+````
+private static int countWords(Stream<Character> stream) {
+    WordCounter wordCounter = stream.reduce(new WordCounter(0, true),
+            WordCounter::accumulate,
+            WordCounter::combine);
+
+    return wordCounter.getCounter();
+}
+
+...
+
+final String SENTENCE =
+        " Nel mezzo del cammin di nostra vita " +
+                "mi ritrovai in una selva oscura" +
+                " ché la dritta via era smarrita ";
+
+Stream<Character> stream = IntStream.range(0, SENTENCE.length())
+        .mapToObj(SENTENCE::charAt);
+
+System.out.println("result = " + countWords(stream));
+````
+
+#### MAKING THE WORDCOUNTER WORK IN PARALLEL
+
+```java
+
+public class WordCounterSpliterator implements Spliterator<Character> {
+    private final String str;
+    private int currentChar = 0;
+
+    public WordCounterSpliterator(String str) {
+        this.str = str;
+    }
+
+    @Override
+    public boolean tryAdvance(Consumer<? super Character> action) {
+        action.accept(str.charAt(currentChar++));
+        return currentChar < str.length(); // 다음 문자가 남아있으면 true
+    }
+
+    // 문자열 분리 시 어절 단위로 분리
+    @Override
+    public Spliterator<Character> trySplit() {
+        int currentSize = str.length() - currentChar;
+
+        // 10글자 이하면 분리하지 않고 sequential 처리
+        if (currentSize < 10)
+            return null;
+
+        // 분리할 문자열의 중간을 찾음
+        for (int splitPos = currentSize / 2 + currentChar; splitPos < str.length(); splitPos++) {
+
+            // 공백이면 split
+            if (Character.isWhitespace(str.charAt(splitPos))) {
+                Spliterator<Character> spliterator =
+                        new WordCounterSpliterator(str.substring(currentChar, splitPos));
+                currentChar = splitPos;
+                return spliterator;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public long estimateSize() {
+        return str.length() - currentChar;
+    }
+
+    @Override
+    public int characteristics() {
+        return ORDERED + SIZED + SUBSIZED + NONNULL + IMMUTABLE;
+    }
+}
+
+```
+
+- `tryAdvance()` : `currentChar`의 문자를 소비하고 `currentChar`를 증가시킴
+    - 더 소비할 문자가 남아있으면 true, 더 이상 소비할 문자가 없으면 false
+- `trySplit()` : `RecursiveTask`의 `compute()`와 비슷한 역할
+    - split 1차 조건 명시 : 10글자 이하면 분리하지 않고 sequential 처리
+    - blank 문자를 찾아서 split, `Spliterator`를 생성하고 현재 `Spliterator`의 `currentChar`를 증가시킴
+- `estimatedSize()` : `Spliterator`가 파싱해야 할 문자열의 길이를 반환
+- `characteristics()` : `Spliterator`의 특성을 반환
+    - `ORDERED` : 문자열의 순서가 유의미함
+    - `SIZED` : `estimatedSize()`가 정확한 값을 반환함
+    - `SUBSIZED` : `trySplit()`으로 생성된 `Spliterator`는 정확한 사이즈를 가짐
+    - `NONNULL` : `null` 문자를 가질 수 없음
+    - `IMMUTABLE` : 문자열은 불변, `String`은 불변 객체
+
+#### PUTTING THE WORDCOUNTERSPLITERATOR TO WORK
+
+````
+Spliterator<Character> spliterator = new WordCounterSpliterator(SENTENCE);
+Stream<Character> streamParallel = StreamSupport.stream(spliterator, true); // 2nd param: parallel boolean
+System.out.println("result2 = " + countWords(streamParallel));
+````
+
 ## 4. Summary
