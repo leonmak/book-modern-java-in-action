@@ -596,3 +596,13 @@ System.out.println("result2 = " + countWords(streamParallel));
 ````
 
 ## 4. Summary
+
+- Internal iteration은 stream을 명시적으로 parallel을 구현하지 않고 간결하게 구현할 수 있음
+- parallel이 무조건 빠르지 않음. 성능 측정을 해야함
+- parallel stream이 유용한 경우
+    - element가 많음
+    - element를 처리하는데 오랜 시간이 걸림
+- 성능 측면 : 올바른 자료구조 > parallel stream
+    - primitive stream을 사용하면 boxing, unboxing이 발생하지 않음
+- fork/join framework : parallelizable task를 재귀적으로 분할하여 병렬로 실행 후 결과를 합침
+- `SplitIterator` : parallel stream의 split기준과 탐색 방법을 정의한 interface
