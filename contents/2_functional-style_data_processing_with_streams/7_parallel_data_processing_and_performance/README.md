@@ -365,7 +365,7 @@ Long result = forkJoinSum(10000000L);
 
 #### _work stealing_
 
-<img src="img_4.png.png"  width="80%"/>
+<img src="img_4.png"  width="80%"/>
 
 - task들이 고르게 분배되지 않는 문제를 해결
 - `ForkJoinPool`의 thread들에게 고르게 task를 할당할 수 있음
