@@ -19,7 +19,7 @@
 - idomatic removal / replacement pattern
 - map을 편리하게 사용하는 방법
 
-##                                   
+##                                                                      
 
 ````
 List<String> aespa = new ArrayList<>();
@@ -251,11 +251,134 @@ System.out.println(aespaAge.getOrDefault("hani", -1).toString());
 
 ### 3.4 Compute patterns
 
+- `computeIfAbsent()` : key가 없으면 새로운 value를 생성해서 Map에 추가
+    - key가 없거나, value가 null인 경우
+- `computeIfPresent()` : key가 있으면 새로운 value를 생성해서 Map에 추가
+    - key가 있고, value가 null이 아닌 경우
+- `compute()` : 새로운 value를 생성해서 Map에 추가
+
+````
+Map<String, byte[]> dataToHash = new HashMap<>();
+MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+
+lines.forEach(line -> 
+  datatToHash.computeIfAbsent(line, this::caculateDigest));
+
+private byte[] caculateDigest(String line) {
+    return messageDigest.digest(line.getBytes(StandardCharsets.UTF_8));
+}
+````
+
+````
+Map<String, List<String>> idolWithMember = new HashMap<>();
+idolWithMember.put("NewJeans", List.of("Minzi", "Hani", "Haerin"));
+idolWithMember.put("RedVelvet", List.of("Irene", "Seulgi", "Wendy", "Joy", "Yeri"));
+...
+
+String aespa = "Aespa";
+List<String> aespaMemberList = idolWithMember.get(aespa);
+if(aespaMemberList == null) {
+    aespaMemberList = new ArrayList<>();
+    idolWithMember.put(aespa, aespaMemberList);
+}
+aespaMemberList.add("Karina");
+aespaMemberList.add("Winter");
+aespaMemberList.add("Giselle");
+aespaMemberList.add("Ningning");
+
+// Java 8 : computeIfAbsent()
+
+idolWithMember.computeIfAbsent("Aespa", groupName -> 
+  new ArrayList<>()).addAll(List.of("Karina", "Winter", "Giselle", "Ningning"));
+
+````
+
 ### 3.5 Remove patterns
+
+- `remove()` : key의 Entry를 제거
+- Java 8부터 key가 특정 value와 일치하는 경우에만 제거 가능한 오버로드 메서드 추가
+- `remove(key, value)` : key의 Entry를 제거
+
+````
+Map<String, String> idolWithLeader = new HashMap<>();
+idolWithLeader.put("NewJeans", "Minzi");
+idolWithLeader.put("Aespa", "Karina");
+
+String nameKarina = "Karina";
+String nameAespa = "Aespa";
+
+if (idolWithLeader.containsKey(nameAespa)
+        && Objects.equals(idolWithLeader.get(nameAespa), nameKarina)) {
+    System.out.println("Aespa는 더 이상 리더 직급이 없습니다.");
+    idolWithLeader.remove(nameAespa);
+}
+
+// Java 8
+idolWithLeader.remove(nameAespa, nameKarina);
+````
 
 ### 3.6 Replacement patterns
 
+- `replaceAll()` : 각 Entry value를 `BiFunction`을 사용하여 새로운 value로 대체
+    - `List`의 `replaceAll()`과 유사
+- `Replace()` : key가 있다면 key의 value를 새로운 value로 대체
+
+````
+idolWithLeader.replaceAll((groupName, leaderName) -> leaderName.toUpperCase());
+````
+
 ### 3.7 Merge
+
+- `merge()` : Map의 merge에 추가적인 기능을 제공
+- given mapping function을 사용하여 새로운 value로 대체
+    - function result가 null이면 key를 제거
+- key의 value가 없거나, null 인 경우
+    - 새로운 value를 추가
+
+````
+Map<String, String> nickNameIdol = Map.ofEntries(
+        Map.entry("유지민", "Karina"),
+        Map.entry("애리", "GiSelle"),
+        Map.entry("김민지", "민지")
+);
+
+Map<String, String> nickNameActor = Map.ofEntries(
+        Map.entry("공지철", "공유"),
+        Map.entry("유지민", "지민") // duplicate key
+);
+
+Map<String, String> everyOne1 = new HashMap<>(nickNameIdol);
+everyOne1.putAll(nickNameActor);
+System.out.println(everyOne1);
+
+// Java 8
+Map<String, String> everyOne2 = new HashMap<>(nickNameIdol);
+nickNameActor.forEach((name, age) -> everyOne2.merge(name, age, (nick1, nick2) -> nick1 + " & " + nick2));
+System.out.println(everyOne2);;
+````
+
+```bash
+{유지민=지민, 김민지=민지, 애리=GiSelle, 공지철=공유}
+{유지민=Karina & 지민, 김민지=민지, 애리=GiSelle, 공지철=공유}
+```
+
+```
+Map<String, Integer> memberAge = new HashMap<>();
+memberAge.put("Karina", 20);
+memberAge.put("Giselle", 20);
+memberAge.put("Winter", 19);
+
+String nameKarina = "Karina";
+Integer age = memberAge.get(nameKarina);
+if (age == null) {
+    memberAge.put(nameKarina, 20);
+} else {
+    memberAge.put(nameKarina, age + 1);
+}
+
+// Java 8
+memberAge.merge(nameKarina, 1, (k, v) -> v + 1);
+```
 
 ## 4. Improved ConcurrentHashMap
 
