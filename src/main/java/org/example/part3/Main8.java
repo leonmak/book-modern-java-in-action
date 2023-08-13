@@ -6,7 +6,27 @@ import java.util.stream.Collectors;
 public class Main8 {
     public static void main(String[] args) {
 //        ch81();
-        ch82();
+//        ch82();
+        ch83();
+    }
+
+    private static void ch83() {
+
+        Map<String, Integer> aespaAge = Map.of("Karina", 21, "Winter", 21, "Giselle", 20, "Ningning", 18);
+        // forEach
+        for (Map.Entry<String, Integer> entry : aespaAge.entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
+        }
+
+        // BiConsumer
+        aespaAge.forEach((memberName, age) -> System.out.println(memberName + " : " + age));
+
+        // Sorting
+        aespaAge.entrySet().stream().sorted(Map.Entry.comparingByValue()).forEachOrdered(System.out::println);
+
+        // getOrDefault
+        System.out.println(aespaAge.get("hani").toString());
+        System.out.println(aespaAge.getOrDefault("hani", -1).toString());
     }
 
     private static void ch82() {

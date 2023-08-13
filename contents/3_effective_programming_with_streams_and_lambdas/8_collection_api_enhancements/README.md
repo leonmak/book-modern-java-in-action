@@ -19,7 +19,7 @@
 - idomatic removal / replacement pattern
 - map을 편리하게 사용하는 방법
 
-##                     
+##                                   
 
 ````
 List<String> aespa = new ArrayList<>();
@@ -194,6 +194,68 @@ memberList.replaceAll(memberName -> "original : " + memberName + " | upper : " +
 ````
 
 ## 3. Working with Map
+
+- Java 8 에 추가된 `Map` interface의 default method
+- 코드를 간결하고, 가독성 좋은 idiomatic pattern으로 작성
+
+### 3.1 forEach
+
+````
+Map<String, Integer> aespaAge = Map.of("Karina", 21, "Winter", 21, "Giselle", 20, "Ningning", 18);
+
+// forEach
+for (Map.Entry<String, Integer> entry : aespaAge.entrySet()) {
+    System.out.println(entry.getKey() + " : " + entry.getValue());
+}
+
+// Java 8 : BiConsumer
+aespaAge.forEach((memberName, age) -> System.out.println(memberName + " : " + age));
+````
+
+- `Map` interface에 `forEach()` method 추가
+    - `BiConsumer`를 사용하여 `Map.Entry`를 처리
+
+### 3.2 Sorting
+
+- `Entry.comparingByValue()`
+- `Entry.comparingByKey()`
+
+````
+aespaAge.entrySet().stream()
+  .sorted(Map.Entry.comparingByValue())
+  .forEachOrdered(System.out::println);
+````
+
+```bash
+Ningning=18
+Giselle=20
+Karina=21
+Winter=21
+````
+
+#### HashMap and Performance
+
+- Java 8부터 `HashMap` 의 성능이 향상
+- `HashMap` 의 `Entry` 는 `LinkedList` (bucket) 로 구현 (O(n))
+    - hashcode로 접근
+    - bucket의 size가 커지면 자동으로 sorted map으로 변경 (O(log n))
+        - entiry가 많아지면 성능 저하될 가능성이 있기 때문
+    - sorted map은 key가 Comparable 인 경우에만 가능
+
+### 3.3 getOrDefault
+
+```
+System.out.println(aespaAge.get("hani").toString()); // NullPointerException
+System.out.println(aespaAge.getOrDefault("hani", -1).toString());
+```
+
+### 3.4 Compute patterns
+
+### 3.5 Remove patterns
+
+### 3.6 Replacement patterns
+
+### 3.7 Merge
 
 ## 4. Improved ConcurrentHashMap
 
