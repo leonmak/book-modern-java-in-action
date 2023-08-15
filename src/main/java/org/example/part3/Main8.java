@@ -1,6 +1,7 @@
 package org.example.part3;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Main8 {
@@ -116,6 +117,33 @@ public class Main8 {
         movies.put("Harry Potter", 5);
 
         movies.entrySet().removeIf(movie -> movie.getValue() < 10);
+
+        Map<String, Long> moviesToCount = new HashMap<>();
+        String movieName = "JamesBond";
+//        Long count = moviesToCount.get(movieName);
+
+//        if(count == null) {
+//            moviesToCount.put(movieName, 1L);
+//        }
+//        else {
+//            moviesToCount.put(movieName, count + 1);
+//        }
+        moviesToCount.merge(movieName, 1L, (k, cnt) -> cnt + 1L);
+
+        System.out.println("moviesToCount : " + moviesToCount);
+
+        ConcurrentHashMap<String, Integer> memberAge3 = new ConcurrentHashMap<>();
+        memberAge3.put("Karina", 20);
+        memberAge3.put("Giselle", 20);
+        memberAge3.put("Winter", 19);
+
+        Set<String> memberNameSet = memberAge3.keySet();
+        Set<String> setNew = ConcurrentHashMap.newKeySet();
+
+        System.out.println("memberNameSet : " + memberNameSet);
+
+        List<String> memberNameList = new ArrayList<>(memberNameSet);
+
 
     }
 

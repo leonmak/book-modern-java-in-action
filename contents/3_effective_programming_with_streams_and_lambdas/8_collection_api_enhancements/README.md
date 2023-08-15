@@ -19,7 +19,7 @@
 - idomatic removal / replacement pattern
 - map을 편리하게 사용하는 방법
 
-##                                                                      
+## 1. Collection factories
 
 ````
 List<String> aespa = new ArrayList<>();
@@ -382,4 +382,67 @@ memberAge.merge(nameKarina, 1, (k, v) -> v + 1);
 
 ## 4. Improved ConcurrentHashMap
 
+- `ConcurrentHashMap` : Modern HashMap
+    - concurrent access : `add()`, `remove()` 시 내부 자료구조의 특정 부분에 lock
+    - synchronized `HashTable` 대체
+
+### 4.1 Reduce and Search
+
+````
+ConcurrentHashMap<String, Integer> memberAge = new ConcurrentHashMap<>();
+memberAge.put("Karina", 20);
+memberAge.put("Giselle", 20);
+...
+
+long parallelismThreshold = 1;
+Optional<Integer> oldestAge = memberAge.reduceValues(parallelismThreshold, Integer::max);
+````
+
+- `forEach()` : for each문
+- `reduce()` : `Stream`의 `reduce()`와 유사, reduction function을 사용하여 Map의 모든 Entry를 하나의 값으로 결합
+- `search()` : `Stream`의 `anyMatch()`와 유사, search function을 사용하여 Map의 모든 Entry를 검색
+    - key : `forEachKey()`, `reduceKeys()`, `searchKeys()`
+    - values : `forEachValue()`, `reduceValues()`, `searchValues()`
+    - key, value : `forEach()`, `reduce()`, `search()`
+    - `Map.entiry` : `forEachEntry()`, `reduceEntries()`, `searchEntries()`
+
+#### 주의점
+
+- funciton은 stateless 해야함
+    - 다른 값이나 객체에 의존 X
+- parallel 설정
+    - 설정한 임계 값보다 작으면 sequential
+    - `Long.MAX_VALUE` : single thread
+    - `1` : parallel 최대
+
+### 4.2 Counting
+
+- `mappingCount()` : Map의 Entry 개수를 반환 (long)
+- long 타입이 필요할 경우 사용
+- 사이즈가 켜저 미래에 int가 overflow 될 경우 미리 사용
+
+### 4.3 Set views
+
+- `keySet()` : Map의 key를 Set으로 반환
+- `newKeySet()` : Map의 key를 Set으로 반환
+
+```
+ConcurrentHashMap<String, Integer> memberAge3 = new ConcurrentHashMap<>();
+memberAge3.put("Karina", 20);
+memberAge3.put("Giselle", 20);
+memberAge3.put("Winter", 19);
+
+Set<String> memberNameSet = memberAge3.keySet();
+Set<String> setNew = ConcurrentHashMap.newKeySet();
+```
+
 ## 5. Summary
+
+- Java 9의 collection factory : 작은 사이즈의 불변 collection 생성
+    - `List.of()`, `Set.of()`, `Map.of()`, `Map.ofEntries()`
+    - 불변 : 생성 후 변경 불가
+- `java.util.List`의 default method : `rmoveIf()`, `replaceAll()`, `sort()`
+- `java.util.Set`의 default method : `removeIf()`
+- `java.util.Map`의 새로운 default method
+- `java.util.concurrent.ConcurrentHashMap`의 새로운 default method
+    - `Map` 으로부터 상속받지만, thread-safe
