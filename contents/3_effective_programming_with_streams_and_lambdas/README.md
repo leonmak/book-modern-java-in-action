@@ -7,4 +7,4 @@
 
 8. [Collection API enhancements (Java 9)](8_collection_api_enhancements/README.md)
 9. [Refactoring, testing, debugging](9_refactoring_testing_debugging/README.md)
-10. Domain-specific languages using lambdas
+10. [Domain-specific languages using lambdas](10_domain_specific_languages_using_lambdas/README.md)
