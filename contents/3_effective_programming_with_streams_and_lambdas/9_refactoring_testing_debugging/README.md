@@ -633,4 +633,78 @@ public void testFilter() {
 
 ## 4. Debugging
 
+### 4.1 Examining the stack trace
+
+- stack frame : 메서드 호출 시, 메서드의 매개변수, 지역변수, 리턴값 등이 저장되는 메모리 영역
+- program failed 시 _stack trace_를 통해 정보를 얻을 수 있음
+    - stack trace : 프로그램 실행 중 예외가 발생한 위치를 알려주는 메시지
+
+#### USING LAMDA EXPRESSIONS
+
+- lamda 는 익명
+- lamda 표현식을 사용하면, stack trace에 람다 표현식 정보가 포함되지 않음
+- 메서드 참조는 메서드 이름이 포함되어 stack trace에 표현
+
+````
+List<Point> points = Arrays.asList(new Point(12, 2), null);
+points.stream().map(p -> p.getX()).forEach(System.out::println);
+````
+
+```bash
+Exception in thread "main" java.lang.NullPointerException: Cannot invoke "org.example.part3.Main9$Point.getX()" because "p" is null
+	at org.example.part3.Main9.lambda$ch3$0(Main9.java:24)
+...
+	at org.example.part3.Main9.ch3(Main9.java:24)
+	at org.example.part3.Main9.main(Main9.java:18)
+
+```
+
+- `lambda$ch3$0` : 익명 lamda
+
+````
+List<Integer> numbers = Arrays.asList(1, 2, 3);
+numbers.stream().map(Main9::divideByZero).forEach(System.out::println);
+````
+
+```bash
+Exception in thread "main" java.lang.ArithmeticException: / by zero
+	at org.example.part3.Main9.divideByZero(Main9.java:34)
+...
+	at org.example.part3.Main9.ch3(Main9.java:29)
+	at org.example.part3.Main9.main(Main9.java:19)
+```
+
+### 4.2 Logging information
+
+<img src="img_3.png"  width="70%"/>
+
+```
+List<Integer> numbers = Arrays.asList(1, 2, 3);
+
+numbers.stream()
+        .peek(x -> System.out.println("from stream : " + x))
+        .map(x -> x + 17)
+        .peek(x -> System.out.println("after map : " + x))
+        .filter(x -> x % 2 == 0)
+        .peek(x -> System.out.println("after filter : " + x))
+        .limit(3)
+        .peek(x -> System.out.println("after limit : " + x))
+        .forEach(System.out::println);
+```
+
+```bash
+from stream : 1
+after map : 18
+after filter : 18
+after limit : 18
+18
+from stream : 2
+after map : 19
+from stream : 3
+after map : 20
+after filter : 20
+after limit : 20
+20
+```
+
 ## 5. Summary
