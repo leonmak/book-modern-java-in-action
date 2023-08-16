@@ -194,6 +194,301 @@ String nameWIthTeanAndAge = processMember((Member member) -> member.getName() + 
 
 ## 2. Refactoring object-oriented design patterns with lambdas
 
+- Strategy
+- Template method
+- Observer
+- Chain of responsibility
+- Factory
+
+### 2.1 Strategy
+
+<img src="img.png"  width="80%"/>
+
+- runtime 시점에 알고리즘을 선택할 수 있음
+- `Strategy` interface : 알고리즘 명세
+- 1개 이상의 `Strategy` 구현체 `ConcreteStrategyA`, `ConcreteStrategyB`
+- 1개 이상의 client : strategy 구현체 사용
+
+```java
+public interface ValidationStrategy {
+    boolean execute(String s);
+}
+
+public class IsAllLowerCase implements ValidationStrategy {
+    @Override
+    public boolean execute(String s) {
+        return s.matches("[a-z]+");
+    }
+}
+
+public class IsNumeric implements ValidationStrategy {
+    @Override
+    public boolean execute(String s) {
+        return s.matches("\\d+");
+    }
+}
+
+public class Validator {
+    private final ValidationStrategy strategy; // 구현체
+
+    public Validator(ValidationStrategy v) {
+        this.strategy = v;
+    }
+
+    public boolean validate(String s) {
+        return strategy.execute(s);
+    }
+}
+````
+
+````
+Validator numericValidator = new Validator(new IsNumeric());
+boolean b1 = numericValidator.validate("aaaa"); // false
+
+Validator lowerCaseValidator = new Validator(new IsAllLowerCase());
+boolean b2 = lowerCaseValidator.validate("bbbb"); // true
+````
+
+#### USING LAMBDA EXPRESSIONS
+
+````
+@FunctionalInterface
+public interface ValidationStrategy {
+    boolean execute(String s);
+}
+
+Validator numericValidator = new Validator((String s) -> s.matches("\\d+"));
+boolean b1 = numericValidator.validate("aaaa"); // false
+
+Validator lowerCaseValidator = new Validator((String s) -> s.matches("[a-z]+"));
+boolean b2 = lowerCaseValidator.validate("bbbb"); // true
+````
+
+### 2.2 Template method
+
+- 사용할 알고리즘의 일부를 커스터마이징
+
+```java
+abstract class OnlineBanking {
+    public void processCustomer(int customerId) {
+        Customer c = Database.getCustomerWithId(customerId);
+        makeCustomerHappy(c);
+    }
+
+    abstract void makeCustomerHappy(Customer c); // subclass에서 구현
+}
+````
+
+#### USING LAMDA EXPRESSIONS
+
+````
+public class OnlineBankingLambda {
+    public void processCustomer(int customerId, Consumer<Customer> makeCustomerHappy) {
+        Customer c = Database.getCustomerWithId(customerId);
+        makeCustomerHappy.accept(c);
+    }
+}
+
+...
+
+new OnlineBankingLambda().processCustomer(1337
+  , (Customer c) -> System.out.println("Hello " + c.getName()));
+````
+
+### 2.3 Observer
+
+<img src="img_1.png"  width="80%"/>
+
+- object (_subject_)가 event 발생 시 다른 objects (_observers_)에게 알림
+    - event : state change 등
+- GUI 버튼 클릭
+- lamda로 변환이 힘든 경우
+    - observer의 세부내이 복잡할 때 (state, methods 등)
+
+````java
+interface Observer {
+    void notify(String tweet);
+}
+
+class NYTimes implements Observer {
+    @Override
+    public void notify(String tweet) {
+        if (tweet != null && tweet.contains("money")) {
+            sendTweet("Breaking news in NY! " + tweet);
+        }
+    }
+}
+
+class Guardian implements Observer {
+    @Override
+    public void notify(String tweet) {
+        if (tweet != null && tweet.contains("queen")) {
+            sendTweet("Yet more news from London... " + tweet);
+        }
+    }
+}
+
+class LeMonde implements Observer {
+    @Override
+    public void notify(String tweet) {
+        if (tweet != null && tweet.contains("wine")) {
+            sendTweet("Today cheese, wine and news! " + tweet);
+        }
+    }
+}
+
+interface Subject {
+    void registerObserver(Observer o);
+
+    void notifyObservers(String tweet);
+}
+
+class Feed implements Subject {
+    private final List<Observer> observers = new ArrayList<>();
+
+    @Override
+    public void registerObserver(Observer o) {
+        this.observers.add(o);
+    }
+
+    @Override
+    public void notifyObservers(String tweet) {
+        observers.forEach(o -> o.notify(tweet));
+    }
+}
+````
+
+````
+Feed feed = new Feed();
+feed.registerObserver(new NYTimes());
+feed.registerObserver(new Guardian());
+feed.registerObserver(new LeMonde());
+feed.notifyObservers("The queen said her favourite book is Java 8 in Action!");
+````
+
+#### USING LMABDA EXPRESSIONS
+
+````
+// NYTimes
+feed.registerObserver((String tweet) -> {
+    if (tweet != null && tweet.contains("money")) {
+       sendTweet("Breaking news in NY! " + tweet);
+    }
+});
+
+// Guardian
+feed.registerObserver((String tweet) -> {
+    if (tweet != null && tweet.contains("queen")) {
+        sendTweet("Yet more news from London... " + tweet);
+    }
+});
+````
+
+### 2.4 Chain of responsibility
+
+- chain of processing objects
+- 일반적으로 method 실행 후 후임자에게 전달하는 abstract class
+
+<img src="img_2.png"  width="70%"/>
+
+````java
+public abstract class ProcessingObject<T> {
+    protected ProcessingObject<T> successor; // 후임자
+
+    public void setSuccessor(ProcessingObject<T> successor) {
+        this.successor = successor;
+    }
+
+    public T handle(T input) {
+        T r = handleWork(input);
+        if (successor != null) {
+            return successor.handle(r); // 후임자에게 전달
+        }
+        return r;
+    }
+
+    abstract protected T handleWork(T input);
+}
+
+public class HeaderTextProcessing extends ProcessingObject<String> {
+    @Override
+    protected String handleWork(String text) {
+        return "From Raoul, Mario and Alan: " + text;
+    }
+}
+
+public class SpellCheckerProcessing extends ProcessingObject<String> {
+    @Override
+    protected String handleWork(String text) {
+        return text.replaceAll("labda", "lambda");
+    }
+}
+````
+
+````
+ProcessingObject<String> hederTextProcessing = new HeaderTextProcessing();
+ProcessingObject<String> spellCheckerProcessing = new SpellCheckerProcessing();
+phetextProcessing.setSuccessor(spellCheckerProcessing);
+String result = hederTextProcessing.handle("Aren't labdas really sexy?!!");
+````
+
+#### USING LAMBDA EXPRESSIONS
+
+````
+UnaryOperator<String> headerProcessing = (String text) -> "From Raoul, Mario and Alan: " + text;
+UnaryOperator<String> spellCheckerProcessing = (String text) -> text.replaceAll("labda", "lambda");
+Function<String, String> pipeline = headerProcessing.andThen(spellCheckerProcessing);
+String result = pipeline.apply("Aren't labdas really sexy?!!");
+````
+
+### 2.5 Factory
+
+- client가 instaniation을 직접하지 않고 factory 통해 생성
+
+````java
+public class ProductFactory {
+    public static Product createProduct(String name) {
+        switch (name) {
+            case "loan":
+                return new Loan();
+            case "stock":
+                return new Stock();
+            case "bond":
+                return new Bond();
+            default:
+                throw new RuntimeException("No such product " + name);
+        }
+    }
+}
+````
+
+#### USING LAMBDA EXPRESSIONS
+
+````
+Supplier<Product> loanSupplier = Loan::new;
+Product loan = loanSupplier.get();
+
+final static Map<String, Supplier<Product>> map = new HashMap<>();
+static {
+    map.put("loan", () -> new Loan()); // lamda expression
+    map.put("stock", Stock::new); // method reference
+    map.put("bond", Bond::new);
+}
+
+public static Product createProduct(String name) {
+    Supplier<Product> p = map.get(name);
+    if (p != null) return p.get();
+    throw new IllegalArgumentException("No such product " + name);
+}
+
+// factory 인자가 2개 이상이라면?
+final static Map<String, TriFunction<Integer, Integer, String, Product>> map = new HashMap<>();
+static {
+    map.put("loan", (i, j, k) -> new Loan(i, j, k));
+    map.put("stock", (i, j, k) -> new Stock(i, j, k));
+}
+````
+
 ## 3. Testing lamdas
 
 ## 4. Debugging
