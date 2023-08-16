@@ -491,6 +491,146 @@ static {
 
 ## 3. Testing lamdas
 
+```java
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class Foo {
+
+    @Test
+    public void testMoveRightBy() {
+        Point p1 = new Point(5, 5);
+        Point p2 = p1.moveRightBy(10);
+
+        assertEquals(15, p2.getX());
+        assertEquals(5, p2.getY());
+    }
+
+
+    private class Point {
+        private int x;
+        private int y;
+
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public Point moveRightBy(int x) {
+            return new Point(this.x + x, this.y);
+        }
+    }
+
+}
+
+```
+
+### 3.1 Testing the behavior of a visible lambda
+
+- lamda는 익명 메서드이기 떄문에 테스트가 어려움
+    - 테스트에서 메서드 이름으로 호출이 어려움
+- lamda :  함수형 인터페이스의 객체를 만들어 Return
+- e.g. `Comparator` 객체를 만들어서 테스트에 활용
+
+```
+import java.util.Comparator;
+
+@Test
+public void testMoveRightBy() {
+    Point p1 = new Point(5, 5);
+    Point p2 = new Point(10, 5);
+
+    int result = Point.compareByXAndThenY.compare(p1, p2);
+    assertTrue(result < 0);
+}
+
+private class Point {
+  // ...
+
+  public final static Comparator<Point> compareByXAndThenY =
+    Comparator.comparing(Point::getX).thenComparing(Point::getY);
+  
+}
+```
+
+### 3.2 Focusing on the behavior of a method using a lambda
+
+- lamda의 목적 : 메서드의 구현을 일회성으로 전달하는 것
+- lamdad 표현식 자체를 공개적으로 사용하거나, 테스트하는 것은 상대적으로 덜 중요
+
+```
+@Test
+public void testMoveAllPointsRightBy() {
+    List<Point> points = Arrays.asList(new Point(5, 5), new Point(10, 5));
+    List<Point> expectedPoints = Arrays.asList(new Point(15, 5), new Point(20, 5));
+
+    // moveAllPointsRightBy의 동작에만 관심 (lamda 표현식 자체는 중요하지 않음)
+    List<Point> newPoints = moveAllPointsRightBy(points, 10);
+    assertEquals(expectedPoints, newPoints);
+
+}
+
+public static List<Point> moveAllPointsRightBy(List<Point> points, int x) {
+    return points.stream().map(p -> new Point(p.getX() + x, p.getY())).collect(Collectors.toList());
+}
+```
+
+### 3.3 Pulling complex lamdas into separate methods
+
+- 람다 표현식 내부 로직이 복잡하다면, 별도의 메서드로 선언해서 분리
+- 별도의 메서드로 분리 후, 메서드 참조 방식으로 호출
+
+````
+memberList.forEach(m -> {
+  if(m.getAge() > 20)
+    System.out.println(m.getName() + "is older than 20");
+   else
+    System.out.println(m.getName() + "is younger than 20");
+});
+
+// 별도의 메서드로 분리
+private void printNameAndAge(Member m) {
+  if(m.getAge() > 20)
+    System.out.println(m.getName() + "is older than 20");
+   else
+    System.out.println(m.getName() + "is younger than 20");
+}
+
+memberList.forEach(m -> printNameAndAge(m)); // lamda
+memberList.forEach(Member::printNameAndAge); // method reference
+
+````
+
+### 3.4 Testing high-order functions
+
+- 고차 함수 : 함수를 인자로 받거나, 함수를 리턴하는 함수
+- 다양한 람다를 전달해서 고차 함수 테스트
+
+```
+// 고차함수 filter
+@Test
+public void testFilter() {
+    List<Integer> numbers = Arrays.asList(1, 2, 3, 4);
+    List<Integer> even = numbers.stream()
+      .filter(i -> i % 2 == 0).collect(Collectors.toList());
+      
+    List<Integer> smallerThanThree = numbers.stream()
+      .filter(i -> i < 3).collect(Collectors.toList());
+
+    assertEquals(Arrays.asList(2, 4), even);
+    assertEquals(Arrays.asList(1, 2), smallerThanThree);
+}
+```
+
 ## 4. Debugging
 
 ## 5. Summary
