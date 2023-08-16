@@ -708,3 +708,15 @@ after limit : 20
 ```
 
 ## 5. Summary
+
+- Lamda 표현식은 가독성과 유연성을 높여줌
+- 익명 클래스 -> lamda 표현식
+    - `this` 키워드, shadowing variable 등 주의
+- 메서드 참조는 lamda 보다 가독성이 좋음
+- iterative colleciton processing -> Streams API
+- Lamda는 디자인 패턴에서 중복코드를 없애는데 기여
+    - Strategy, Template Method, Observer, chain of responsibility, Factory
+- Lamda 는 유닛 테스트가 가능하지만, 람다의 동작을 테스트 하는 것에 집중할 것 (람다 내부 로직 보다)
+- 복잡한 Lamda를 일반 메서드로 분리해도 됨
+- Lamda는 stack trace에서 읽기 힘듦
+- `peek()`은 stream 내부 동작을 로깅할 때 사용
