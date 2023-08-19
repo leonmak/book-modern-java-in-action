@@ -166,6 +166,108 @@ implicit def intToTimes(i: Int) = new {
 
 ## 2. Small DSLs in modern Java APIs
 
+- `Comparator` interface : Java 8 이전에는 `Collections.sort()`를 사용할 때, `Comparator`를 구현해야함
+- Java 8
+    - `Comparator`에 `default` method 추가
+    - 람다로 구현 가능
+
+````
+
+// Java 8 이전
+Collections.sort(member, new Comparator<Member>() {
+    @Override
+    public int compare(Member m1, Member m2) {
+        return m1.getName().compareTo(m2.getName());
+    }
+});
+
+// Java 8
+Collections.sort(memberList, comparing(m -> m.getName()));
+Colelctions.sort(memberList, comparing(Member::getName));
+Colelctions.sort(memberList, comparing(Member::getName).reverse()); // 역순 
+Collections.sort(memberList, comparing(Member::getName)
+  .thenComparing(Member::getAge)); // 이름으로 정렬 후 나이로 정렬
+
+
+````
+
+### 2.1 The Stream API seen as a DSL to manipulate collections
+
+- `Stream` interface는 native Java API에 추가된 internal DSL
+- filter, sort, transform, group, item 연산
+
+````
+// not Streams API
+
+List<String> errors = new ArrayList<>(); //에러 메시지
+int errCnt = 0; // 에러 카운트
+BufferedReader reader = new BufferedReader(new FileReader("file.txt"));
+String line = bufferedReader.readLine();
+while (errCnt < 40 && line != null) {
+    if (line.startsWith("ERROR")) {
+        errors.add(line);
+        errCnt++;
+    }
+    line = bufferedReader.readLine();
+}
+
+// Streams API
+List<String> errors = Files.lines(Paths.get("file.txt")) // open file
+    .filter(line -> line.startsWith("ERROR")) // filter 
+    .limit(40) // limit 40
+    .collect(toList()); // get result
+````
+
+### 2.2 Collectors as a DSL to aggregate data
+
+- `Collectors` : 데이터를 aggregate하는 DSL
+    - `Stream`의 element를 collect, group, partition, reduce
+- Builder를 선언해서 사용할 수 있음
+    - group 조건이 많아지면 유용
+
+````
+Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge1 = memberList.stream()
+        .collect(groupingBy(Member::getTeam, groupingBy(Member::getAgeLevel)));
+System.out.println(memberByTeamAndAge1);
+
+// Collector nesting
+Collector<Member, ?, Map<Member.Team, Map<Member.AgeLevel, List<Member>>>> collectorNested1
+        = groupingBy(Member::getTeam, groupingBy(Member::getAgeLevel));
+
+Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge2 = memberList.stream().collect(collectorNested1);
+System.out.println(memberByTeamAndAge2);
+
+Collector<? super Member, ?, Map<Member.Team, Map<Member.AgeLevel, List<Member>>>> collectorNested2
+        = GroupingBuilder.groupOn(Member::getAgeLevel).after(Member::getTeam).get();
+
+Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge3 = memberList.stream().collect(collectorNested2);
+System.out.println(memberByTeamAndAge3);
+
+
+````
+
+```java
+public static class GroupingBuilder<T, D, K> {
+    private final Collector<? super T, ?, Map<K, D>> collector;
+
+    private GroupingBuilder(Collector<? super T, ?, Map<K, D>> collector) {
+        this.collector = collector;
+    }
+
+    public Collector<? super T, ?, Map<K, D>> get() {
+        return collector;
+    }
+
+    public <J> GroupingBuilder<T, Map<K, D>, J> after(Function<? super T, ? extends J> classifier) {
+        return new GroupingBuilder<>(groupingBy(classifier, collector));
+    }
+
+    public static <T, D, K> GroupingBuilder<T, List<T>, K> groupOn(Function<? super T, ? extends K> classifier) {
+        return new GroupingBuilder<>(groupingBy(classifier));
+    }
+}
+```
+
 ## 3. Patterns and techniques to create DSLs in Java
 
 ## 4. Real world Java 8 DSL

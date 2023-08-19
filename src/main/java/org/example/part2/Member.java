@@ -74,6 +74,16 @@ public class Member {
         return nation;
     }
 
+    public AgeLevel getAgeLevel() {
+        if (age < 20) {
+            return AgeLevel.CHILD;
+        } else if (age < 30) {
+            return AgeLevel.ADULT;
+        } else {
+            return AgeLevel.SENIOR;
+        }
+    }
+
     public enum Team {
         NEW_JEANS, AESPA, RED_VELVET, IVE
 
