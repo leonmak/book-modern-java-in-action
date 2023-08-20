@@ -358,7 +358,7 @@ Order orderSMAndJYP = NestedFunctionOrderBuilder.order("BigBank",
     - 특정 필드에 대한 dummy method가 가독성을 높일 수 있음 (e.g. `at()`, `on()`)
 
 <details>
-<summary> `NestedFunctionOrderBuilder` 코드 </summary>
+<summary> NestedFunctionOrderBuilder 코드 </summary>
 
 ````java
 public class NestedFunctionOrderBuilder {
@@ -439,7 +439,7 @@ Order order = LambdaOrderBuilder.order( o -> {
 - 구현하기위한 set-up 코드가 많음
 
 <details>
-<summary> `LambdaOrderBuilder`, `TradeBuilder`, `StockBuilder` 코드 </summary>
+<summary> LambdaOrderBuilder, TradeBuilder, StockBuilder 코드 </summary>
 
 ````java
 
@@ -550,7 +550,7 @@ Order order = forCustomer("BigBank", // nested function : customer 생성
 - 구현과 이해 난이도가 높은 편
 
 <details>
-<summary> `MixedBuilder`, `TradeBuilder`, `StockBuilder` 코드 </summary>
+<summary> MixedBuilder, TradeBuilder, StockBuilder 코드 </summary>
 
 ````java
 
@@ -653,7 +653,7 @@ double value = new TaxCalculator()
 - 유연성 : `Tax`에 새로운 function이 추가되면 client는 바로 사용 가능
 
 <details>
-<summary> `TaxCalculator`, `Tax` 코드 </summary>
+<summary> TaxCalculator, Tax 코드 </summary>
 
 ````java
 
