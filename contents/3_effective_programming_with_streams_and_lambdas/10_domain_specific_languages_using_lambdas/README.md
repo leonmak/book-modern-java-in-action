@@ -861,3 +861,24 @@ public class MyConfiguration {
 ````
 
 ## 5. Summary
+
+- DSL의 목표는 개발자와 도메인 전문가 사이의 갭을 줄이는 것
+    - 개발자 : 코드 작성
+    - 도메인 전문가 : 비즈니스 로직을 이해하고, 코드의 로직을 검증
+- DSL의 종류
+    - **_Internal_** DSL : DSL을 구현하는 언어의 기본 문법을 사용하여 구현, 구현이 쉽지만, host 언어에 의존
+    - **_External_** DSL : 특별하게 설계된 다른 언어, 구현이 어려우나 높은 유연성
+- JVM에 이미 구현되어있는 DSL, e.g. Groovy, Scala
+    - Java 보다 유연하고 간결함
+    - Java와 통합하는 것이 쉽지 않고, 호환이 매끄럽지 못함
+- Java는 internal DSL을 사용하기 쉬운 언어가 아님
+    - lamda 표현식과 method reference를 사용하여 좀더 쉽게 구현 가능
+- Modern Java는 native API에 DSL을 적용
+    - `java.util.stream.Stream`
+    - `java.util.stream.Collectors`
+- DSL 구현 패턴 : method chaining, nested functions, function sequencing
+    - 각자 장단점 있고, 세가지를 적절히 혼합하여 사용
+- DSL를 사용할 수 있게 제공하는 Java framework, library
+    - jOOQ : SQL mapping tool
+    - Cucumber : BDD framework
+    - Spring Integration : Enterprise Integration Pattern 구현을 위한 확장
