@@ -1,20 +1,110 @@
 package org.example.part3;
 
 import org.example.part2.Member;
+import org.example.part3.order.*;
+import org.example.part3.order.mix.MixedBuilder;
+import org.example.part3.order.mr.Tax;
+import org.example.part3.order.mr.TaxCalculator;
+import org.example.part3.order.withlamda.LambdaOrderBuilder;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
+import static org.example.part3.order.NestedFunctionOrderBuilder.*;
 
 public class Main10 {
 
     public static void main(String[] args) {
-        ch101();
+//        ch101();
+        ch103();
+    }
+
+    private static void ch103() {
+        Order orderJYP = new Order();
+        orderJYP.setCustomer("BigBank");
+
+        Trade trade1 = new Trade();
+        trade1.setType(Trade.Type.BUY);
+
+        Stock stockJYP = new Stock();
+        stockJYP.setSymbol("JYP");
+        stockJYP.setMarket("코스피");
+
+        trade1.setStock(stockJYP);
+        trade1.setPrice(125.00);
+        trade1.setQuantity(80);
+        orderJYP.addTrade(trade1);
+
+        Trade trade2 = new Trade();
+        trade2.setType(Trade.Type.BUY);
+
+        Stock stockGOOGLE = new Stock();
+        stockGOOGLE.setSymbol("GOOGLE");
+        stockGOOGLE.setMarket("NASDAQ");
+
+        trade2.setStock(stockGOOGLE);
+        trade2.setPrice(375.00);
+        trade2.setQuantity(50);
+        orderJYP.addTrade(trade2);
+
+        Order orderKAKAOAndSM = MethodChainingOrderBuilder.forCustomer("BigBank")
+                .buy(80)
+                .stock("KAKAO")
+                .on("코스피")
+                .at(125.00)
+                .sell(50)
+                .stock("SM")
+                .on("코스피")
+                .at(375.00)
+                .end();
+
+        Order orderSMAndJYP = NestedFunctionOrderBuilder.order("BigBank",
+                buy(80,
+                        stock("SM", "코스피"),
+                        at(375.00)),
+                sell(50,
+                        stock("JYP", "코스피"),
+                        at(125.00)));
+
+        Order orderSMAndJYPLamda = LambdaOrderBuilder.order(o -> {
+            o.forCustomer("BigBank");
+            o.buy(t -> {
+                t.quantity(80);
+                t.price(375.00);
+                t.stock(s -> {
+                    s.symbol("SM");
+                    s.market("코스피");
+                });
+            });
+            o.sell(t -> {
+                t.quantity(50);
+                t.price(125.00);
+                t.stock(s -> {
+                    s.symbol("JYP");
+                    s.market("코스피");
+                });
+            });
+        });
+
+        Order order = MixedBuilder.forCustomer("BigBank", // nested function : customer 생성
+                MixedBuilder.buy(t -> t.quantity(80) // lambda expression : trade 생성
+                        .stock("SM")
+                        .on("코스피")
+                        .at(375.00)), // method chaining : trade 필드 설정
+                MixedBuilder.sell(t -> t.quantity(50)
+                        .stock("JYP")
+                        .on("코스피")
+                        .at(125.00)));
+
+        double value = new TaxCalculator().with(Tax::regional)
+                .with(Tax::surcharge)
+                .calculate(order);
+
+        System.out.println("value = " + value);
     }
 
     private static void ch101() {

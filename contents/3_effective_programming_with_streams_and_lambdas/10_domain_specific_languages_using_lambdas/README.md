@@ -270,6 +270,443 @@ public static class GroupingBuilder<T, D, K> {
 
 ## 3. Patterns and techniques to create DSLs in Java
 
+<img src="img.png"  width="50%"/>
+
+````
+Order orderJYP = new Order();
+orderJYP.setCustomer("BigBank");
+
+Trade trade1 = new Trade();
+trade1.setType(Trade.Type.BUY);
+
+Stock stockJYP = new Stock();
+stockJYP.setSymbol("JYP");
+stockJYP.setMarket("코스피");
+
+trade1.setStock(stockJYP);
+trade1.setPrice(125.00);
+trade1.setQuantity(80);
+orderJYP.addTrade(trade1);
+
+Trade trade2 = new Trade();
+trade2.setType(Trade.Type.BUY);
+
+Stock stockGOOGLE = new Stock();
+stockGOOGLE.setSymbol("GOOGLE");
+stockGOOGLE.setMarket("NASDAQ");
+
+trade2.setStock(stockGOOGLE);
+trade2.setPrice(375.00);
+trade2.setQuantity(50);
+orderJYP.addTrade(trade2);
+````
+
+- JYP, GOOGLE 주식을 사는 코드
+- 도메인 전문가 (비개발자)가 이해하기 어려움
+
+### 3.1 Method chaining
+
+````
+Order orderKAKAOAndSM = MethodChainingOrderBuilder.forCustomer("BigBank")
+  .buy(80)
+    .stock("KAKAO")
+    .on("코스피")
+    .at(125.00)
+  .sell(50)
+    .stock("SM")
+    .on("코스피")
+    .at(375.00)
+  .end();
+````
+
+- `MethodChainingOrderBuilder` : `Order` 객체를 생성하는 builder
+- `forCustomer()` : `Order` 객체의 customer를 설정
+- `buy()` : `TradBuilder` 객체를 생성하고, `Trade` 객체의 type, quantity 설정
+- `stock()` : `StockBuilder` 객체를 생성하고, `Stock` 객체의 symbol 설정
+- `on()` : `StockBuilder` 객체의 market 설정
+- `at()` : `TradeBuilder` 객체의 price 설정
+- `end()` : `Order` 객체를 반환
+
+#### 장단점
+
+<img src="img_1.png"  width="60%"/>
+
+- 장점 : 가독성이 좋아짐
+- 단점 : builder를 구현하기 위해 많은 빌더 클래스 작성 필요 (복잡한 빌더 간의 의존 관계)
+
+### 3.2 Using nested functions
+
+- **_nested function_** : 다른 function의 중첩된 형태로 도메인 모델을 표현하는 방법
+
+````
+Order orderSMAndJYP = NestedFunctionOrderBuilder.order("BigBank",
+        buy(80,
+                stock("SM", "코스피"),
+                at(375.00)),
+        sell(50,
+                stock("JYP", "코스피"),
+                at(125.00)));
+````
+
+#### 장단점
+
+- 도메인의 계층형 구조를 표현 가능 (`Oreder` -> `Trade` -> `Stock`)
+- 코드에 괄호가 많음
+- 도메인 object에 optial field가 있으면 overloading method를 구현해두어야함
+    - e.g. `Order`에 optional로 _주문일시_ 필드가 있다면?
+- dummy method가 많아짐
+    - 특정 필드에 대한 dummy method가 가독성을 높일 수 있음 (e.g. `at()`, `on()`)
+
+<details>
+<summary> `NestedFunctionOrderBuilder` 코드 </summary>
+
+````java
+public class NestedFunctionOrderBuilder {
+
+    // Order 생성
+    public static Order order(String customer, Trade... trades) {
+        Order order = new Order();
+        order.setCustomer(customer);
+        Stream.of(trades).forEach(order::addTrade);
+        return order;
+    }
+
+    public static Trade buy(int quantity, Stock stock, double price) {
+        return buildTrade(quantity, stock, price, Trade.Type.BUY);
+    }
+
+    public static Trade sell(int quantity, Stock stock, double price) {
+        return buildTrade(quantity, stock, price, Trade.Type.SELL);
+    }
+
+    public static double at(double price) {
+        return price;
+    }
+
+    public static Stock stock(String symbol, String market) {
+        Stock stock = new Stock();
+        stock.setSymbol(symbol);
+        stock.setMarket(market);
+        return stock;
+    }
+
+    public static String on(String market) {
+        return market;
+    }
+
+    private static Trade buildTrade(int quantity, Stock stock, double price, Trade.Type type) {
+        Trade trade = new Trade();
+        trade.setQuantity(quantity);
+        trade.setStock(stock);
+        trade.setPrice(price);
+        trade.setType(type);
+        return trade;
+    }
+}
+````
+
+</details>
+
+### 3.3 Function sequencing with lamda expressions
+
+<img src="img_2.png"  width="60%"/>
+
+````
+Order order = LambdaOrderBuilder.order( o -> {
+    o.forCustomer("BigBank");
+    o.buy(t -> {
+        t.quantity(80);
+        t.price(125.00);
+        t.stock(s -> {
+            s.symbol("SM");
+            s.market("코스피");
+        });
+    });
+    o.sell(t -> {
+        t.quantity(50);
+        t.price(375.00);
+        t.stock(s -> {
+            s.symbol("GOOGLE");
+            s.market("NASDAQ");
+        });
+    });
+});
+````
+
+#### 장단점
+
+- **_method-chaining_** pattern과 _**nested funciton**_ pattern의 장점을 모두 가짐
+- 구현하기위한 set-up 코드가 많음
+
+<details>
+<summary> `LambdaOrderBuilder`, `TradeBuilder`, `StockBuilder` 코드 </summary>
+
+````java
+
+
+import java.util.function.Consumer;
+
+public class LambdaOrderBuilder {
+
+    private Order order = new Order();
+
+    public static Order order(Consumer<LambdaOrderBuilder> consumer) {
+        LambdaOrderBuilder builder = new LambdaOrderBuilder();
+        consumer.accept(builder); // landa 표현식 실행
+        return builder.order; // builder.order를 반환
+    }
+
+    public void forCustomer(String customer) {
+        order.setCustomer(customer);
+    }
+
+    public void buy(Consumer<TradeBuilder> consumer) {
+        trade(consumer, Trade.Type.BUY);
+    }
+
+    public void sell(Consumer<TradeBuilder> consumer) {
+        trade(consumer, Trade.Type.SELL);
+    }
+
+    private void trade(Consumer<TradeBuilder> consumer, Trade.Type type) {
+        TradeBuilder builder = new TradeBuilder();
+        builder.getTrade().setType(type);
+        consumer.accept(builder); // landa 표현식 실행
+        order.addTrade(builder.getTrade());  // builder.trade를 order에 추가
+    }
+}
+
+````
+
+````java
+
+import java.util.function.Consumer;
+
+public class TradeBuilder {
+    private Trade trade = new Trade();
+
+    public void quantity(int quantity) {
+        trade.setQuantity(quantity);
+    }
+
+    public void price(double price) {
+        trade.setPrice(price);
+    }
+
+    public void stock(Consumer<StockBuilder> consumer) {
+        StockBuilder builder = new StockBuilder();
+        consumer.accept(builder);
+        trade.setStock(builder.getStock());
+    }
+
+    public Trade getTrade() {
+        return trade;
+    }
+}
+````
+
+````java
+
+public class StockBuilder {
+    private Stock stock = new Stock();
+
+    public void symbol(String symbol) {
+        stock.setSymbol(symbol);
+    }
+
+    public void market(String market) {
+        stock.setMarket(market);
+    }
+
+    public Stock getStock() {
+        return stock;
+    }
+
+    public void setStock(Stock stock) {
+        this.stock = stock;
+    }
+}
+````
+
+</details>
+
+### 3.4 Putting it all together
+
+````
+Order order = forCustomer("BigBank", // nested function : customer 생성
+          buy(t -> t.quantity(80) // lambda expression : trade 생성
+                    .stock("SM"")
+                    .on("코스피")
+                    .at(375.00)), // method chaining : trade 필드 설정
+          sell(t -> t.quantity(50)
+                  .stock("JYP")
+                  .on("코스피")
+                  .at(125.00)));
+````
+
+#### 장단점
+
+- **_method-chaining_** pattern과 _**nested funciton**_ pattern의 장점을 모두 가짐
+- 구현과 이해 난이도가 높은 편
+
+<details>
+<summary> `MixedBuilder`, `TradeBuilder`, `StockBuilder` 코드 </summary>
+
+````java
+
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+public class MixedBuilder {
+
+    public static Order forCustomer(String customer, TradeBuilder... builders) {
+        Order order = new Order();
+        order.setCustomer(customer);
+        Stream.of(builders).forEach(b -> order.addTrade(b.getTrade()));
+        return order;
+    }
+
+    public static TradeBuilder buy(Consumer<TradeBuilder> consumer) {
+        return buildTrade(consumer, Trade.Type.BUY);
+    }
+
+    public static TradeBuilder sell(Consumer<TradeBuilder> consumer) {
+        return buildTrade(consumer, Trade.Type.SELL);
+    }
+
+    private static TradeBuilder buildTrade(Consumer<TradeBuilder> consumer, Trade.Type type) {
+        TradeBuilder builder = new TradeBuilder();
+        builder.getTrade().setType(type);
+        consumer.accept(builder);
+        return builder;
+    }
+}
+
+
+````
+
+````java
+
+public class TradeBuilder {
+
+    private Trade trade = new Trade();
+
+    public TradeBuilder quantity(int quantity) {
+        trade.setQuantity(quantity);
+        return this;
+    }
+
+    public TradeBuilder at(double price) {
+        trade.setPrice(price);
+        return this;
+    }
+
+    public StockBuilder stock(String symbol) {
+        return new StockBuilder(this, trade, symbol);
+    }
+
+    public Trade getTrade() {
+        return trade;
+    }
+}
+
+````
+
+````java
+
+public class StockBuilder {
+    private final TradeBuilder builder;
+    private final Trade trade;
+    private final Stock stock = new Stock();
+
+    public StockBuilder(TradeBuilder builder, Trade trade, String symbol) {
+        this.builder = builder;
+        this.trade = trade;
+        stock.setSymbol(symbol);
+    }
+
+    public TradeBuilder on(String market) {
+        stock.setMarket(market);
+        trade.setStock(stock);
+        return builder;
+    }
+}
+
+````
+
+</details>
+
+### 3.5 Using method references in a DSL
+
+````
+double value = new TaxCalculator()
+    .with(Tax::regional) // tax 부과
+    .with(Tax::surcharge) // tax 부과
+    .calculate(order);
+````
+
+<img src="img_3.png"  width="50%"/>
+
+#### 장단점
+
+- 간결한 코드와 좋은 가독성
+- 유연성 : `Tax`에 새로운 function이 추가되면 client는 바로 사용 가능
+
+<details>
+<summary> `TaxCalculator`, `Tax` 코드 </summary>
+
+````java
+
+import java.util.function.DoubleUnaryOperator;
+
+public class TaxCalculator {
+    public DoubleUnaryOperator taxFunction = d -> d;
+
+    public TaxCalculator with(DoubleUnaryOperator f) {
+        taxFunction = taxFunction.andThen(f);
+        return this;
+    }
+
+    public double calculate(Order order) {
+        return taxFunction.applyAsDouble(order.getValue());
+    }
+}
+````
+
+````java
+
+
+public class Tax {
+    public static double regional(double value) {
+        return value * 1.1;
+    }
+
+    public static double general(double value) {
+        return value * 1.3;
+    }
+
+    public static double surcharge(double value) {
+        return value * 1.05;
+    }
+
+    public static double calculate(Order order, Boolean useRegional, Boolean useGeneral, Boolean useSurcharge) {
+        double value = order.getValue();
+        if (useRegional) {
+            value = Tax.regional(value);
+        }
+        if (useGeneral) {
+            value = Tax.general(value);
+        }
+        if (useSurcharge) {
+            value = Tax.surcharge(value);
+        }
+        return value;
+    }
+}
+````
+
+</details>
+
 ## 4. Real world Java 8 DSL
 
 ## 5. Summary
