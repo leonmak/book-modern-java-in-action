@@ -20,7 +20,26 @@ public class Main10 {
 
     public static void main(String[] args) {
 //        ch101();
-        ch103();
+        // ch103();
+        ch104();
+    }
+
+    private static void ch104() {
+        List<Member> memberList = Arrays.asList(new Member("karina", Member.Team.AESPA, true, 23)
+                , new Member("winter", Member.Team.AESPA, true, 23)
+                , new Member("gisele", Member.Team.AESPA, false, 20)
+                , new Member("ningning", Member.Team.AESPA, false, 18)
+                , new Member("REI", Member.Team.IVE, true, 19)
+                , new Member("AN YUJIN", Member.Team.IVE, true, 19)
+                , new Member("hani", Member.Team.NEW_JEANS, false, 20)
+                , new Member("hyerin", Member.Team.NEW_JEANS, false, 18)
+                , new Member("minzi", Member.Team.NEW_JEANS, false, 20));
+
+        memberList.stream().collect(groupingBy(Member::getTeam)).forEach((team, members) -> {
+            members.forEach(m ->{
+                System.out.println("team : " + team + ", member : " + m.getName());
+            });
+        });
     }
 
     private static void ch103() {

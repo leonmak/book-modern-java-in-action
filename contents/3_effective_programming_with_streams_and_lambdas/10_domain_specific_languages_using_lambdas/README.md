@@ -709,4 +709,155 @@ public class Tax {
 
 ## 4. Real world Java 8 DSL
 
+|             Pattern name              | 장점                                                                                                          | 단점                                                                                                     |
+|:-------------------------------------:|-------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
+|         **_method-chaining_**         | - 특정 인자 전용 메서드 네이밍<br/> - optional paramter 지원<br/> - 호출 순서 강제 가능<br/> - static method 최소화<br/> - 구문 오류 최소화 | - 구현 코드량이 많음<br/> - builder 간의 높은 의존성<br/> - 들여쓰기로만 도메인 계층 구분 가능                                       |
+|         **_Nested function_**         | - 구현 코드량이 적음<br/> - 도메인 계층 구분 가능<br/>                                                                       | - static mehtod 많음<br/> - optional parameter 를 위해 overloading<br/> - 인자 구분을 mehtod name이 아닌, 호출 순서로 구분 |
+| **_Funciton sequencing with lamdas_** | - optional paramter 지원<br/> - static method 최소화<br/> - 도메인 계층 구분 가능<br/> - Builder 간의 의존성 없음                | - 구현 코드량이 많음<br/> - lamda 표현식의 코드량이 많음                                                                 |
+
+### 4.1 jOOQ
+
+- jOOQ : SQL을 type-safe하게 작성할 수 있도록 도와주는 Java 라이브러리
+- Java compiler가 SQL 구문 type-check
+    - source-code generator가 DB schema를 reverse engineering
+
+````
+-- SQL
+SELECT * 
+FROM IDOL
+WHERE IDOL.DT_DEBUT = 2020
+ORDER BY IDOL.NAME;
+
+-- jOOQ
+create.selectFrom(IDOL)
+      .where(IDOL.DT_DEBUT.eq(2020))
+      .orderBy(IDOL.NAME)
+      
+-- jOOQ + Java 8 Stream API
+Class.forName("org.h2.Driver");
+try(Connection c = getConnection("jdbc:h2:~/test", "sa", "")) {
+  DSL.using(c)
+        .select(IDOL.NAME, IDOL.AGE, IDOL.NAME_GROUP)
+        .where(IDOL.DT_DEBUT.eq(2020))
+        .orderBy(IDOL.NAME)
+        .fetch()
+        .stream()
+        .collect(groupingBy(r -> r.getValue(IDOL.NAME_GROUP)))
+        .forEach((team, members) -> {
+            members.forEach(m ->{
+                System.out.println("team : " + team + ", member : " + m);
+            });
+        });      
+}
+````
+
+### 4.2 Cucumber
+
+- Cucumber : BDD(Behavior Driven Development)를 위한 도구
+    - 비즈니스 시나리오를 영어로 작성
+- BDD : 테스트 코드를 작성하기 전에 테스트 대상의 동작을 설명하는 테스트 코드를 작성하는 방법론, TDD의 확장
+
+````
+Feature: Buy stock
+    Scenario: Buy 10 IBM stocks
+        Given the price of a "IBM" stock is 125$
+        When I buy 10 "IBM"
+        Then the order value should be 1250$
+````
+
+- `Given` : 테스트를 위한 초기 상태를 설정
+- `When` : 테스트 대상의 동작을 실행
+- `Then` : 테스트 결과를 검증
+
+```java
+
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import io.cucumber.java8.En;
+
+public class BuyStocksSteps implements En {
+
+    private Map<String, Integer> stockUnitPrices = new HashMap<>();
+    private Order order = new Order();
+
+    @Given("^the price of a \"(.*?)\" stock is (\\d+)\\$$")
+    public void setUnitPrice(String stock, int unitPrice) {
+        stockUnitPrices.put(stock, unitPrice);
+    }
+
+    @When("^I buy (\\d+) \"(.*?)\"$")
+    public void buiStocks(int quantity, String stockName) {
+        Trade trade = new Trade();
+        trade.setType(Trade.Type.BUY);
+
+        Stock stock = new Stock();
+        stock.setSymbol(stockName);
+
+        trade.setStock(stock);
+        trade.setQuantity(quantity);
+        trade.setPrice(stockUnitPrices.get(stockName));
+        order.addTrade(trade);
+    }
+
+    @Then("^the order value should be (\\d+)\\$$")
+    public void checkOrderValue(int expectedValue) {
+        assertEquals(expectedValue, order.getValue());
+    }
+
+    // Java 8 Lambda
+    public BuyStocksSteps() {
+        Given("\"^the price of a \\\"(.*?)\\\" stock is (\\\\d+)\\\\$$\"", (stock, unitPrice) -> {
+            stockUnitPrices.put((String) stock, (Integer) unitPrice);
+        });
+    }
+}
+```
+
+### 4.3 Spring Integration
+
+- **_Spring Integration_** : DI based Spring 의 확장
+    - Enterprise Integration Pattern을 구현하기 위한 DSL 제공
+    - 복잡한 Enterprise Integration Pattern을 Java DSL로 구현 가능
+    - asynchronous, message-driven architecture를 제공
+- lightweight remoteing, messaging, scheduling을 위한 DSL 제공
+- _method-chaining pattern_ 을 많이 사용
+
+````java
+
+@Configuration
+@EnableIntegration
+public class MyConfiguration {
+
+    @Bean
+    public MessageSource<?> integerMessageSource() {
+        MthodInvokingMessageSource source = new MethodInvokingMessageSource();
+        source.setObjecty(new AtomicInteger());
+        source.setMethodName("getAndIncrement");
+        return source;
+    }
+
+    @Bean
+    public DirectChannel inputChannel() {
+        return new DirectChannel();
+    }
+
+    // Spring Integration DSL을 사용하여 IntegrationFlow를 구성
+    // method-chaining pattern
+    @Bean
+    public IntegrationFlow myFlow() {
+        return IntegrationFlows
+                .from(this.integerMessageSource(),
+                        c -> c.poller(Pollers.fixedRate(10)))
+                .channel(this.inputChannel())
+                .filter((Integer p) -> p % 2 == 0)
+                .transform(Object::toString)
+                .channel(MessageChannels.queue("queueChannel"))
+                .get();
+
+
+    }
+}
+````
+
 ## 5. Summary

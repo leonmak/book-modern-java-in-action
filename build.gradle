@@ -17,6 +17,9 @@ dependencies {
 
     testImplementation 'org.openjdk.jmh:jmh-core:1.36'
     testImplementation 'org.openjdk.jmh:jmh-generator-annprocess:1.36'
+    testImplementation 'io.cucumber:cucumber-java:7.13.0'
+    testImplementation 'io.cucumber:cucumber-junit:7.13.0'
+    testImplementation 'io.cucumber:cucumber-java8:7.13.0'
 
 }
 
