@@ -157,23 +157,23 @@ public class Car {
 
 ## 3. Patterns for adopting Optional
 
-|                                 Method                                 | Description                                                                |
-|:----------------------------------------------------------------------:|----------------------------------------------------------------------------|
-|                               `empty()`                                | Returns an empty Optional instance                                         |
-|                `filter(Predicate<? super T> predicate)`                | value 존재 && `Predicate` 만족 -> `Optional` 반환<br/>아니면, `Optional.empty()` 반환 |
-| `flatMap(Function<? super T, ? extends Optional<? extends U>> mapper)` | value 존재 -> `Function` 적용 후, `Optional` 반환<br/>아니면, `Optional.empty()` 반환  |
-|                                `get()`                                 | value 존재 -> value 반환<br/>아니면, `NoSuchElementException` 발생                  |
-|               `ifPresent(Consumer<? super T> consumer)`                | value 존재 -> `Consumer` 적용<br/>아니면, 아무 일도 일어나지 않음                           |
-|  `ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction)`   | value 존재 -> `Consumer` 적용<br/>아니면, `Runnable` 적용                           |
-|                             `isPresent()`                              | value 존재 -> `true`<br/>아니면, `false`                                        |
-|             `map(Function<? super T, ? extends U> mapper)`             | value 존재 -> `Function`이 반환하는  `Optional` 반환<br/>아니면, `Optional.empty()` 반환 |
-|                         `Optional.of(T value)`                         | `Optional<value type>` 반환 <br/>`null`이면, `NullPointerException` 발생         |
-|                     `Optional.ofNullable(T value)`                     | `Optional<value type>` 반환 <br/>`null`이면, `Optional.empty()` 반환             |
-|                  `or(Supplier<? extends T> supplier)`                  | value 존재 -> `Optional` 반환<br/>아니면, `Supplier` 적용 후, `Optional` 반환          |
-|                           `orElse(T other)`                            | value 존재 -> value 반환<br/>아니면, `other` 반환                                   |
-|                `orElseGet(Supplier<? extends T> other)`                | value 존재 -> value 반환<br/>아니면, `Supplier` 적용 후, 반환                          |
-|         `orElseThrow(Supplier<? extends X> exceptionSupplier)`         | value 존재 -> value 반환<br/>아니면, `Supplier` 적용 후, `X` 타입의 exception 발생        |
-|                               `stream()`                               | value 존재 -> `Stream` 반환<br/>아니면, `Stream.empty()` 반환                       |
+|                                 Method                                 | Description                                                                        |
+|:----------------------------------------------------------------------:|------------------------------------------------------------------------------------|
+|                               `empty()`                                | Returns an empty Optional instance                                                 |
+|                `filter(Predicate<? super T> predicate)`                | value 존재 && `Predicate` 만족 -> `Optional` 반환<br/>아니면, `Optional.empty()` 반환         |
+| `flatMap(Function<? super T, ? extends Optional<? extends U>> mapper)` | value 존재 -> `Function` 적용 후, `Optional` 반환<br/>아니면, `Optional.empty()` 반환          |
+|                                `get()`                                 | value 존재 -> value 반환<br/>아니면, `NoSuchElementException` 발생<br/>**가장 간단하고, 안전하지 않음** |
+|               `ifPresent(Consumer<? super T> consumer)`                | value 존재 -> `Consumer` 적용<br/>아니면, 아무 일도 일어나지 않음                                   |
+|  `ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction)`   | value 존재 -> `Consumer` 적용<br/>아니면, `Runnable` 적용                                   |
+|                             `isPresent()`                              | value 존재 -> `true`<br/>아니면, `false`                                                |
+|             `map(Function<? super T, ? extends U> mapper)`             | value 존재 -> `Function`이 반환하는  `Optional` 반환<br/>아니면, `Optional.empty()` 반환         |
+|                         `Optional.of(T value)`                         | `Optional<value type>` 반환 <br/>`null`이면, `NullPointerException` 발생                 |
+|                     `Optional.ofNullable(T value)`                     | `Optional<value type>` 반환 <br/>`null`이면, `Optional.empty()` 반환                     |
+|                  `or(Supplier<? extends T> supplier)`                  | value 존재 -> `Optional` 반환<br/>아니면, `Supplier` 적용 후, `Optional` 반환                  |
+|                           `orElse(T other)`                            | value 존재 -> value 반환<br/>아니면, `other` 반환                                           |
+|                `orElseGet(Supplier<? extends T> other)`                | value 존재 -> value 반환<br/>아니면, `Supplier` 적용 후, 반환                                  |
+|         `orElseThrow(Supplier<? extends X> exceptionSupplier)`         | value 존재 -> value 반환<br/>아니면, `Supplier` 적용 후, `X` 타입의 exception 발생                |
+|                               `stream()`                               | value 존재 -> `Stream` 반환<br/>아니면, `Stream.empty()` 반환                               |
 
 ### 3.1 Creating Optional objects
 
@@ -375,34 +375,39 @@ public static Optional<Integer> strToInt(String str) {
 ### 4.4 Putting it all together
 
 ````
-Properties props = new Properties();
-props.setProperty("aespa", "is my life");
-props.setProperty("karina age", "23");
-props.setProperty("karina height", "170");
-props.setProperty("karina is leader", "true");
-props.setProperty("karina is men", "-1"); // -1 : false
+@Test
+public void test1() {
+    Properties props = new Properties();
+    props.setProperty("aespa", "is my life");
+    props.setProperty("karina age", "23");
+    props.setProperty("karina height", "170");
+    props.setProperty("karina is leader", "true");
+    props.setProperty("karina is men", "-1"); // -1 : false
+    
+    assertEquals(0, readValueOnlyNumber(props, "aespa"));
+    assertEquals(23, readValueOnlyNumber(props, "karina age"));
+    assertEquals(170, readValueOnlyNumber(props, "karina height"));
+    assertEquals(0, readValueOnlyNumber(props, "karina is leader"));
+    assertEquals(0, readValueOnlyNumber(props, "karina is men"));
+
+}
 
 // property의 값이 양의 정수 일 경우에만 반환, 아닐 경우 0 반환
-public int readValueOnlyNubmer (Properties props, String name){
-    String value = props.getProperty(name);
-        if(value != null){
-              try{
-                  int i = Integer.parseInt(value);
-                  if(i > 0){
-                      return i;
-                  }
-              }catch(NumberFormatException e){
-                  // do nothing
-              }
-        }
-    return 0;
+public int readValueOnlyNumber(Properties props, String name) {
+    return Optional.ofNullable(props.getProperty(name)) // Optional<String>
+            .flatMap(strVal -> strToInt(strVal)) // Optional<Integer>
+            .filter(intVal -> intVal > 0) // 양의 정수인지 확인
+            .orElse(0); // 양의 정수가 아닐 경우 0 반환
+
 }
 
-// Optional 
-public int readValueOnlyNubmer (Properties props, String name){
-  Optional.
+public static Optional<Integer> strToInt(String str) {
+    try {
+        return Optional.of(Integer.parseInt(str)); // return Optional<Integer>
+    } catch (NumberFormatException e) {
+        return Optional.empty(); // return Optional.empty()
+    }
 }
-
 ````
 
 ## 5. Summary
