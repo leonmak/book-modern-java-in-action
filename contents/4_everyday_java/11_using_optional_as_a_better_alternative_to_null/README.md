@@ -339,4 +339,82 @@ Optional<String> leaderCarName = optIdol
 
 ## 4. Practical examples of Optional
 
+### 4.1 Wrapping a potentially null value in an Optional
+
+````
+Object karina = map.get("specific key"); // return nullable value
+
+// Optional
+Optional<Object> optKarina = Optional.ofNullable(map.get("specific key");
+````
+
+- 기존 API의 시그니처를 바꿀 수 없어도, `Optional`로 wrapping 가능
+
+### 4.2 Exceptions vs Optional
+
+````
+public static Optional<Integer> strToInt(String str) {
+    try {
+        return Optional.of(Integer.parseInt(str)); // return Optional<Integer>
+    } catch (NumberFormatException e) {
+        return Optional.empty(); // return Optional.empty()
+    }
+}
+````
+
+- `Integer.parseInt()` : `NumberFormatException` 발생 가능
+- Exception 발생 시 `catch` 블록에서 `Optional.empty()` 반환
+
+### 4.3 Primitive optionals and why you shouldn’t use them
+
+- `OptionalInt`, `OptionalLong`, `OptionalDouble` : primitive type을 `Optional`로 wrapping
+- Stream은 성능 향상을 위해 primitive type을 사용
+- `Optional`은 값이 하나이므로 auto-boxing, unboxing 고려 안함
+- primitive optional은 `map()`, `flatMap()`, `filter()` 등의 메서드를 제공하지 않음
+
+### 4.4 Putting it all together
+
+````
+Properties props = new Properties();
+props.setProperty("aespa", "is my life");
+props.setProperty("karina age", "23");
+props.setProperty("karina height", "170");
+props.setProperty("karina is leader", "true");
+props.setProperty("karina is men", "-1"); // -1 : false
+
+// property의 값이 양의 정수 일 경우에만 반환, 아닐 경우 0 반환
+public int readValueOnlyNubmer (Properties props, String name){
+    String value = props.getProperty(name);
+        if(value != null){
+              try{
+                  int i = Integer.parseInt(value);
+                  if(i > 0){
+                      return i;
+                  }
+              }catch(NumberFormatException e){
+                  // do nothing
+              }
+        }
+    return 0;
+}
+
+// Optional 
+public int readValueOnlyNubmer (Properties props, String name){
+  Optional.
+}
+
+````
+
 ## 5. Summary
+
+- **_null_** reference : absence of a value
+- `java.util.Optional<T>` : null-safe container, Java 8
+- `Optional` 생성하는 static factory method
+    - `Optional.empty()`
+    - `Optional.of(value)`
+    - `Optional.ofNullable(value)`
+- `Optional`의 메서드 : `map()`, `flatMap()`, `filter()`, ...
+    - Stream의 메서드와 유사
+- `Optional`은 nullable value를 처리하도록 강제하는 의미를 가짐
+    - 더 나은 API 설계
+    - `NullPointerException`을 방지
