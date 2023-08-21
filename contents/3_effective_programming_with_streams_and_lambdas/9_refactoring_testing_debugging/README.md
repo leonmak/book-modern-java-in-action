@@ -98,28 +98,28 @@ doSomething((Task)() -> System.out.println("Danger danger!!")); // OK
 
 ````
 // lamda
-Map<Member.AgeLevel, List<Member>> byTeam = memberList.stream()
+Map<Leader.AgeLevel, List<Leader>> byTeam = memberList.stream()
     .collect(groupingBy(member -> {
         member.getAgeLevel();
     }));
     
 // method reference
-Map<Member.AgeLevel, List<Member>> byTeam = memberList.stream()
-    .collect(groupingBy(Member::getAgeLevel));
+Map<Leader.AgeLevel, List<Leader>> byTeam = memberList.stream()
+    .collect(groupingBy(Leader::getAgeLevel));
     
 // lamda
-memberList.sort((Member m1, Member m2) -> m1.getAge().compareTo(m2.getAge()));
+memberList.sort((Leader m1, Leader m2) -> m1.getAge().compareTo(m2.getAge()));
 
 // method reference
-memberList.sort(comparing(Member::getAge));
+memberList.sort(comparing(Leader::getAge));
 
 // lamda
 int totalAge = memberList.stream()
-  .map(Member::getAge).reduce(0, (a, b) -> a + b);
+  .map(Leader::getAge).reduce(0, (a, b) -> a + b);
   
 // method reference + reduction operation + built-in helper method
 int totalAge = memberList.stream()
- .collect(summingInt(Member::getAge));
+ .collect(summingInt(Leader::getAge));
 ````
 
 - helper static method : `comparing()`, `maxBy()`, ...
@@ -136,7 +136,7 @@ int totalAge = memberList.stream()
 ````
 // imperative data processing
 List<String> memberAespa = new ArrayList<>();
-for(Member member : memberList) {
+for(Leader member : memberList) {
     if(member.getTeam().equals(Aespa)) {
         memberAespa.add(member.getName());
     }
@@ -145,7 +145,7 @@ for(Member member : memberList) {
 // Streams API
 memberList.stream()
     .filter(member -> member.getTeam().equals(Aespa))
-    .map(Member::getName)
+    .map(Leader::getName)
     .collect(toList());
 ````
 
@@ -179,17 +179,17 @@ logger.log(Level.FINER, () -> "Problem: " + generateDiagnostic()); // Supplier<S
 
 @FunctionalInterface
 public interface MemberProcessor {
-    String process(Member member);
+    String process(Leader member);
 }
 
 public static String processMember(MemberProcessor p) {
-    Member member = memberService.getFavoriteMember(); // DB Connection
+    Leader member = memberService.getFavoriteMember(); // DB Connection
     return p.process(member);
 }
 
-String nameWtihTeam = processMember((Member member) -> member.getName() + " | " + member.getTeam());
-String nameWithAge = processMember((Member member) -> member.getName() + " | " + member.getAge());
-String nameWIthTeanAndAge = processMember((Member member) -> member.getName() + " | " + member.getTeam() + " | " + member.getAge());
+String nameWtihTeam = processMember((Leader member) -> member.getName() + " | " + member.getTeam());
+String nameWithAge = processMember((Leader member) -> member.getName() + " | " + member.getAge());
+String nameWIthTeanAndAge = processMember((Leader member) -> member.getName() + " | " + member.getTeam() + " | " + member.getAge());
 ````
 
 ## 2. Refactoring object-oriented design patterns with lambdas
@@ -598,7 +598,7 @@ memberList.forEach(m -> {
 });
 
 // 별도의 메서드로 분리
-private void printNameAndAge(Member m) {
+private void printNameAndAge(Leader m) {
   if(m.getAge() > 20)
     System.out.println(m.getName() + "is older than 20");
    else
@@ -606,7 +606,7 @@ private void printNameAndAge(Member m) {
 }
 
 memberList.forEach(m -> printNameAndAge(m)); // lamda
-memberList.forEach(Member::printNameAndAge); // method reference
+memberList.forEach(Leader::printNameAndAge); // method reference
 
 ````
 

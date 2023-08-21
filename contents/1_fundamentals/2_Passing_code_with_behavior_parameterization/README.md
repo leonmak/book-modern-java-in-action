@@ -30,9 +30,9 @@
 ````
 enum Team {NEW_JEANS, AESPA}
 
-public static List<Member> filterAespa(List<Member> memberList){
-  List<Member> memberAespa = new ArrayList<>();
-  for(Member member : memberList){
+public static List<Leader> filterAespa(List<Leader> memberList){
+  List<Leader> memberAespa = new ArrayList<>();
+  for(Leader member : memberList){
     if(member.getTeam() == Team.AESPA){
       memberAespa.add(member);
   }
@@ -44,9 +44,9 @@ public static List<Member> filterAespa(List<Member> memberList){
 ### 2.2 Second attempt : paramterizing the `team`
 
 ````
-public static List<Member> filterByTeam(List<Member> memberList, Team team){
-  List<Member> memberAespa = new ArrayList<>();
-  for(Member member : memberList){
+public static List<Leader> filterByTeam(List<Leader> memberList, Team team){
+  List<Leader> memberAespa = new ArrayList<>();
+  for(Leader member : memberList){
     if(member.getTeam() == team){
       memberAespa.add(member);
   }
@@ -54,8 +54,8 @@ public static List<Member> filterByTeam(List<Member> memberList, Team team){
 
 ...
 
-List<Member> aespa = filterByTeam(memberList, Team.AESPA);
-List<Member> newJeans = filterByTeam(memberList, Team.NEW_JEANS);
+List<Leader> aespa = filterByTeam(memberList, Team.AESPA);
+List<Leader> newJeans = filterByTeam(memberList, Team.NEW_JEANS);
 
 ````
 
@@ -71,9 +71,9 @@ List<Member> newJeans = filterByTeam(memberList, Team.NEW_JEANS);
 /* 
 * flag : true -> team filter, false -> age fitler
 */
-public static List<Member> fitlerMember(List<Member> memberList, Team team, int age, Bollean flag){
-    List<Member> memberAespa = new ArrayList<>();
-    for(Member member : memberList){
+public static List<Leader> fitlerMember(List<Leader> memberList, Team team, int age, Bollean flag){
+    List<Leader> memberAespa = new ArrayList<>();
+    for(Leader member : memberList){
         if((flag && member.getTeam() == team) || (!flag && member.getAge() == age)){
             memberAespa.add(member);
         }
@@ -82,8 +82,8 @@ public static List<Member> fitlerMember(List<Member> memberList, Team team, int 
 
 ...
 
-List<Member> aespa = filterMember(memberList, Team.AESPA, 0, true);
-List<Member> adult = filterMember(memberList, null, 20, false);
+List<Leader> aespa = filterMember(memberList, Team.AESPA, 0, true);
+List<Leader> adult = filterMember(memberList, null, 20, false);
 ````
 
 - client code가 복잡해짐
@@ -99,14 +99,14 @@ List<Member> adult = filterMember(memberList, null, 20, false);
 
 ````java
 public interface MemberPredicate {
-    boolean test(Member member);
+    boolean test(Leader member);
 }
 
 // 전략 1 : Team으로 필터링
 public class MemberAespaPredicate implements MemberPredicate {
 
     @Override
-    public boolean test(Member member) {
+    public boolean test(Leader member) {
         return member.getTeam() == Team.AESPA;
     }
 }
@@ -117,7 +117,7 @@ public class MemberAgePredicate implements MemberPredicate {
     //...
 
     @Override
-    public boolean test(Member member) {
+    public boolean test(Leader member) {
         return member.getAge() >= 20;
     }
 }
@@ -132,9 +132,9 @@ public class MemberAgePredicate implements MemberPredicate {
 <img src="img.png"  width="70%"/>
 
 ````
-public static List<Member> filterMember(List<Member> memberList, MemberPredicate memberPredicate){
-    List<Member> result = new ArrayList<>();
-    for(Member member : memberList){
+public static List<Leader> filterMember(List<Leader> memberList, MemberPredicate memberPredicate){
+    List<Leader> result = new ArrayList<>();
+    for(Leader member : memberList){
         if(memberPredicate.test(member)){
             result.add(member);
         }
@@ -143,8 +143,8 @@ public static List<Member> filterMember(List<Member> memberList, MemberPredicate
 
 ...
 
-List<Member> aespa = filterMember(memberList, new MemberAespaPredicate());
-List<Member> adult = filterMember(memberList, new MemberAgePredicate());
+List<Leader> aespa = filterMember(memberList, new MemberAespaPredicate());
+List<Leader> adult = filterMember(memberList, new MemberAgePredicate());
 ````
 
 #### PASSING CODE / BEHAVIOR
@@ -174,16 +174,16 @@ List<Member> adult = filterMember(memberList, new MemberAgePredicate());
 ### 3.2 Fifth attempt : Using an anonymous class
 
 ````
-List<Member> memberAespaAdult = filterMember(memberList, new MemberPredicate() {
+List<Leader> memberAespaAdult = filterMember(memberList, new MemberPredicate() {
     @Override
-    public boolean test(Member member) {
+    public boolean test(Leader member) {
         return member.getTeam() == Team.AESPA && member.getAge() >= 20;
     }
 });
 
-List<Member> memberAespaAdultKorean = filterMember(memberList, new MemberPredicate() {
+List<Leader> memberAespaAdultKorean = filterMember(memberList, new MemberPredicate() {
     @Override
-    public boolean test(Member member) {
+    public boolean test(Leader member) {
         return member.getTeam() == Team.AESPA && member.getAge() >= 20 
                   && member.getNation() == Nation.KOREA;
     }
@@ -196,11 +196,11 @@ List<Member> memberAespaAdultKorean = filterMember(memberList, new MemberPredica
 ### 3.3 Sixth attempt : Using a lambda expression
 
 ````
-List<Member> memberAespaAdult = filterMember(memberList, (Member member) -> {
+List<Leader> memberAespaAdult = filterMember(memberList, (Leader member) -> {
     return member.getTeam() == Team.AESPA && member.getAge() >= 20;
 });
 
-List<Member> memberAespaAdultKorean = filterMember(memberList, (Member member) -> {
+List<Leader> memberAespaAdultKorean = filterMember(memberList, (Leader member) -> {
     return member.getTeam() == Team.AESPA && member.getAge() >= 20 
                   && member.getNation() == Nation.KOREA;
 });
@@ -230,7 +230,7 @@ public static <T> List<T> fitler(List<T> list, Predicate<T> p){
 
 ...
 
-List<Member> memberAespaAdult = filter(memberList, (Member member) -> {
+List<Leader> memberAespaAdult = filter(memberList, (Leader member) -> {
     return member.getTeam() == Team.AESPA && member.getAge() >= 20;
 });
 
@@ -252,15 +252,15 @@ public interface Comparator<T> {
 ...
 
 // anonymous class
-member.sort(new Comparator<Member>() {
+member.sort(new Comparator<Leader>() {
   @Override
-  public int compare(Member o1, Member o2) {
+  public int compare(Leader o1, Leader o2) {
           return o1.getAge().compareTo(o2.getAge());
   }
 });
 
 // lambda expression
-member.sort((Member o1, Member o2) -> o1.getAge().compareTo(o2.getAge()));
+member.sort((Leader o1, Leader o2) -> o1.getAge().compareTo(o2.getAge()));
 ````
 
 ### 4.2 Executing a block of code with Runnable

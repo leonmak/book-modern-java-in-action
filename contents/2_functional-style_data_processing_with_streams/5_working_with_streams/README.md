@@ -22,8 +22,8 @@
 
 ````
 // external iteration
-List<Member> memberAespa = new ArrayList<>();
-for(Member member : members) {
+List<Leader> memberAespa = new ArrayList<>();
+for(Leader member : members) {
     if (member.getTeam() == Team.AESPA) {
         memberAespa.add(member);
     }
@@ -31,7 +31,7 @@ for(Member member : members) {
 
 // internal iteration
 import static java.util.stream.Collectors.toList;
-List<Member> memberAespa = members.stream()
+List<Leader> memberAespa = members.stream()
                                 .filter(member -> member.getTeam() == Team.AESPA)
                                 .collect(toList());
 ````
@@ -48,8 +48,8 @@ List<Member> memberAespa = members.stream()
 <img src="img.png"  width="70%"/>
 
 ````
-List<Member> memberIsDebut = members.stream()
-                                    .filter(Member::isDebut)
+List<Leader> memberIsDebut = members.stream()
+                                    .filter(Leader::isDebut)
                                     .collect(toList());
 ````
 
@@ -94,15 +94,15 @@ member = NINGNING
 
 ````
 // fitler
-List<Member> aespa1 = memberList.stream().filter(member -> {
+List<Leader> aespa1 = memberList.stream().filter(member -> {
     System.out.println("filter: " + member.getName());
-    return member.getTeam() == Member.Team.AESPA;
+    return member.getTeam() == Leader.Team.AESPA;
 }).toList();
 
 // takeWhile
-List<Member> aespa2 = memberList.stream().takeWhile(member -> {
+List<Leader> aespa2 = memberList.stream().takeWhile(member -> {
     System.out.println("takeWhile: " + member.getName());
-    return member.getTeam() == Member.Team.AESPA;
+    return member.getTeam() == Leader.Team.AESPA;
 }).toList();
 ````
 
@@ -134,9 +134,9 @@ takeWhile: irene
 - `takeWhile`과 반대
 
 ````
-List<Member> notAespa = memberList.stream().dropWhile(member -> {
+List<Leader> notAespa = memberList.stream().dropWhile(member -> {
     System.out.println("dropWhile: " + member.getName());
-    return member.getTeam() == Member.Team.AESPA;
+    return member.getTeam() == Leader.Team.AESPA;
 }).toList();
 ````
 
@@ -146,8 +146,8 @@ List<Member> notAespa = memberList.stream().dropWhile(member -> {
 - 순서 정렬에 상관없이 사용 가능
 
 ````
-List<Member> aespaTwoMember = memberList.stream()
-                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
+List<Leader> aespaTwoMember = memberList.stream()
+                                        .filter(member -> member.getTeam() == Leader.Team.AESPA)
                                         .limit(2)
                                         .toList();
 ````
@@ -158,8 +158,8 @@ List<Member> aespaTwoMember = memberList.stream()
 - n이 stream 사이즈보다 크면 빈 stream 반환
 
 ````
-List<Member> aespaTwoMember = memberList.stream()
-                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
+List<Leader> aespaTwoMember = memberList.stream()
+                                        .filter(member -> member.getTeam() == Leader.Team.AESPA)
                                         .skip(2)
                                         .toList();
 ````
@@ -176,14 +176,14 @@ List<Member> aespaTwoMember = memberList.stream()
 
 ````
 List<String> memberNamesAespa = memberList.stream()
-                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
-                                        .map(Member::getName)
+                                        .filter(member -> member.getTeam() == Leader.Team.AESPA)
+                                        .map(Leader::getName)
                                         .toList();
 
 // 멤버 이름의 글자수 출력
 List<Integer> memberNameLengthAespa = memberList.stream()
-                                                .filter(member -> member.getTeam() == Member.Team.AESPA)
-                                                .map(Member::getName)
+                                                .filter(member -> member.getTeam() == Leader.Team.AESPA)
+                                                .map(Leader::getName)
                                                 .map(String::length)
                                                 .toList();
 ````
@@ -251,7 +251,7 @@ for (int i : numbers1) {
 - terminal operation
 
 ````
-if(memberList.stream().anyMatch(Member::getIsDebut)) {
+if(memberList.stream().anyMatch(Leader::getIsDebut)) {
   System.out.println("there is a debut member");
 }
 ````
@@ -261,7 +261,7 @@ if(memberList.stream().anyMatch(Member::getIsDebut)) {
 - `allMatch()` : `Predicate`에 부합하는 element가 모두 있으면 `true` 반환
 
 ````
-if(memberList.stream().allMatch(Member::checkIsNotChild)) {
+if(memberList.stream().allMatch(Leader::checkIsNotChild)) {
   System.out.println("there is a not child member");
 }
 ````
@@ -271,7 +271,7 @@ if(memberList.stream().allMatch(Member::checkIsNotChild)) {
 - `noneMatch()` : `Predicate`에 부합하는 element가 하나도 없으면 `true` 반환
 
 ````
-if (memberList.stream().noneMatch(Member::unknownTeam)) {
+if (memberList.stream().noneMatch(Leader::unknownTeam)) {
   System.out.println("there is no unknown team member");
 }
 ````
@@ -284,8 +284,8 @@ if (memberList.stream().noneMatch(Member::unknownTeam)) {
 
 ````
 memberList.stream()
-        .filter(member -> member.getTeam() == Member.Team.AESPA)
-        .filter(Member::checkIsAdult)
+        .filter(member -> member.getTeam() == Leader.Team.AESPA)
+        .filter(Leader::checkIsAdult)
         .findAny()
         .ifPresent(member -> System.out.println("member = " + member));
 ````
@@ -304,7 +304,7 @@ memberList.stream()
 
 ````
 memberList.stream()
-        .filter(member -> member.getTeam() == Member.Team.NEW_JEANS)
+        .filter(member -> member.getTeam() == Leader.Team.NEW_JEANS)
         .findFirst()
         .ifPresent(member -> System.out.println("NEW_JEANS leader is" + member));
 ````
@@ -564,7 +564,7 @@ Optional<Transaction> sol8Better = transactions.stream()
 
 ````
 int ageTotal = members.stream()
-                       .map(Member::getAge)
+                       .map(Leader::getAge)
                         .reduce(0, Integer::sum);  
 ````
 
@@ -586,8 +586,8 @@ int ageTotal = members.stream()
 - specialized stream을 리턴
 
 ````
-int ageTotal = members.stream() // Return : Stream<Member>
-                       .mapToInt(Member::getAge) // Return : IntStream, not Stream<Integer>
+int ageTotal = members.stream() // Return : Stream<Leader>
+                       .mapToInt(Leader::getAge) // Return : IntStream, not Stream<Integer>
                        .sum();  
 ````
 
@@ -598,7 +598,7 @@ int ageTotal = members.stream() // Return : Stream<Member>
 
 ````
 IntStream intStream = members.stream()
-                             .mapToInt(Member::getAge);
+                             .mapToInt(Leader::getAge);
 Stream<Integer> stream = intStream.boxed();
 ````
 
@@ -610,7 +610,7 @@ Stream<Integer> stream = intStream.boxed();
 
 ````
 OptionalInt maxAge = members.stream()
-                            .mapToInt(Member::getAge)
+                            .mapToInt(Leader::getAge)
                             .max();
 
 int maxAge = maxAge.orElse(-1);

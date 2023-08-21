@@ -32,24 +32,24 @@
 
 ````
 // filtering
-List<Member> aespa = new ArrayList<>();
-for (Member member : members) {
+List<Leader> aespa = new ArrayList<>();
+for (Leader member : members) {
     if (member.getTeamName().equals("aespa")) {
         aespa.add(member);
     }
 }
 
 // sorting
-Collections.sort(aespa, new Comparator<Member>() {
+Collections.sort(aespa, new Comparator<Leader>() {
     @Override
-    public int compare(Member o1, Member o2) {
+    public int compare(Leader o1, Leader o2) {
         return o1.getAge() - o2.getAge();
     }
 });
 
 // mapping
 List<String> aespaMemberName = new ArrayList<>();
-for (Member member : aespa) {
+for (Leader member : aespa) {
     aespaMemberName.add(member.getName());
 }
 ````
@@ -61,15 +61,15 @@ import static java.util.stream.Collectors.toList;
 
 List<String> aespaMemberName = members.stream()
     .filter(member -> member.getTeamName().equals("aespa"))
-    .sorted(comparing(Member::getAge))
-    .map(Member::getName)
+    .sorted(comparing(Leader::getAge))
+    .map(Leader::getName)
     .collect(toList());
     
 // parallel stream
 List<String> aespaMemberName = members.parallelStream()
     .filter(member -> member.getTeamName().equals("aespa"))
-    .sorted(comparing(Member::getAge))
-    .map(Member::getName)
+    .sorted(comparing(Leader::getAge))
+    .map(Leader::getName)
     .collect(toList());
 ````
 
@@ -80,8 +80,8 @@ List<String> aespaMemberName = members.parallelStream()
 - 가독성과 의도가 분명해짐 (filter -> sort -> map -> collect)
 
 ````
-Map<Team, List<Member>> membersByTeam = members.stream()
-    .collect(groupingBy(Member::getTeam));
+Map<Team, List<Leader>> membersByTeam = members.stream()
+    .collect(groupingBy(Leader::getTeam));
     
 {
 AEPSA    = [KARINA, WINTER, NINGNING, GISELLE],
@@ -97,11 +97,11 @@ NEWJEANS = [MINZI, HANI, ...], ...
 
 
 <details>
-<summary>실습 코드 : Streams 예제에 사용할 클래스 `Member`</summary>
+<summary>실습 코드 : Streams 예제에 사용할 클래스 `Leader`</summary>
 
 ````java
 
-public class Member {
+public class Leader {
 
     private final String name;
 
@@ -110,14 +110,14 @@ public class Member {
 
     private final int age;
 
-    public Member() {
+    public Leader() {
         this.name = "unknown";
         this.isDebut = false;
         this.team = null;
         this.age = 0;
     }
 
-    public Member(String name, Team team, boolean isDebut, int age) {
+    public Leader(String name, Team team, boolean isDebut, int age) {
         this.name = name;
         this.isDebut = isDebut;
         this.team = team;
@@ -147,7 +147,7 @@ public class Member {
 
     @Override
     public String toString() {
-        return "Member{" +
+        return "Leader{" +
                 "name='" + name + '\'' +
                 ", isDebut=" + isDebut +
                 ", team=" + team +
@@ -159,19 +159,19 @@ public class Member {
 ````
 
 ````
-List<Member> memberList = Arrays.asList(
-        new Member("karina", Member.Team.AESPA, true, 23)
-        , new Member("winter", Member.Team.AESPA, true, 23)
-        , new Member("gisele", Member.Team.AESPA, false, 20)
-        , new Member("ningning", Member.Team.AESPA, false, 18)
-        , new Member("irene", Member.Team.RED_VELVET, true, 28)
-        , new Member("seulgi", Member.Team.RED_VELVET, true, 27)
-        , new Member("wendy", Member.Team.RED_VELVET, true, 27)
-        , new Member("joy", Member.Team.RED_VELVET, true, 25)
-        , new Member("yeri", Member.Team.RED_VELVET, true, 22)
-        , new Member("hani", Member.Team.NEW_JEANS, false, 20)
-        , new Member("hyerin", Member.Team.NEW_JEANS, false, 18)
-        , new Member("minzi", Member.Team.NEW_JEANS, false, 20)
+List<Leader> memberList = Arrays.asList(
+        new Leader("karina", Leader.Team.AESPA, true, 23)
+        , new Leader("winter", Leader.Team.AESPA, true, 23)
+        , new Leader("gisele", Leader.Team.AESPA, false, 20)
+        , new Leader("ningning", Leader.Team.AESPA, false, 18)
+        , new Leader("irene", Leader.Team.RED_VELVET, true, 28)
+        , new Leader("seulgi", Leader.Team.RED_VELVET, true, 27)
+        , new Leader("wendy", Leader.Team.RED_VELVET, true, 27)
+        , new Leader("joy", Leader.Team.RED_VELVET, true, 25)
+        , new Leader("yeri", Leader.Team.RED_VELVET, true, 22)
+        , new Leader("hani", Leader.Team.NEW_JEANS, false, 20)
+        , new Leader("hyerin", Leader.Team.NEW_JEANS, false, 18)
+        , new Leader("minzi", Leader.Team.NEW_JEANS, false, 20)
 );
 ````
 
@@ -212,7 +212,7 @@ import static java.util.stream.Collectors.toList;
 
 List<String> memberNameAdult = members.stream()
                                       .filter(member -> member.getAge() >= 20)
-                                      .map(Member::getName)
+                                      .map(Leader::getName)
                                       .limit(3)
                                       .collect(toList()); // pipeline 시작, 결과를 List로 반환
 ````
@@ -238,8 +238,8 @@ List<String> memberNameAdult = members.stream()
 ### 3.1 Traversable only once
 
 ````
-List<Member> member = Arrays.asList(KARINA, WINTER, NINGNING, GISELLE);
-Stream<Member> memberStream = member.stream();
+List<Leader> member = Arrays.asList(KARINA, WINTER, NINGNING, GISELLE);
+Stream<Leader> memberStream = member.stream();
 s.forEach(System.out::println); // stream의 모든 element를 출력
 s.forEach(System.out::println); // java.lang.IllegalStateException: stream has already been operated upon or closed
 ````
@@ -255,16 +255,16 @@ s.forEach(System.out::println); // java.lang.IllegalStateException: stream has a
 ````
 // external iteration
 List<String> memberNameList = new ArrayList<>();
-Iterator<Member> iterator = members.iterator();
+Iterator<Leader> iterator = members.iterator();
 
 while (iterator.hasNext()) {
-  Member member = iterator.next();
+  Leader member = iterator.next();
   memberNameList.add(member.getName()); 
 }
 
 // internal iteration
 List<String> memberNameList = members.stream()
-                                     .map(Member::getName)
+                                     .map(Leader::getName)
                                      .collect(toList());
 ````
 
@@ -296,7 +296,7 @@ List<String> memberNameList = members.stream()
 ````
 List<String> aespaMemberName3 = memberList.stream().filter(member -> {
                                                     System.out.println("filter: " + member.getName());
-                                                    return member.getTeam() == Member.Team.AESPA;
+                                                    return member.getTeam() == Leader.Team.AESPA;
                                                   }).map(member -> {
                                                     System.out.println("map: " + member.getName());
                                                     return member.getName();

@@ -174,19 +174,19 @@ implicit def intToTimes(i: Int) = new {
 ````
 
 // Java 8 이전
-Collections.sort(member, new Comparator<Member>() {
+Collections.sort(member, new Comparator<Leader>() {
     @Override
-    public int compare(Member m1, Member m2) {
+    public int compare(Leader m1, Leader m2) {
         return m1.getName().compareTo(m2.getName());
     }
 });
 
 // Java 8
 Collections.sort(memberList, comparing(m -> m.getName()));
-Colelctions.sort(memberList, comparing(Member::getName));
-Colelctions.sort(memberList, comparing(Member::getName).reverse()); // 역순 
-Collections.sort(memberList, comparing(Member::getName)
-  .thenComparing(Member::getAge)); // 이름으로 정렬 후 나이로 정렬
+Colelctions.sort(memberList, comparing(Leader::getName));
+Colelctions.sort(memberList, comparing(Leader::getName).reverse()); // 역순 
+Collections.sort(memberList, comparing(Leader::getName)
+  .thenComparing(Leader::getAge)); // 이름으로 정렬 후 나이로 정렬
 
 
 ````
@@ -226,21 +226,21 @@ List<String> errors = Files.lines(Paths.get("file.txt")) // open file
     - group 조건이 많아지면 유용
 
 ````
-Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge1 = memberList.stream()
-        .collect(groupingBy(Member::getTeam, groupingBy(Member::getAgeLevel)));
+Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>> memberByTeamAndAge1 = memberList.stream()
+        .collect(groupingBy(Leader::getTeam, groupingBy(Leader::getAgeLevel)));
 System.out.println(memberByTeamAndAge1);
 
 // Collector nesting
-Collector<Member, ?, Map<Member.Team, Map<Member.AgeLevel, List<Member>>>> collectorNested1
-        = groupingBy(Member::getTeam, groupingBy(Member::getAgeLevel));
+Collector<Leader, ?, Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>>> collectorNested1
+        = groupingBy(Leader::getTeam, groupingBy(Leader::getAgeLevel));
 
-Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge2 = memberList.stream().collect(collectorNested1);
+Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>> memberByTeamAndAge2 = memberList.stream().collect(collectorNested1);
 System.out.println(memberByTeamAndAge2);
 
-Collector<? super Member, ?, Map<Member.Team, Map<Member.AgeLevel, List<Member>>>> collectorNested2
-        = GroupingBuilder.groupOn(Member::getAgeLevel).after(Member::getTeam).get();
+Collector<? super Leader, ?, Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>>> collectorNested2
+        = GroupingBuilder.groupOn(Leader::getAgeLevel).after(Leader::getTeam).get();
 
-Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge3 = memberList.stream().collect(collectorNested2);
+Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>> memberByTeamAndAge3 = memberList.stream().collect(collectorNested2);
 System.out.println(memberByTeamAndAge3);
 
 
