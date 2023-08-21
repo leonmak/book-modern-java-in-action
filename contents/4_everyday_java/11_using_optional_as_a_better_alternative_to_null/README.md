@@ -119,6 +119,42 @@ def idolMemberCarName = idol?.member?.car?.name ?: "Unknown"
 
 ## 2. Introducing the Optional class
 
+![img_1.png](img_1.png)
+
+- Haskell, Scala로부터 영감을 받아 추가한 `java.util.Optional<T>` class
+- optional value를 캡슐화
+- value가 있으면 `Optional`이 wrapping, 없으면 `Optional.empty()` 반환
+- null reference vs `Optional.empty()`
+    - null reference : NPE 유발
+    - `Optional.empty()` : `Optional` 객체 반환
+- 가독성 :  명시적으로 객체가 optional임을 표현
+
+````java
+public class Idol {
+    private Optional<Member> member; // optional
+
+    public Optional<Member> getMember() {
+        return member;
+    }
+}
+
+public class Member {
+    private Optional<Car> car; // optional
+
+    public Optional<Car> getCar() {
+        return car;
+    }
+}
+
+public class Car {
+    private String name; // not null
+
+    public String getName() {
+        return name;
+    }
+}
+````
+
 ## 3. Patterns for adopting Optional
 
 ## 4. Practical examples of Optional
