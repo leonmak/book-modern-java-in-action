@@ -24,23 +24,23 @@
 ## 1. Lamdas in a nutshell
 
 - Lamda expression : 전달가능한 익명 함수
-    - anonymous + function + passed around + concise
+  - anonymous + function + passed around + concise
 - anonyumous : 메서드 명명을 하지 않음
 - function : class와 연관 없음
-    - paramters, body, return type, exception을 가짐
+  - paramters, body, return type, exception을 가짐
 - passed around : 메서드 인수로 전달하거나 변수에 저장 가능
 - concise : 익명 클래스보다 간결하고, 중복 코드가 없음
 
 ````
 // without lamda
-Comparator<Leader> byName = new Comparator<Leader>() {
-    public int compare(Leader a, Leader b) {
+Comparator<Member> byName = new Comparator<Member>() {
+    public int compare(Member a, Member b) {
         return a.getName().compareTo(b.getName());
     }
 };
 
 // lamda
-Comparator<Leader> byName = (Leader a, Leader b) -> a.getName().compareTo(b.getName());
+Comparator<Member> byName = (Member a, Member b) -> a.getName().compareTo(b.getName());
 ````
 
 #### lamda expression의 구성
@@ -62,7 +62,7 @@ Comparator<Leader> byName = (Leader a, Leader b) -> a.getName().compareTo(b.getN
 ````
 (Stirng s) -> s.length() // String 파라미터 1개 + s.length() 리턴
 
-(Leader m) -> m.getTeam() == TEAM.AESPA // Leader 파라미터 1개 + boolean 리턴
+(Member m) -> m.getTeam() == TEAM.AESPA // Member 파라미터 1개 + boolean 리턴
 
 (int x, int y) -> {
     System.out.println("Result : ");
@@ -71,7 +71,7 @@ Comparator<Leader> byName = (Leader a, Leader b) -> a.getName().compareTo(b.getN
 
 () -> 42 // 파라미터 없음 + int 타입의 42 리턴
 
-(Leader m1, Leader m2) -> m1.getAge().compareTo(m2.getAge()) // Leader 파라미터 2개 + int 리턴
+(Member m1, Member m2) -> m1.getAge().compareTo(m2.getAge()) // Member 파라미터 2개 + int 리턴
 ````
 
 | Use Case                      | Lamdas Expression                                                  |
@@ -86,11 +86,11 @@ Comparator<Leader> byName = (Leader a, Leader b) -> a.getName().compareTo(b.getN
 ## 2. Where and how to use lambdas
 
 ````
-List<Leader> memberAespa = fitler(members, (Leader m) -> m.getTeam() == TEAM.AESPA);
+List<Member> memberAespa = fitler(members, (Member m) -> m.getTeam() == TEAM.AESPA);
 ````
 
 - functional interface에 사용
-    - functional interface : 하나의 추상 메서드를 가진 인터페이스
+  - functional interface : 하나의 추상 메서드를 가진 인터페이스
 
 ### 2.1 Functional interface
 
@@ -116,7 +116,7 @@ public interface Callable<V> {
 ````
 
 - functional interface : 하나의 추상 메서드를 가진 인터페이스
-    - e.g. Java API `Comparator`, `Runnable`
+  - e.g. Java API `Comparator`, `Runnable`
 - Lamda는 functional interface의 추상 메서드를 바로 구현하게 해줌
 
 ````
@@ -138,10 +138,10 @@ process(() -> System.out.println("This is awesome!"));
 ### 3.2 Function descriptor
 
 - function descriptor : functional interface 추상 메서드의 signature
-    - e.g. `Comparator`의 `compare` 메서드는 `int compare(T o1, T o2)` signature를 가짐
+  - e.g. `Comparator`의 `compare` 메서드는 `int compare(T o1, T o2)` signature를 가짐
 - `@FuncitonallInterface` annotation : functional interface임을 명시
-    - functional interface가 아닌 경우 컴파일 에러 발생
-        - e.g. "Multiple non-overriding abstract methods found in interface Foo"
+  - functional interface가 아닌 경우 컴파일 에러 발생
+    - e.g. "Multiple non-overriding abstract methods found in interface Foo"
 
 ## 3. Putting lambdas into practice: the execute-around pattern
 
@@ -156,14 +156,14 @@ public String processFile() throws IOException {
 <img src="img_1.png"  width="60%"/>
 
 - execute-around pattern : resource 열기 -> 처리 -> resource 닫기
-    - e.g. 파일 읽기, DB 연결, 네트워크 연결
+  - e.g. 파일 읽기, DB 연결, 네트워크 연결
 
 <img src="img_2.png"  width="60%"/>
 
 ### 3.1 Step 1 : Remember behavior parameterization
 
 - `BufferedReader`의 동작을 바꾸고 싶을 때
-    - e.g. 파일의 2줄을 읽고 싶을 때
+  - e.g. 파일의 2줄을 읽고 싶을 때
 
 ````
 String result = processFile((BufferedReader br) -> br.readLine() + br.readLine()); // 2줄 읽기
@@ -208,12 +208,12 @@ Java 8 API에 정의되어있는 functional interface
 
 | Use case             | Example of lamda                                                        | Matching functional interface                         |
 |----------------------|-------------------------------------------------------------------------|-------------------------------------------------------|
-| A boolean expression | `(List<Leader> list) -> member.isEmpty`                                 | `Predicate<List<Leader>>`                             |
-| Creating an object   | `() -> new Leader("karina", 20)`                                        | `Supplier<Leader>`                                    |
-| Consuming an object  | `(Leader m) -> { System.out.println("member name : " + m.getName()); }` | `Consumer<Leader>`                                    |
-| Select/extract       | `(Leader m) -> m.getName()`                                             | `Function<Leader, String>`<br/>ToIntFunction<Leader>` |
+| A boolean expression | `(List<Member> list) -> member.isEmpty`                                 | `Predicate<List<Member>>`                             |
+| Creating an object   | `() -> new Member("karina", 20)`                                        | `Supplier<Member>`                                    |
+| Consuming an object  | `(Member m) -> { System.out.println("member name : " + m.getName()); }` | `Consumer<Member>`                                    |
+| Select/extract       | `(Member m) -> m.getName()`                                             | `Function<Member, String>`<br/>ToIntFunction<Member>` |
 | Combine two values   | `(int a, int b) -> a * b`                                               | `IntBinaryOperator`                                   |
-| Compare two objects  | `(Leader m1, Leader m2) -> m1.getAge().compareTo(m2.getAge())`          | `Comparator<Leader>`                                  |
+| Compare two objects  | `(Member m1, Member m2) -> m1.getAge().compareTo(m2.getAge())`          | `Comparator<Member>`                                  |
 
 ### 4.1 Predicate
 
@@ -265,7 +265,7 @@ public <T> void forEach(List<T> lsit, Consumer<T> c){
 
 ...
 
-forEach(members, (Leader m) -> System.out.println("meber name : " + m.getName()));
+forEach(members, (Member m) -> System.out.println("meber name : " + m.getName()));
 ````
 
 ### 4.3 Function
@@ -291,8 +291,8 @@ public <T, R> List<R>  map(List<T> list, Function<T, R> f) {
 
 ...
 
-// Leader 객체에서 name만 추출
-List<String> memberNames = map(members, (Leader m) -> m.getName());
+// Member 객체에서 name만 추출
+List<String> memberNames = map(members, (Member m) -> m.getName());
 ````
 
 #### PRIMITIVE SPECIALIZATIONS
@@ -302,8 +302,8 @@ List<String> memberNames = map(members, (Leader m) -> m.getName());
 - unboxing : reference type을 primitive type으로 변환
 - autoboxing : boxing과 unboxing을 자동으로 수행
 - boxed value의 단점
-    - Heap 메모리 사용
-    - boxing, unboxing에 따른 성능 저하
+  - Heap 메모리 사용
+  - boxing, unboxing에 따른 성능 저하
 
 ````
 public interface IntPredicate {
@@ -321,8 +321,8 @@ oddNumbers.test(1000); // boxing이 일어남
 
 - 함수형 인터페이스는 checked exception을 던질 수 없음
 - exception을 던지고 싶으면
-    - 사용자 정의 함수형 인터페이스를 만들기 (checked exception을 던질 수 있는 함수형 인터페이스)
-    - lamda body에서 try-catch로 감싸기
+  - 사용자 정의 함수형 인터페이스를 만들기 (checked exception을 던질 수 있는 함수형 인터페이스)
+  - lamda body에서 try-catch로 감싸기
 
 ## 5. Type checking, type inference, and restrictions
 
@@ -332,15 +332,15 @@ oddNumbers.test(1000); // boxing이 일어남
 ### 5.1 Type checking
 
 ````
-List<Leader> memberAespa = filter(memberList, (Leader m) -> m.getTeamName().equals("aespa"));
+List<Member> memberAespa = filter(memberList, (Member m) -> m.getTeamName().equals("aespa"));
 ````
 
 타입체크 과정
 
 1. `filter()` 선언을 찾음
-2. target type : `Predicate<Leader>`
-3. `Predicate<Leader>`의 추상 메서드 : `boolean test(Leader m)`
-4. `test()`의 시그니처 파악 : paramter type은 `Leader`, return type은 `boolean`
+2. target type : `Predicate<Member>`
+3. `Predicate<Member>`의 추상 메서드 : `boolean test(Member m)`
+4. `test()`의 시그니처 파악 : paramter type은 `Member`, return type은 `boolean`
 5. lamda 타입 체크 완료
 
 ### 5.2 Same lambda, different functional interfaces
@@ -362,9 +362,9 @@ BiFunction<String, String, Integer> c3 = (String s1, String s2) -> s1.compareToI
 - 타입추론 가능
 
 ````
-Comparator<Leader> c1 = (Leader karina, Leader winter) 
+Comparator<Member> c1 = (Member karina, Member winter) 
                           -> karina.getAge().compareTo(winter.getAge()); // 타입 명시
-Comparator<Leader> c2 = (karina, winter) 
+Comparator<Member> c2 = (karina, winter) 
                           -> karina.getAge().compareTo(winter.getAge()); // 타입 추론
 ````
 
@@ -373,12 +373,12 @@ Comparator<Leader> c2 = (karina, winter)
 - free variable : 파라미터가 아니고, 바깥 scope에 정의되어있는 변수
 - capturing lamdas : free variable을 참조하는 lamda 표현식
 - cpature 가능한 변수
-    - 인스턴스 변수, static 변수
-    - 명시적으로 final이거나 final처럼 취급되는 변수
+  - 인스턴스 변수, static 변수
+  - 명시적으로 final이거나 final처럼 취급되는 변수
 
 ````
 String memberName = "karina";
-Predicate<Leader> p = () -> memberName.equals("karina"); // free variable : memberName
+Predicate<Member> p = () -> memberName.equals("karina"); // free variable : memberName
 
 // memberName = "winter"; 이 주석을 풀면 memberName은 가변이어서 compile error 발생
 ````
@@ -386,9 +386,9 @@ Predicate<Leader> p = () -> memberName.equals("karina"); // free variable : memb
 #### RESTRICTIONS ON LOCAL VARIABLES
 
 - Lamda는 local variable에 직접 접근하지 않음
-    - local variable의 복사본에 접근
+  - local variable의 복사본에 접근
 - threa에서 lamda가 사용되는 상황에서,
-    - thread가 변수를 해제했는데 lamda가 변수를 사용하려고 할 수 있음
+  - thread가 변수를 해제했는데 lamda가 변수를 사용하려고 할 수 있음
 
 ## 6. Method references
 
@@ -397,23 +397,23 @@ Predicate<Leader> p = () -> memberName.equals("karina"); // free variable : memb
 - **lamda body에서 사용하는 메서드가 하나인 경우에만 가능**
 
 ````
-memberList.sort((Leader m1, Leader m2) -> m1.getAge().compareTo(m2.getAge()));
+memberList.sort((Member m1, Member m2) -> m1.getAge().compareTo(m2.getAge()));
 
 // method reference
 // using java.util.Comparator.comparing
-memberList.sort(Comparator.comparing(Leader::getAge));
+memberList.sort(Comparator.comparing(Member::getAge));
 ````
 
 ### 6.1 In a nutshell
 
 ````
 [method의 class]::[method name]
-Leader::getAge // (Leader m) -> m.getAge()
+Member::getAge // (Member m) -> m.getAge()
 ````
 
 | Lamda expression                           | Method reference                    |
 |--------------------------------------------|-------------------------------------|
-| `(Leader member) -> member.getAge()`       | `Leader::getAge`                    |
+| `(Member member) -> member.getAge()`       | `Member::getAge`                    |
 | `() -> Thread.currentThread().dumpStack()` | `Thread.currentThread()::dumpStack` |
 | `(str, i) -> str.substring(i)`             | `String::substring`                 |
 | `(String s) -> System.out.println(s)`      | `System.out::println`               |
@@ -447,19 +447,19 @@ memberList.sort(String::compareToIgnoreCase); // method reference
 ### 6.2 Constructor references
 
 ````
-Supplier<Leader> member = () -> new Leader(); // lamda
-Supplier<Leader> member = Leader::new; // constructor reference
+Supplier<Member> member = () -> new Member(); // lamda
+Supplier<Member> member = Member::new; // constructor reference
 
-Function<String, Leader> memberFunction = (name) -> new Leader(name); // lamda
-Leader karina = memberFunction.apply("karina");
+Function<String, Member> memberFunction = (name) -> new Member(name); // lamda
+Member karina = memberFunction.apply("karina");
 
-Function<String, Leader> karina2 = Leader::new; // constructor reference
-Leader karina = karina2.apply("karina"); 
+Function<String, Member> karina2 = Member::new; // constructor reference
+Member karina = karina2.apply("karina"); 
 ````
 
 ````
-public List<Leader> map(List<String> list, Function<String, Leader> f){
-  List<Leader> result = new ArrayList<>();
+public List<Member> map(List<String> list, Function<String, Member> f){
+  List<Member> result = new ArrayList<>();
     for(String s : list){
         result.add(f.apply(s));
     }
@@ -468,20 +468,20 @@ public List<Leader> map(List<String> list, Function<String, Leader> f){
 ...
 
 List<String> memberNameList = Arrays.asList("karina", "winter", "gisele", "hani", "minzi");
-List<Leader> memberList = map(memberNameList, Leader::new); // constructor reference
-// List<Leader> memberList = map(memberNameList, (name) -> new Leader(name)); // lamda
+List<Member> memberList = map(memberNameList, Member::new); // constructor reference
+// List<Member> memberList = map(memberNameList, (name) -> new Member(name)); // lamda
 ````
 
 ````
-// BiFunction<String, Integer, Leader> c3 = (name, age) -> new Leader(name, age); // lamda
-BiFunction<String, Integer, Leader> c3 = Leader::new; // constructor reference
-Leader karina = c3.apply("karina", 25);
+// BiFunction<String, Integer, Member> c3 = (name, age) -> new Member(name, age); // lamda
+BiFunction<String, Integer, Member> c3 = Member::new; // constructor reference
+Member karina = c3.apply("karina", 25);
 ````
 
 ## 7. Putting lamdas and method references into practice
 
 ````
-memberList.sort(comparing(Leader::getAge));
+memberList.sort(comparing(Member::getAge));
 ````
 
 ### 7.1 Step 1 : Pass code
@@ -491,9 +491,9 @@ void sort(Comparator<? super E> c);
 ````
 
 ````
-public class MemberComparator implements Comparator<Leader> {
+public class MemberComparator implements Comparator<Member> {
   @Override
-  public int compare(Leader m1, Leader m2) {
+  public int compare(Member m1, Member m2) {
     return m1.getAge().compareTo(m2.getAge());
   }
 }
@@ -505,9 +505,9 @@ memberList.sort(new MemberComparator());
 ### 7.2 Step 2 Use an anonymous class
 
 ````
-memberList.sort(new Comparator<Leader>() {
+memberList.sort(new Comparator<Member>() {
   @Override
-  public int compare(Leader m1, Leader m2) {
+  public int compare(Member m1, Member m2) {
     return m1.getAge().compareTo(m2.getAge());
   }
 });
@@ -516,8 +516,8 @@ memberList.sort(new Comparator<Leader>() {
 ### 7.3 Step 3 : Use lamda expression
 
 ````
-// fuction descriptor : (Leader, Leader) -> int
-// memberList.sort((Leader m1, Leader m2) -> m1.getAge().compareTo(m2.getAge())); // 타입 명시
+// fuction descriptor : (Member, Member) -> int
+// memberList.sort((Member m1, Member m2) -> m1.getAge().compareTo(m2.getAge())); // 타입 명시
 
 memberList.sort((m1, m2) -> m1.getAge().compareTo(m2.getAge())); // 타입 추론
 ````
@@ -533,7 +533,7 @@ memberList.sort(comparing(member -> member.getAge()));
 ````
 import static java.util.Comparator.comparing;
 
-memberList.sort(comparing(Leader::getAge));
+memberList.sort(comparing(Member::getAge));
 ````
 
 ## 8. Useful methods to compose lamda expressions
@@ -541,7 +541,7 @@ memberList.sort(comparing(Leader::getAge));
 ### 8.1 Composing Comparators
 
 ````
-Comparator<Leader> c = Comparator.comparing(Leader::getAge);
+Comparator<Member> c = Comparator.comparing(Member::getAge);
 ````
 
 #### REVERSED ORDER
@@ -549,7 +549,7 @@ Comparator<Leader> c = Comparator.comparing(Leader::getAge);
 - `revresed()` : default method, 정렬을 역순으로 변경
 
 ````
-memberList.sort(comparing(Leader::getAge).reversed());
+memberList.sort(comparing(Member::getAge).reversed());
 ````
 
 #### CHAINING COMPARATORS
@@ -557,7 +557,7 @@ memberList.sort(comparing(Leader::getAge).reversed());
 - `thenComparing()` : default method, 두번쨰 정렬 기준을 추가
 
 ````
-memberList.sort(comparing(Leader::getAge).thenComparing(Leader::getName)); // 나이가 같을 경우 이름 순
+memberList.sort(comparing(Member::getAge).thenComparing(Member::getName)); // 나이가 같을 경우 이름 순
 ````
 
 ### 8.2 Composing Predicates
@@ -565,13 +565,13 @@ memberList.sort(comparing(Leader::getAge).thenComparing(Leader::getName)); // �
 - `negate`, `and`, `or` : default method, Predicate를 조합할 수 있음
 
 ````
-Predicate<Leader> memberAespa = (member) -> member.getTeanName().equals("aespa");
-Predicate<Leader> notAespa = memberAespa.negate(); // Predicate 조건 부정
+Predicate<Member> memberAespa = (member) -> member.getTeanName().equals("aespa");
+Predicate<Member> notAespa = memberAespa.negate(); // Predicate 조건 부정
 
-Predicate<Leader> aespaAdult = memberAespa.and((member) -> member.getAge() > 19); // Predicate 조건 and
+Predicate<Member> aespaAdult = memberAespa.and((member) -> member.getAge() > 19); // Predicate 조건 and
 
 // (aespa && age > 19) || (newjeans)
-Predicate<Leader> aespaAdultorNewJeans = memberAespa.and((member) -> member.getAge() > 19)
+Predicate<Member> aespaAdultorNewJeans = memberAespa.and((member) -> member.getAge() > 19)
                                               .or((member) -> member.getTeanName().equals("newJeans")); 
 ````
 
@@ -638,7 +638,7 @@ integrate(C::f, 3, 7) // method reference
 - **lamda expression은 functional interface를 기대하는 곳에만 사용 가능**
 - lamda expression은 functional interface의 추상 메서드를 바로 구현하고, 인스턴스처럼 다룰 수 있음
 - `java.util.function` : Java 8에 추가된 함수형 인터페이스
-    - `Predicate<T>`, `Consumer<T>`, `Function<T, R>`, `Supplier<T>`, `UnaryOperator<T>`, `BinaryOperator<T>`, ...
+  - `Predicate<T>`, `Consumer<T>`, `Function<T, R>`, `Supplier<T>`, `UnaryOperator<T>`, `BinaryOperator<T>`, ...
 - execute-around pattern은 lamda를 통해 유연하고 재사용 가능한 코드를 만들 수 있음
 - target type : lamda expression에서 기대하는 타입 (함수형 인터페이스)
 - method reference : 기존 메서드 구현을 재활용 할 수 있음

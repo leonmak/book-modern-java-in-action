@@ -22,8 +22,8 @@
 
 ````
 // external iteration
-List<Leader> memberAespa = new ArrayList<>();
-for(Leader member : members) {
+List<Member> memberAespa = new ArrayList<>();
+for(Member member : members) {
     if (member.getTeam() == Team.AESPA) {
         memberAespa.add(member);
     }
@@ -31,7 +31,7 @@ for(Leader member : members) {
 
 // internal iteration
 import static java.util.stream.Collectors.toList;
-List<Leader> memberAespa = members.stream()
+List<Member> memberAespa = members.stream()
                                 .filter(member -> member.getTeam() == Team.AESPA)
                                 .collect(toList());
 ````
@@ -48,13 +48,13 @@ List<Leader> memberAespa = members.stream()
 <img src="img.png"  width="70%"/>
 
 ````
-List<Leader> memberIsDebut = members.stream()
-                                    .filter(Leader::isDebut)
+List<Member> memberIsDebut = members.stream()
+                                    .filter(Member::isDebut)
                                     .collect(toList());
 ````
 
 - `filter` : `Predicate`를 인수로 받아서 새로운 스트림을 반환
-    - 반환 stream의 요소는 `Predicate`를 만족하는 원본 stream의 element
+  - 반환 stream의 요소는 `Predicate`를 만족하는 원본 stream의 element
 
 ### 1.2 Filtering unique elements
 
@@ -94,15 +94,15 @@ member = NINGNING
 
 ````
 // fitler
-List<Leader> aespa1 = memberList.stream().filter(member -> {
+List<Member> aespa1 = memberList.stream().filter(member -> {
     System.out.println("filter: " + member.getName());
-    return member.getTeam() == Leader.Team.AESPA;
+    return member.getTeam() == Member.Team.AESPA;
 }).toList();
 
 // takeWhile
-List<Leader> aespa2 = memberList.stream().takeWhile(member -> {
+List<Member> aespa2 = memberList.stream().takeWhile(member -> {
     System.out.println("takeWhile: " + member.getName());
-    return member.getTeam() == Leader.Team.AESPA;
+    return member.getTeam() == Member.Team.AESPA;
 }).toList();
 ````
 
@@ -134,9 +134,9 @@ takeWhile: irene
 - `takeWhile`과 반대
 
 ````
-List<Leader> notAespa = memberList.stream().dropWhile(member -> {
+List<Member> notAespa = memberList.stream().dropWhile(member -> {
     System.out.println("dropWhile: " + member.getName());
-    return member.getTeam() == Leader.Team.AESPA;
+    return member.getTeam() == Member.Team.AESPA;
 }).toList();
 ````
 
@@ -146,8 +146,8 @@ List<Leader> notAespa = memberList.stream().dropWhile(member -> {
 - 순서 정렬에 상관없이 사용 가능
 
 ````
-List<Leader> aespaTwoMember = memberList.stream()
-                                        .filter(member -> member.getTeam() == Leader.Team.AESPA)
+List<Member> aespaTwoMember = memberList.stream()
+                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
                                         .limit(2)
                                         .toList();
 ````
@@ -158,8 +158,8 @@ List<Leader> aespaTwoMember = memberList.stream()
 - n이 stream 사이즈보다 크면 빈 stream 반환
 
 ````
-List<Leader> aespaTwoMember = memberList.stream()
-                                        .filter(member -> member.getTeam() == Leader.Team.AESPA)
+List<Member> aespaTwoMember = memberList.stream()
+                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
                                         .skip(2)
                                         .toList();
 ````
@@ -172,18 +172,18 @@ List<Leader> aespaTwoMember = memberList.stream()
 ### 3.1 Applying a function to each element of a stream
 
 - `map()` : function을 인수로 받아서 새로운 stream을 반환
-    - function을 각 element에 적용한 결과로 구성된 stream 반환
+  - function을 각 element에 적용한 결과로 구성된 stream 반환
 
 ````
 List<String> memberNamesAespa = memberList.stream()
-                                        .filter(member -> member.getTeam() == Leader.Team.AESPA)
-                                        .map(Leader::getName)
+                                        .filter(member -> member.getTeam() == Member.Team.AESPA)
+                                        .map(Member::getName)
                                         .toList();
 
 // 멤버 이름의 글자수 출력
 List<Integer> memberNameLengthAespa = memberList.stream()
-                                                .filter(member -> member.getTeam() == Leader.Team.AESPA)
-                                                .map(Leader::getName)
+                                                .filter(member -> member.getTeam() == Member.Team.AESPA)
+                                                .map(Member::getName)
                                                 .map(String::length)
                                                 .toList();
 ````
@@ -191,8 +191,8 @@ List<Integer> memberNameLengthAespa = memberList.stream()
 ### 3.2 Flattening streams
 
 - `flatMap()` : function을 인수로 받아서 새로운 stream을 반환
-    - function을 각 element에 적용한 결과로 구성된 stream 반환
-    - **각 function의 결과 stream을 하나의 stream으로 연결**
+  - function을 각 element에 적용한 결과로 구성된 stream 반환
+  - **각 function의 결과 stream을 하나의 stream으로 연결**
 
 ````
 // 아래 words 배열에서 중복을 제거한 문자열을 반환하려함
@@ -243,7 +243,7 @@ for (int i : numbers1) {
 
 - `allMatch()`, `anyMatch()`, `nonMatch()`, `findFirst()`, `findAny()`
 - short-circuiting operation : **stream의 일부 element만 확인하고 전체 stream을 확인하지 않아도 되는 operation**
-    - 큰 사이즈의 stream에서는 성능 향상에 도움이 됨
+  - 큰 사이즈의 stream에서는 성능 향상에 도움이 됨
 
 ### 4.1 Checking to see if a predicate matches at least one element
 
@@ -251,7 +251,7 @@ for (int i : numbers1) {
 - terminal operation
 
 ````
-if(memberList.stream().anyMatch(Leader::getIsDebut)) {
+if(memberList.stream().anyMatch(Member::getIsDebut)) {
   System.out.println("there is a debut member");
 }
 ````
@@ -261,7 +261,7 @@ if(memberList.stream().anyMatch(Leader::getIsDebut)) {
 - `allMatch()` : `Predicate`에 부합하는 element가 모두 있으면 `true` 반환
 
 ````
-if(memberList.stream().allMatch(Leader::checkIsNotChild)) {
+if(memberList.stream().allMatch(Member::checkIsNotChild)) {
   System.out.println("there is a not child member");
 }
 ````
@@ -271,7 +271,7 @@ if(memberList.stream().allMatch(Leader::checkIsNotChild)) {
 - `noneMatch()` : `Predicate`에 부합하는 element가 하나도 없으면 `true` 반환
 
 ````
-if (memberList.stream().noneMatch(Leader::unknownTeam)) {
+if (memberList.stream().noneMatch(Member::unknownTeam)) {
   System.out.println("there is no unknown team member");
 }
 ````
@@ -280,12 +280,12 @@ if (memberList.stream().noneMatch(Leader::unknownTeam)) {
 
 - `findAny()` : stream에서 임의의 element를 반환
 - short-circuiting operation
-    - 조건에 맞는 element를 찾으면 바로 반환하고 stream을 종료
+  - 조건에 맞는 element를 찾으면 바로 반환하고 stream을 종료
 
 ````
 memberList.stream()
-        .filter(member -> member.getTeam() == Leader.Team.AESPA)
-        .filter(Leader::checkIsAdult)
+        .filter(member -> member.getTeam() == Member.Team.AESPA)
+        .filter(Member::checkIsAdult)
         .findAny()
         .ifPresent(member -> System.out.println("member = " + member));
 ````
@@ -304,7 +304,7 @@ memberList.stream()
 
 ````
 memberList.stream()
-        .filter(member -> member.getTeam() == Leader.Team.NEW_JEANS)
+        .filter(member -> member.getTeam() == Member.Team.NEW_JEANS)
         .findFirst()
         .ifPresent(member -> System.out.println("NEW_JEANS leader is" + member));
 ````
@@ -337,11 +337,11 @@ int sum = nubmers.stream().reduce(0, Integer::sum);
 - 0 : 초기값
 - `BinaryOperator<T>` : 두 element를 조합해서 하나의 값을 반환하는 functional interface
 - 순차적으로 stream의 element를 하나씩 처리하면서 누적된 값을 반환
-    1. 0 + 4
-    2. 4 + 5
-    3. 5 + 3
-    4. 8 + 9
-    5. return : 17
+  1. 0 + 4
+  2. 4 + 5
+  3. 5 + 3
+  4. 8 + 9
+  5. return : 17
 
 #### NO INITIAL VALUE
 
@@ -371,7 +371,7 @@ int sum = numbers.parallelStream().reduce(0, Integer::sum);
 - reduce : parallel을 쉽게 작성할 수 있음
 - 기존에는 파티션을 나누고, 각 파티션의 합을 계산한 다음에 합을 계산하는 과정을 거쳐야 함
 - mutable-accumulator pattern : `sum` 변수에 누산해가는 방식
-    - `sum` 변수를 공유하면서 병렬로 실행할 때 문제가 발생할 수 있음
+  - `sum` 변수를 공유하면서 병렬로 실행할 때 문제가 발생할 수 있음
 
 ### Stream operations : stateless vs stateful
 
@@ -564,13 +564,13 @@ Optional<Transaction> sol8Better = transactions.stream()
 
 ````
 int ageTotal = members.stream()
-                       .map(Leader::getAge)
+                       .map(Member::getAge)
                         .reduce(0, Integer::sum);  
 ````
 
 - `reduce`로 합계를 구하면,
-    - unboxing 필요
-    - 가독성 별로
+  - unboxing 필요
+  - 가독성 별로
 - **primitive stream specializations** : number로 된 Stream에 특화
 
 ### 7.1 Primitive stream specialization
@@ -586,8 +586,8 @@ int ageTotal = members.stream()
 - specialized stream을 리턴
 
 ````
-int ageTotal = members.stream() // Return : Stream<Leader>
-                       .mapToInt(Leader::getAge) // Return : IntStream, not Stream<Integer>
+int ageTotal = members.stream() // Return : Stream<Member>
+                       .mapToInt(Member::getAge) // Return : IntStream, not Stream<Integer>
                        .sum();  
 ````
 
@@ -598,7 +598,7 @@ int ageTotal = members.stream() // Return : Stream<Leader>
 
 ````
 IntStream intStream = members.stream()
-                             .mapToInt(Leader::getAge);
+                             .mapToInt(Member::getAge);
 Stream<Integer> stream = intStream.boxed();
 ````
 
@@ -610,7 +610,7 @@ Stream<Integer> stream = intStream.boxed();
 
 ````
 OptionalInt maxAge = members.stream()
-                            .mapToInt(Leader::getAge)
+                            .mapToInt(Member::getAge)
                             .max();
 
 int maxAge = maxAge.orElse(-1);
@@ -619,8 +619,8 @@ int maxAge = maxAge.orElse(-1);
 ### 7,2 Numeric ranges
 
 - `range()`, `rangeClosed()` : 범위를 활용해서 숫자 스트림을 만들 수 있음
-    - `range()` : 배타적
-    - `rangeClosed()` : 배타적 X
+  - `range()` : 배타적
+  - `rangeClosed()` : 배타적 X
 
 ````
 IntStream evenNumbers = IntStream.rangeClosed(1, 100)
@@ -756,7 +756,7 @@ int sum = Arrays.stream(numbers).sum();
 - Java NIO API : I/O 명령 실행, e.g. 파일 읽기, 쓰기, 삭제 등
 - Streams API 사용시 적합
 - `java.nio.file.Files` 의 메서드들이 stream을 반환
-    - e.g. `Files.list()`, `Files.find()`, `Files.lines()`, `Files.walk()`
+  - e.g. `Files.list()`, `Files.find()`, `Files.lines()`, `Files.walk()`
 
 ````
 /*
@@ -817,7 +817,7 @@ Stream.iterate(0, n -> n + 2)
 
 - `generate()` : `Supplier<T>`를 인자로 받음
 - **`Supplier`는 stateless한 것이 좋음**
-    - stateeful은 병렬 처리에 적합하지 않음
+  - stateeful은 병렬 처리에 적합하지 않음
 
 ````
 Stream.generate(Math::random)
@@ -876,11 +876,11 @@ streams은 복잡한 데이터 처리를 간단하게 구현할 수 있게 해�
 - short-circuiting : 탐색이 완료되면 연산을 마치고 stream을 닫음
 - element에 대한 반복적인 연산으로 단일 결과 만들기 : `reduce()` e.g. `sum()`, `max()`, `min()`
 - stateless vs stateful
-    - stateless :  : `filter()`, `map()`
-    - stateful : `reduce()`, `sorted()`, `distinct()`
+  - stateless :  : `filter()`, `map()`
+  - stateful : `reduce()`, `sorted()`, `distinct()`
 - primitive specilization stremas : `IntStream`, `LongStream`, `DoubleStream`
 - Streams는 collection, values, arrays, files, functions로부터 생성 가능
-    - function : `iterate()`, `generate()`
+  - function : `iterate()`, `generate()`
 - infinite stream 생성 가능
-    - 연산이 실행될 때까지 생성을 미루기 때문에 가능
-    - `limit()`으로 제한 가능
+  - 연산이 실행될 때까지 생성을 미루기 때문에 가능
+  - `limit()`으로 제한 가능

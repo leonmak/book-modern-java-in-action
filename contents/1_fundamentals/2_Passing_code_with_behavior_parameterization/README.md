@@ -20,7 +20,7 @@
 - software development pattern
 - 자주 바뀌는 요구사항에 대처하기 위함
 - 코드 블럭을 당장 실행 없이 나중에 프로그램의 다른 부분을 통해 실행 될 수 있게 함
-    - e.g. 메서드의 파라미터러 코드를 전달해서 나중에 실행되게 함
+  - e.g. 메서드의 파라미터러 코드를 전달해서 나중에 실행되게 함
 - e.g. `goAndBuy(buy list)` -> `goAndDo(doSomething method)`
 
 ## 1. Coping with changing requirements
@@ -30,9 +30,9 @@
 ````
 enum Team {NEW_JEANS, AESPA}
 
-public static List<Leader> filterAespa(List<Leader> memberList){
-  List<Leader> memberAespa = new ArrayList<>();
-  for(Leader member : memberList){
+public static List<Member> filterAespa(List<Member> memberList){
+  List<Member> memberAespa = new ArrayList<>();
+  for(Member member : memberList){
     if(member.getTeam() == Team.AESPA){
       memberAespa.add(member);
   }
@@ -44,9 +44,9 @@ public static List<Leader> filterAespa(List<Leader> memberList){
 ### 2.2 Second attempt : paramterizing the `team`
 
 ````
-public static List<Leader> filterByTeam(List<Leader> memberList, Team team){
-  List<Leader> memberAespa = new ArrayList<>();
-  for(Leader member : memberList){
+public static List<Member> filterByTeam(List<Member> memberList, Team team){
+  List<Member> memberAespa = new ArrayList<>();
+  for(Member member : memberList){
     if(member.getTeam() == team){
       memberAespa.add(member);
   }
@@ -54,8 +54,8 @@ public static List<Leader> filterByTeam(List<Leader> memberList, Team team){
 
 ...
 
-List<Leader> aespa = filterByTeam(memberList, Team.AESPA);
-List<Leader> newJeans = filterByTeam(memberList, Team.NEW_JEANS);
+List<Member> aespa = filterByTeam(memberList, Team.AESPA);
+List<Member> newJeans = filterByTeam(memberList, Team.NEW_JEANS);
 
 ````
 
@@ -71,9 +71,9 @@ List<Leader> newJeans = filterByTeam(memberList, Team.NEW_JEANS);
 /* 
 * flag : true -> team filter, false -> age fitler
 */
-public static List<Leader> fitlerMember(List<Leader> memberList, Team team, int age, Bollean flag){
-    List<Leader> memberAespa = new ArrayList<>();
-    for(Leader member : memberList){
+public static List<Member> fitlerMember(List<Member> memberList, Team team, int age, Bollean flag){
+    List<Member> memberAespa = new ArrayList<>();
+    for(Member member : memberList){
         if((flag && member.getTeam() == team) || (!flag && member.getAge() == age)){
             memberAespa.add(member);
         }
@@ -82,8 +82,8 @@ public static List<Leader> fitlerMember(List<Leader> memberList, Team team, int 
 
 ...
 
-List<Leader> aespa = filterMember(memberList, Team.AESPA, 0, true);
-List<Leader> adult = filterMember(memberList, null, 20, false);
+List<Member> aespa = filterMember(memberList, Team.AESPA, 0, true);
+List<Member> adult = filterMember(memberList, null, 20, false);
 ````
 
 - client code가 복잡해짐
@@ -93,20 +93,20 @@ List<Leader> adult = filterMember(memberList, null, 20, false);
 
 - predicate : boolean-valued function
 - Strategy pattern, 전략 패턴
-    - 전략 : 사용할 알고리즘
-    - 전략은 캡슐화되어있음
-    - run time에 전략을 결정
+  - 전략 : 사용할 알고리즘
+  - 전략은 캡슐화되어있음
+  - run time에 전략을 결정
 
 ````java
 public interface MemberPredicate {
-    boolean test(Leader member);
+    boolean test(Member member);
 }
 
 // 전략 1 : Team으로 필터링
 public class MemberAespaPredicate implements MemberPredicate {
 
     @Override
-    public boolean test(Leader member) {
+    public boolean test(Member member) {
         return member.getTeam() == Team.AESPA;
     }
 }
@@ -117,7 +117,7 @@ public class MemberAgePredicate implements MemberPredicate {
     //...
 
     @Override
-    public boolean test(Leader member) {
+    public boolean test(Member member) {
         return member.getAge() >= 20;
     }
 }
@@ -132,9 +132,9 @@ public class MemberAgePredicate implements MemberPredicate {
 <img src="img.png"  width="70%"/>
 
 ````
-public static List<Leader> filterMember(List<Leader> memberList, MemberPredicate memberPredicate){
-    List<Leader> result = new ArrayList<>();
-    for(Leader member : memberList){
+public static List<Member> filterMember(List<Member> memberList, MemberPredicate memberPredicate){
+    List<Member> result = new ArrayList<>();
+    for(Member member : memberList){
         if(memberPredicate.test(member)){
             result.add(member);
         }
@@ -143,8 +143,8 @@ public static List<Leader> filterMember(List<Leader> memberList, MemberPredicate
 
 ...
 
-List<Leader> aespa = filterMember(memberList, new MemberAespaPredicate());
-List<Leader> adult = filterMember(memberList, new MemberAgePredicate());
+List<Member> aespa = filterMember(memberList, new MemberAespaPredicate());
+List<Member> adult = filterMember(memberList, new MemberAgePredicate());
 ````
 
 #### PASSING CODE / BEHAVIOR
@@ -157,7 +157,7 @@ List<Leader> adult = filterMember(memberList, new MemberAgePredicate());
 <img src="img_1.png"  width="70%"/>
 
 - 메서드 재사용
-    - 같은 메서드에 다른 동작을 전달
+  - 같은 메서드에 다른 동작을 전달
 
 ## 3. Tackling verbosity
 
@@ -174,16 +174,16 @@ List<Leader> adult = filterMember(memberList, new MemberAgePredicate());
 ### 3.2 Fifth attempt : Using an anonymous class
 
 ````
-List<Leader> memberAespaAdult = filterMember(memberList, new MemberPredicate() {
+List<Member> memberAespaAdult = filterMember(memberList, new MemberPredicate() {
     @Override
-    public boolean test(Leader member) {
+    public boolean test(Member member) {
         return member.getTeam() == Team.AESPA && member.getAge() >= 20;
     }
 });
 
-List<Leader> memberAespaAdultKorean = filterMember(memberList, new MemberPredicate() {
+List<Member> memberAespaAdultKorean = filterMember(memberList, new MemberPredicate() {
     @Override
-    public boolean test(Leader member) {
+    public boolean test(Member member) {
         return member.getTeam() == Team.AESPA && member.getAge() >= 20 
                   && member.getNation() == Nation.KOREA;
     }
@@ -196,11 +196,11 @@ List<Leader> memberAespaAdultKorean = filterMember(memberList, new MemberPredica
 ### 3.3 Sixth attempt : Using a lambda expression
 
 ````
-List<Leader> memberAespaAdult = filterMember(memberList, (Leader member) -> {
+List<Member> memberAespaAdult = filterMember(memberList, (Member member) -> {
     return member.getTeam() == Team.AESPA && member.getAge() >= 20;
 });
 
-List<Leader> memberAespaAdultKorean = filterMember(memberList, (Leader member) -> {
+List<Member> memberAespaAdultKorean = filterMember(memberList, (Member member) -> {
     return member.getTeam() == Team.AESPA && member.getAge() >= 20 
                   && member.getNation() == Nation.KOREA;
 });
@@ -230,7 +230,7 @@ public static <T> List<T> fitler(List<T> list, Predicate<T> p){
 
 ...
 
-List<Leader> memberAespaAdult = filter(memberList, (Leader member) -> {
+List<Member> memberAespaAdult = filter(memberList, (Member member) -> {
     return member.getTeam() == Team.AESPA && member.getAge() >= 20;
 });
 
@@ -252,15 +252,15 @@ public interface Comparator<T> {
 ...
 
 // anonymous class
-member.sort(new Comparator<Leader>() {
+member.sort(new Comparator<Member>() {
   @Override
-  public int compare(Leader o1, Leader o2) {
+  public int compare(Member o1, Member o2) {
           return o1.getAge().compareTo(o2.getAge());
   }
 });
 
 // lambda expression
-member.sort((Leader o1, Leader o2) -> o1.getAge().compareTo(o2.getAge()));
+member.sort((Member o1, Member o2) -> o1.getAge().compareTo(o2.getAge()));
 ````
 
 ### 4.2 Executing a block of code with Runnable
@@ -329,6 +329,6 @@ btn.setOnAction((ActionEvent event) -> System.out.println("Right! karina is best
 - Behavior parameterization : 메서드가 실행할 동작을 파리미터로 받아서 내부에서 실행하는 것
 - Behavior parameterization는 요구사항 변화에 유연하게 대응
 - Passing Code : 메서드 파라미터에 동작을 전달하는 것
-    - Java 8 이전에는 익명클래스로 함 (코드 중복이 많고, 길어짐)
+  - Java 8 이전에는 익명클래스로 함 (코드 중복이 많고, 길어짐)
 - Java API에는 Behavior parameterization을 사용하는 메서드가 많음
-    - Comparator, Runnable, Callable, EventHandler 등
+  - Comparator, Runnable, Callable, EventHandler 등

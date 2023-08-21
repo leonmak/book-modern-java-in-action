@@ -48,12 +48,12 @@ menu.stream()
 - DSL : 특정 비스니스 도메인의 문제해결을 위해 설계된 언어
 - 연산과 단어를 특정 도메인에 특화, 제한
 - user-friendly DSL
-    - 사용자는 lower-level 구현을 하지않음
-    - 도메인의 복잡도를 해결
+  - 사용자는 lower-level 구현을 하지않음
+  - 도메인의 복잡도를 해결
 - **_communiciation is king_**
-    - 코드의 의도가 명백하게 비 개발자에게 전달 가능해야함
+  - 코드의 의도가 명백하게 비 개발자에게 전달 가능해야함
 - **_Code is written once but read many times_**
-    - 가독성은 유지보수성을 높임
+  - 가독성은 유지보수성을 높임
 
 ### 1.1 Pros and cons of DSLs
 
@@ -88,11 +88,11 @@ menu.stream()
 - Lamda가 도입되면서 Java 8에서는 internal DSL을 쉽게 만들 수 있음
 - signal / noise ratio가 높음
 - pain java로 DSL을 작성하는 이점
-    - Java 로 DSL을 구현하는 것은 외부 DSL을 구현하는 것보다 쉬움
-    - 추가적인 compiler 필요 없음
-    - 다른 언어를 배울 필요 없음
-    - Java IDE의 기능을 그대로 사용
-    - 다른 plain java DSL과 호환 가능
+  - Java 로 DSL을 구현하는 것은 외부 DSL을 구현하는 것보다 쉬움
+  - 추가적인 compiler 필요 없음
+  - 다른 언어를 배울 필요 없음
+  - Java IDE의 기능을 그대로 사용
+  - 다른 plain java DSL과 호환 가능
 
 ````
 // Java 8 이전
@@ -113,10 +113,10 @@ numbers.forEach(System.out::println); // signal
 
 - JVM에서는 100개 이상의 언어가 사용 가능 e.g. Groovy, Scala, Kotlin, Clojure
 - 단점
-    - 공부해야함
-    - 2개 이상의 언어로 작성된 소스 빌드를 위한 통합 컴파일러 필요
-    - Java가 100 % 호환성을 주장하지만, 약간의 호환성 문제가 있음
-        - e.g. Scala와 Java의 Colelction은 호환 안됨
+  - 공부해야함
+  - 2개 이상의 언어로 작성된 소스 빌드를 위한 통합 컴파일러 필요
+  - Java가 100 % 호환성을 주장하지만, 약간의 호환성 문제가 있음
+    - e.g. Scala와 Java의 Colelction은 호환 안됨
 
 ```scala
 // Scala 는 `i`이 커도 Stack over flow가 발생하지 않음
@@ -159,34 +159,34 @@ implicit def intToTimes(i: Int) = new {
 - parsing과 parser를 구현하고, 별도의 인프라 구축
 - ANTLR : Java와 함께 사용되는 parser 생성기
 - 장점
-    - 무한한 유연성
-    - 도메인에 완전히 특화된 언어 설계
-    - 가독성 올라감
-    - Java 인프라 코드와 완벽한 독립
+  - 무한한 유연성
+  - 도메인에 완전히 특화된 언어 설계
+  - 가독성 올라감
+  - Java 인프라 코드와 완벽한 독립
 
 ## 2. Small DSLs in modern Java APIs
 
 - `Comparator` interface : Java 8 이전에는 `Collections.sort()`를 사용할 때, `Comparator`를 구현해야함
 - Java 8
-    - `Comparator`에 `default` method 추가
-    - 람다로 구현 가능
+  - `Comparator`에 `default` method 추가
+  - 람다로 구현 가능
 
 ````
 
 // Java 8 이전
-Collections.sort(member, new Comparator<Leader>() {
+Collections.sort(member, new Comparator<Member>() {
     @Override
-    public int compare(Leader m1, Leader m2) {
+    public int compare(Member m1, Member m2) {
         return m1.getName().compareTo(m2.getName());
     }
 });
 
 // Java 8
 Collections.sort(memberList, comparing(m -> m.getName()));
-Colelctions.sort(memberList, comparing(Leader::getName));
-Colelctions.sort(memberList, comparing(Leader::getName).reverse()); // 역순 
-Collections.sort(memberList, comparing(Leader::getName)
-  .thenComparing(Leader::getAge)); // 이름으로 정렬 후 나이로 정렬
+Colelctions.sort(memberList, comparing(Member::getName));
+Colelctions.sort(memberList, comparing(Member::getName).reverse()); // 역순 
+Collections.sort(memberList, comparing(Member::getName)
+  .thenComparing(Member::getAge)); // 이름으로 정렬 후 나이로 정렬
 
 
 ````
@@ -221,26 +221,26 @@ List<String> errors = Files.lines(Paths.get("file.txt")) // open file
 ### 2.2 Collectors as a DSL to aggregate data
 
 - `Collectors` : 데이터를 aggregate하는 DSL
-    - `Stream`의 element를 collect, group, partition, reduce
+  - `Stream`의 element를 collect, group, partition, reduce
 - Builder를 선언해서 사용할 수 있음
-    - group 조건이 많아지면 유용
+  - group 조건이 많아지면 유용
 
 ````
-Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>> memberByTeamAndAge1 = memberList.stream()
-        .collect(groupingBy(Leader::getTeam, groupingBy(Leader::getAgeLevel)));
+Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge1 = memberList.stream()
+        .collect(groupingBy(Member::getTeam, groupingBy(Member::getAgeLevel)));
 System.out.println(memberByTeamAndAge1);
 
 // Collector nesting
-Collector<Leader, ?, Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>>> collectorNested1
-        = groupingBy(Leader::getTeam, groupingBy(Leader::getAgeLevel));
+Collector<Member, ?, Map<Member.Team, Map<Member.AgeLevel, List<Member>>>> collectorNested1
+        = groupingBy(Member::getTeam, groupingBy(Member::getAgeLevel));
 
-Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>> memberByTeamAndAge2 = memberList.stream().collect(collectorNested1);
+Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge2 = memberList.stream().collect(collectorNested1);
 System.out.println(memberByTeamAndAge2);
 
-Collector<? super Leader, ?, Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>>> collectorNested2
-        = GroupingBuilder.groupOn(Leader::getAgeLevel).after(Leader::getTeam).get();
+Collector<? super Member, ?, Map<Member.Team, Map<Member.AgeLevel, List<Member>>>> collectorNested2
+        = GroupingBuilder.groupOn(Member::getAgeLevel).after(Member::getTeam).get();
 
-Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>> memberByTeamAndAge3 = memberList.stream().collect(collectorNested2);
+Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAge3 = memberList.stream().collect(collectorNested2);
 System.out.println(memberByTeamAndAge3);
 
 
@@ -248,23 +248,23 @@ System.out.println(memberByTeamAndAge3);
 
 ```java
 public static class GroupingBuilder<T, D, K> {
-    private final Collector<? super T, ?, Map<K, D>> collector;
+  private final Collector<? super T, ?, Map<K, D>> collector;
 
-    private GroupingBuilder(Collector<? super T, ?, Map<K, D>> collector) {
-        this.collector = collector;
-    }
+  private GroupingBuilder(Collector<? super T, ?, Map<K, D>> collector) {
+    this.collector = collector;
+  }
 
-    public Collector<? super T, ?, Map<K, D>> get() {
-        return collector;
-    }
+  public Collector<? super T, ?, Map<K, D>> get() {
+    return collector;
+  }
 
-    public <J> GroupingBuilder<T, Map<K, D>, J> after(Function<? super T, ? extends J> classifier) {
-        return new GroupingBuilder<>(groupingBy(classifier, collector));
-    }
+  public <J> GroupingBuilder<T, Map<K, D>, J> after(Function<? super T, ? extends J> classifier) {
+    return new GroupingBuilder<>(groupingBy(classifier, collector));
+  }
 
-    public static <T, D, K> GroupingBuilder<T, List<T>, K> groupOn(Function<? super T, ? extends K> classifier) {
-        return new GroupingBuilder<>(groupingBy(classifier));
-    }
+  public static <T, D, K> GroupingBuilder<T, List<T>, K> groupOn(Function<? super T, ? extends K> classifier) {
+    return new GroupingBuilder<>(groupingBy(classifier));
+  }
 }
 ```
 
@@ -353,9 +353,9 @@ Order orderSMAndJYP = NestedFunctionOrderBuilder.order("BigBank",
 - 도메인의 계층형 구조를 표현 가능 (`Oreder` -> `Trade` -> `Stock`)
 - 코드에 괄호가 많음
 - 도메인 object에 optial field가 있으면 overloading method를 구현해두어야함
-    - e.g. `Order`에 optional로 _주문일시_ 필드가 있다면?
+  - e.g. `Order`에 optional로 _주문일시_ 필드가 있다면?
 - dummy method가 많아짐
-    - 특정 필드에 대한 dummy method가 가독성을 높일 수 있음 (e.g. `at()`, `on()`)
+  - 특정 필드에 대한 dummy method가 가독성을 높일 수 있음 (e.g. `at()`, `on()`)
 
 <details>
 <summary> NestedFunctionOrderBuilder 코드 </summary>
@@ -363,45 +363,45 @@ Order orderSMAndJYP = NestedFunctionOrderBuilder.order("BigBank",
 ````java
 public class NestedFunctionOrderBuilder {
 
-    // Order 생성
-    public static Order order(String customer, Trade... trades) {
-        Order order = new Order();
-        order.setCustomer(customer);
-        Stream.of(trades).forEach(order::addTrade);
-        return order;
-    }
+  // Order 생성
+  public static Order order(String customer, Trade... trades) {
+    Order order = new Order();
+    order.setCustomer(customer);
+    Stream.of(trades).forEach(order::addTrade);
+    return order;
+  }
 
-    public static Trade buy(int quantity, Stock stock, double price) {
-        return buildTrade(quantity, stock, price, Trade.Type.BUY);
-    }
+  public static Trade buy(int quantity, Stock stock, double price) {
+    return buildTrade(quantity, stock, price, Trade.Type.BUY);
+  }
 
-    public static Trade sell(int quantity, Stock stock, double price) {
-        return buildTrade(quantity, stock, price, Trade.Type.SELL);
-    }
+  public static Trade sell(int quantity, Stock stock, double price) {
+    return buildTrade(quantity, stock, price, Trade.Type.SELL);
+  }
 
-    public static double at(double price) {
-        return price;
-    }
+  public static double at(double price) {
+    return price;
+  }
 
-    public static Stock stock(String symbol, String market) {
-        Stock stock = new Stock();
-        stock.setSymbol(symbol);
-        stock.setMarket(market);
-        return stock;
-    }
+  public static Stock stock(String symbol, String market) {
+    Stock stock = new Stock();
+    stock.setSymbol(symbol);
+    stock.setMarket(market);
+    return stock;
+  }
 
-    public static String on(String market) {
-        return market;
-    }
+  public static String on(String market) {
+    return market;
+  }
 
-    private static Trade buildTrade(int quantity, Stock stock, double price, Trade.Type type) {
-        Trade trade = new Trade();
-        trade.setQuantity(quantity);
-        trade.setStock(stock);
-        trade.setPrice(price);
-        trade.setType(type);
-        return trade;
-    }
+  private static Trade buildTrade(int quantity, Stock stock, double price, Trade.Type type) {
+    Trade trade = new Trade();
+    trade.setQuantity(quantity);
+    trade.setStock(stock);
+    trade.setPrice(price);
+    trade.setType(type);
+    return trade;
+  }
 }
 ````
 
@@ -448,32 +448,32 @@ import java.util.function.Consumer;
 
 public class LambdaOrderBuilder {
 
-    private Order order = new Order();
+  private Order order = new Order();
 
-    public static Order order(Consumer<LambdaOrderBuilder> consumer) {
-        LambdaOrderBuilder builder = new LambdaOrderBuilder();
-        consumer.accept(builder); // landa 표현식 실행
-        return builder.order; // builder.order를 반환
-    }
+  public static Order order(Consumer<LambdaOrderBuilder> consumer) {
+    LambdaOrderBuilder builder = new LambdaOrderBuilder();
+    consumer.accept(builder); // landa 표현식 실행
+    return builder.order; // builder.order를 반환
+  }
 
-    public void forCustomer(String customer) {
-        order.setCustomer(customer);
-    }
+  public void forCustomer(String customer) {
+    order.setCustomer(customer);
+  }
 
-    public void buy(Consumer<TradeBuilder> consumer) {
-        trade(consumer, Trade.Type.BUY);
-    }
+  public void buy(Consumer<TradeBuilder> consumer) {
+    trade(consumer, Trade.Type.BUY);
+  }
 
-    public void sell(Consumer<TradeBuilder> consumer) {
-        trade(consumer, Trade.Type.SELL);
-    }
+  public void sell(Consumer<TradeBuilder> consumer) {
+    trade(consumer, Trade.Type.SELL);
+  }
 
-    private void trade(Consumer<TradeBuilder> consumer, Trade.Type type) {
-        TradeBuilder builder = new TradeBuilder();
-        builder.getTrade().setType(type);
-        consumer.accept(builder); // landa 표현식 실행
-        order.addTrade(builder.getTrade());  // builder.trade를 order에 추가
-    }
+  private void trade(Consumer<TradeBuilder> consumer, Trade.Type type) {
+    TradeBuilder builder = new TradeBuilder();
+    builder.getTrade().setType(type);
+    consumer.accept(builder); // landa 표현식 실행
+    order.addTrade(builder.getTrade());  // builder.trade를 order에 추가
+  }
 }
 
 ````
@@ -483,48 +483,48 @@ public class LambdaOrderBuilder {
 import java.util.function.Consumer;
 
 public class TradeBuilder {
-    private Trade trade = new Trade();
+  private Trade trade = new Trade();
 
-    public void quantity(int quantity) {
-        trade.setQuantity(quantity);
-    }
+  public void quantity(int quantity) {
+    trade.setQuantity(quantity);
+  }
 
-    public void price(double price) {
-        trade.setPrice(price);
-    }
+  public void price(double price) {
+    trade.setPrice(price);
+  }
 
-    public void stock(Consumer<StockBuilder> consumer) {
-        StockBuilder builder = new StockBuilder();
-        consumer.accept(builder);
-        trade.setStock(builder.getStock());
-    }
+  public void stock(Consumer<StockBuilder> consumer) {
+    StockBuilder builder = new StockBuilder();
+    consumer.accept(builder);
+    trade.setStock(builder.getStock());
+  }
 
-    public Trade getTrade() {
-        return trade;
-    }
+  public Trade getTrade() {
+    return trade;
+  }
 }
 ````
 
 ````java
 
 public class StockBuilder {
-    private Stock stock = new Stock();
+  private Stock stock = new Stock();
 
-    public void symbol(String symbol) {
-        stock.setSymbol(symbol);
-    }
+  public void symbol(String symbol) {
+    stock.setSymbol(symbol);
+  }
 
-    public void market(String market) {
-        stock.setMarket(market);
-    }
+  public void market(String market) {
+    stock.setMarket(market);
+  }
 
-    public Stock getStock() {
-        return stock;
-    }
+  public Stock getStock() {
+    return stock;
+  }
 
-    public void setStock(Stock stock) {
-        this.stock = stock;
-    }
+  public void setStock(Stock stock) {
+    this.stock = stock;
+  }
 }
 ````
 
@@ -559,27 +559,27 @@ import java.util.stream.Stream;
 
 public class MixedBuilder {
 
-    public static Order forCustomer(String customer, TradeBuilder... builders) {
-        Order order = new Order();
-        order.setCustomer(customer);
-        Stream.of(builders).forEach(b -> order.addTrade(b.getTrade()));
-        return order;
-    }
+  public static Order forCustomer(String customer, TradeBuilder... builders) {
+    Order order = new Order();
+    order.setCustomer(customer);
+    Stream.of(builders).forEach(b -> order.addTrade(b.getTrade()));
+    return order;
+  }
 
-    public static TradeBuilder buy(Consumer<TradeBuilder> consumer) {
-        return buildTrade(consumer, Trade.Type.BUY);
-    }
+  public static TradeBuilder buy(Consumer<TradeBuilder> consumer) {
+    return buildTrade(consumer, Trade.Type.BUY);
+  }
 
-    public static TradeBuilder sell(Consumer<TradeBuilder> consumer) {
-        return buildTrade(consumer, Trade.Type.SELL);
-    }
+  public static TradeBuilder sell(Consumer<TradeBuilder> consumer) {
+    return buildTrade(consumer, Trade.Type.SELL);
+  }
 
-    private static TradeBuilder buildTrade(Consumer<TradeBuilder> consumer, Trade.Type type) {
-        TradeBuilder builder = new TradeBuilder();
-        builder.getTrade().setType(type);
-        consumer.accept(builder);
-        return builder;
-    }
+  private static TradeBuilder buildTrade(Consumer<TradeBuilder> consumer, Trade.Type type) {
+    TradeBuilder builder = new TradeBuilder();
+    builder.getTrade().setType(type);
+    consumer.accept(builder);
+    return builder;
+  }
 }
 
 
@@ -589,25 +589,25 @@ public class MixedBuilder {
 
 public class TradeBuilder {
 
-    private Trade trade = new Trade();
+  private Trade trade = new Trade();
 
-    public TradeBuilder quantity(int quantity) {
-        trade.setQuantity(quantity);
-        return this;
-    }
+  public TradeBuilder quantity(int quantity) {
+    trade.setQuantity(quantity);
+    return this;
+  }
 
-    public TradeBuilder at(double price) {
-        trade.setPrice(price);
-        return this;
-    }
+  public TradeBuilder at(double price) {
+    trade.setPrice(price);
+    return this;
+  }
 
-    public StockBuilder stock(String symbol) {
-        return new StockBuilder(this, trade, symbol);
-    }
+  public StockBuilder stock(String symbol) {
+    return new StockBuilder(this, trade, symbol);
+  }
 
-    public Trade getTrade() {
-        return trade;
-    }
+  public Trade getTrade() {
+    return trade;
+  }
 }
 
 ````
@@ -615,21 +615,21 @@ public class TradeBuilder {
 ````java
 
 public class StockBuilder {
-    private final TradeBuilder builder;
-    private final Trade trade;
-    private final Stock stock = new Stock();
+  private final TradeBuilder builder;
+  private final Trade trade;
+  private final Stock stock = new Stock();
 
-    public StockBuilder(TradeBuilder builder, Trade trade, String symbol) {
-        this.builder = builder;
-        this.trade = trade;
-        stock.setSymbol(symbol);
-    }
+  public StockBuilder(TradeBuilder builder, Trade trade, String symbol) {
+    this.builder = builder;
+    this.trade = trade;
+    stock.setSymbol(symbol);
+  }
 
-    public TradeBuilder on(String market) {
-        stock.setMarket(market);
-        trade.setStock(stock);
-        return builder;
-    }
+  public TradeBuilder on(String market) {
+    stock.setMarket(market);
+    trade.setStock(stock);
+    return builder;
+  }
 }
 
 ````
@@ -660,16 +660,16 @@ double value = new TaxCalculator()
 import java.util.function.DoubleUnaryOperator;
 
 public class TaxCalculator {
-    public DoubleUnaryOperator taxFunction = d -> d;
+  public DoubleUnaryOperator taxFunction = d -> d;
 
-    public TaxCalculator with(DoubleUnaryOperator f) {
-        taxFunction = taxFunction.andThen(f);
-        return this;
-    }
+  public TaxCalculator with(DoubleUnaryOperator f) {
+    taxFunction = taxFunction.andThen(f);
+    return this;
+  }
 
-    public double calculate(Order order) {
-        return taxFunction.applyAsDouble(order.getValue());
-    }
+  public double calculate(Order order) {
+    return taxFunction.applyAsDouble(order.getValue());
+  }
 }
 ````
 
@@ -677,31 +677,31 @@ public class TaxCalculator {
 
 
 public class Tax {
-    public static double regional(double value) {
-        return value * 1.1;
-    }
+  public static double regional(double value) {
+    return value * 1.1;
+  }
 
-    public static double general(double value) {
-        return value * 1.3;
-    }
+  public static double general(double value) {
+    return value * 1.3;
+  }
 
-    public static double surcharge(double value) {
-        return value * 1.05;
-    }
+  public static double surcharge(double value) {
+    return value * 1.05;
+  }
 
-    public static double calculate(Order order, Boolean useRegional, Boolean useGeneral, Boolean useSurcharge) {
-        double value = order.getValue();
-        if (useRegional) {
-            value = Tax.regional(value);
-        }
-        if (useGeneral) {
-            value = Tax.general(value);
-        }
-        if (useSurcharge) {
-            value = Tax.surcharge(value);
-        }
-        return value;
+  public static double calculate(Order order, Boolean useRegional, Boolean useGeneral, Boolean useSurcharge) {
+    double value = order.getValue();
+    if (useRegional) {
+      value = Tax.regional(value);
     }
+    if (useGeneral) {
+      value = Tax.general(value);
+    }
+    if (useSurcharge) {
+      value = Tax.surcharge(value);
+    }
+    return value;
+  }
 }
 ````
 
@@ -719,7 +719,7 @@ public class Tax {
 
 - jOOQ : SQL을 type-safe하게 작성할 수 있도록 도와주는 Java 라이브러리
 - Java compiler가 SQL 구문 type-check
-    - source-code generator가 DB schema를 reverse engineering
+  - source-code generator가 DB schema를 reverse engineering
 
 ````
 -- SQL
@@ -754,7 +754,7 @@ try(Connection c = getConnection("jdbc:h2:~/test", "sa", "")) {
 ### 4.2 Cucumber
 
 - Cucumber : BDD(Behavior Driven Development)를 위한 도구
-    - 비즈니스 시나리오를 영어로 작성
+  - 비즈니스 시나리오를 영어로 작성
 - BDD : 테스트 코드를 작성하기 전에 테스트 대상의 동작을 설명하는 테스트 코드를 작성하는 방법론, TDD의 확장
 
 ````
@@ -778,48 +778,48 @@ import io.cucumber.java8.En;
 
 public class BuyStocksSteps implements En {
 
-    private Map<String, Integer> stockUnitPrices = new HashMap<>();
-    private Order order = new Order();
+  private Map<String, Integer> stockUnitPrices = new HashMap<>();
+  private Order order = new Order();
 
-    @Given("^the price of a \"(.*?)\" stock is (\\d+)\\$$")
-    public void setUnitPrice(String stock, int unitPrice) {
-        stockUnitPrices.put(stock, unitPrice);
-    }
+  @Given("^the price of a \"(.*?)\" stock is (\\d+)\\$$")
+  public void setUnitPrice(String stock, int unitPrice) {
+    stockUnitPrices.put(stock, unitPrice);
+  }
 
-    @When("^I buy (\\d+) \"(.*?)\"$")
-    public void buiStocks(int quantity, String stockName) {
-        Trade trade = new Trade();
-        trade.setType(Trade.Type.BUY);
+  @When("^I buy (\\d+) \"(.*?)\"$")
+  public void buiStocks(int quantity, String stockName) {
+    Trade trade = new Trade();
+    trade.setType(Trade.Type.BUY);
 
-        Stock stock = new Stock();
-        stock.setSymbol(stockName);
+    Stock stock = new Stock();
+    stock.setSymbol(stockName);
 
-        trade.setStock(stock);
-        trade.setQuantity(quantity);
-        trade.setPrice(stockUnitPrices.get(stockName));
-        order.addTrade(trade);
-    }
+    trade.setStock(stock);
+    trade.setQuantity(quantity);
+    trade.setPrice(stockUnitPrices.get(stockName));
+    order.addTrade(trade);
+  }
 
-    @Then("^the order value should be (\\d+)\\$$")
-    public void checkOrderValue(int expectedValue) {
-        assertEquals(expectedValue, order.getValue());
-    }
+  @Then("^the order value should be (\\d+)\\$$")
+  public void checkOrderValue(int expectedValue) {
+    assertEquals(expectedValue, order.getValue());
+  }
 
-    // Java 8 Lambda
-    public BuyStocksSteps() {
-        Given("\"^the price of a \\\"(.*?)\\\" stock is (\\\\d+)\\\\$$\"", (stock, unitPrice) -> {
-            stockUnitPrices.put((String) stock, (Integer) unitPrice);
-        });
-    }
+  // Java 8 Lambda
+  public BuyStocksSteps() {
+    Given("\"^the price of a \\\"(.*?)\\\" stock is (\\\\d+)\\\\$$\"", (stock, unitPrice) -> {
+      stockUnitPrices.put((String) stock, (Integer) unitPrice);
+    });
+  }
 }
 ```
 
 ### 4.3 Spring Integration
 
 - **_Spring Integration_** : DI based Spring 의 확장
-    - Enterprise Integration Pattern을 구현하기 위한 DSL 제공
-    - 복잡한 Enterprise Integration Pattern을 Java DSL로 구현 가능
-    - asynchronous, message-driven architecture를 제공
+  - Enterprise Integration Pattern을 구현하기 위한 DSL 제공
+  - 복잡한 Enterprise Integration Pattern을 Java DSL로 구현 가능
+  - asynchronous, message-driven architecture를 제공
 - lightweight remoteing, messaging, scheduling을 위한 DSL 제공
 - _method-chaining pattern_ 을 많이 사용
 
@@ -829,56 +829,56 @@ public class BuyStocksSteps implements En {
 @EnableIntegration
 public class MyConfiguration {
 
-    @Bean
-    public MessageSource<?> integerMessageSource() {
-        MthodInvokingMessageSource source = new MethodInvokingMessageSource();
-        source.setObjecty(new AtomicInteger());
-        source.setMethodName("getAndIncrement");
-        return source;
-    }
+  @Bean
+  public MessageSource<?> integerMessageSource() {
+    MthodInvokingMessageSource source = new MethodInvokingMessageSource();
+    source.setObjecty(new AtomicInteger());
+    source.setMethodName("getAndIncrement");
+    return source;
+  }
 
-    @Bean
-    public DirectChannel inputChannel() {
-        return new DirectChannel();
-    }
+  @Bean
+  public DirectChannel inputChannel() {
+    return new DirectChannel();
+  }
 
-    // Spring Integration DSL을 사용하여 IntegrationFlow를 구성
-    // method-chaining pattern
-    @Bean
-    public IntegrationFlow myFlow() {
-        return IntegrationFlows
-                .from(this.integerMessageSource(),
-                        c -> c.poller(Pollers.fixedRate(10)))
-                .channel(this.inputChannel())
-                .filter((Integer p) -> p % 2 == 0)
-                .transform(Object::toString)
-                .channel(MessageChannels.queue("queueChannel"))
-                .get();
+  // Spring Integration DSL을 사용하여 IntegrationFlow를 구성
+  // method-chaining pattern
+  @Bean
+  public IntegrationFlow myFlow() {
+    return IntegrationFlows
+            .from(this.integerMessageSource(),
+                    c -> c.poller(Pollers.fixedRate(10)))
+            .channel(this.inputChannel())
+            .filter((Integer p) -> p % 2 == 0)
+            .transform(Object::toString)
+            .channel(MessageChannels.queue("queueChannel"))
+            .get();
 
 
-    }
+  }
 }
 ````
 
 ## 5. Summary
 
 - DSL의 목표는 개발자와 도메인 전문가 사이의 갭을 줄이는 것
-    - 개발자 : 코드 작성
-    - 도메인 전문가 : 비즈니스 로직을 이해하고, 코드의 로직을 검증
+  - 개발자 : 코드 작성
+  - 도메인 전문가 : 비즈니스 로직을 이해하고, 코드의 로직을 검증
 - DSL의 종류
-    - **_Internal_** DSL : DSL을 구현하는 언어의 기본 문법을 사용하여 구현, 구현이 쉽지만, host 언어에 의존
-    - **_External_** DSL : 특별하게 설계된 다른 언어, 구현이 어려우나 높은 유연성
+  - **_Internal_** DSL : DSL을 구현하는 언어의 기본 문법을 사용하여 구현, 구현이 쉽지만, host 언어에 의존
+  - **_External_** DSL : 특별하게 설계된 다른 언어, 구현이 어려우나 높은 유연성
 - JVM에 이미 구현되어있는 DSL, e.g. Groovy, Scala
-    - Java 보다 유연하고 간결함
-    - Java와 통합하는 것이 쉽지 않고, 호환이 매끄럽지 못함
+  - Java 보다 유연하고 간결함
+  - Java와 통합하는 것이 쉽지 않고, 호환이 매끄럽지 못함
 - Java는 internal DSL을 사용하기 쉬운 언어가 아님
-    - lamda 표현식과 method reference를 사용하여 좀더 쉽게 구현 가능
+  - lamda 표현식과 method reference를 사용하여 좀더 쉽게 구현 가능
 - Modern Java는 native API에 DSL을 적용
-    - `java.util.stream.Stream`
-    - `java.util.stream.Collectors`
+  - `java.util.stream.Stream`
+  - `java.util.stream.Collectors`
 - DSL 구현 패턴 : method chaining, nested functions, function sequencing
-    - 각자 장단점 있고, 세가지를 적절히 혼합하여 사용
+  - 각자 장단점 있고, 세가지를 적절히 혼합하여 사용
 - DSL를 사용할 수 있게 제공하는 Java framework, library
-    - jOOQ : SQL mapping tool
-    - Cucumber : BDD framework
-    - Spring Integration : Enterprise Integration Pattern 구현을 위한 확장
+  - jOOQ : SQL mapping tool
+  - Cucumber : BDD framework
+  - Spring Integration : Enterprise Integration Pattern 구현을 위한 확장

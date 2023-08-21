@@ -55,33 +55,33 @@ Map<Currency, List<Transaction>> transactionsByCurrencies = transactions.stream(
 | `toSet()`                                             | `Set<T>`                | stream의 element를 `Set`로 반환                     | `Set<member> memberSet = memberStream.collect(Collectors.toSet());`                                                  |
 | `toCollection(Supplier<C>)`                           | `C`                     | stream의 element를 `Collection`으로 반환             | `Collection<member> memberCollection = memberStream.collect(Collectors.toCollection(), ArrayList::new);`             |
 | `counting()`                                          | `long`                  | stream의 element의 개수 반환                         | `long howManyMembers = memberStream.collect(Collectors.counting());`                                                 |
-| `summingInt(ToIntFunction<? super T>)`                | `int`                   | stream의 element의 int field의 합 반환               | `int totalAge = memberStream.collect(Collectors.summingInt(Leader::getAge));`                                        |
-| `averagingInt(ToIntFunction<? super T>)`              | `double`                | stream의 element의 int field의 평균 반환              | `double avgAge = memberStream.collect(Collectors.averagingInt(Leader::getAge));`                                     |
-| `summarizingInt(ToIntFunction<? super T>)`            | `IntSummaryStatistics`  | stream의 element의 int field의 합, 평균, 최대, 최소 반환   | `IntSummaryStatistics memberStatics = memberStream.collect(Collectors.summarizingInt(Leader::getAge));`              |
-| `joining()`                                           | `String`                | stream의 element를 `String`으로 연결                 | `String memberNames = memberStream.map(Leader::getName).collect(Collectors.joining(", "));`                          |
-| `maxBy(Comparator<? super T>)`                        | `Optional<T>`           | stream의 element의 최대값 반환                        | `Optional<Leader> oldestMember = memberStream.collect(Collectors.maxBy(Comparator.comparingInt(Leader::getAge)));`   |
-| `minBy(Comparator<? super T>)`                        | `Optional<T>`           | stream의 element의 최소값 반환                        | `Optional<Leader> youngestMember = memberStream.collect(Collectors.minBy(Comparator.comparingInt(Leader::getAge)));` |
-| `reducing(BinaryOperator<T>)`                         | `T`                     | stream의 element를 `BinaryOperator`로 reducing    | `int totalAge = memberStream.collect(Collectors.reducing(0, Leader::getAge, Integer::sum));`                         |
+| `summingInt(ToIntFunction<? super T>)`                | `int`                   | stream의 element의 int field의 합 반환               | `int totalAge = memberStream.collect(Collectors.summingInt(Member::getAge));`                                        |
+| `averagingInt(ToIntFunction<? super T>)`              | `double`                | stream의 element의 int field의 평균 반환              | `double avgAge = memberStream.collect(Collectors.averagingInt(Member::getAge));`                                     |
+| `summarizingInt(ToIntFunction<? super T>)`            | `IntSummaryStatistics`  | stream의 element의 int field의 합, 평균, 최대, 최소 반환   | `IntSummaryStatistics memberStatics = memberStream.collect(Collectors.summarizingInt(Member::getAge));`              |
+| `joining()`                                           | `String`                | stream의 element를 `String`으로 연결                 | `String memberNames = memberStream.map(Member::getName).collect(Collectors.joining(", "));`                          |
+| `maxBy(Comparator<? super T>)`                        | `Optional<T>`           | stream의 element의 최대값 반환                        | `Optional<Member> oldestMember = memberStream.collect(Collectors.maxBy(Comparator.comparingInt(Member::getAge)));`   |
+| `minBy(Comparator<? super T>)`                        | `Optional<T>`           | stream의 element의 최소값 반환                        | `Optional<Member> youngestMember = memberStream.collect(Collectors.minBy(Comparator.comparingInt(Member::getAge)));` |
+| `reducing(BinaryOperator<T>)`                         | `T`                     | stream의 element를 `BinaryOperator`로 reducing    | `int totalAge = memberStream.collect(Collectors.reducing(0, Member::getAge, Integer::sum));`                         |
 | `collectingAndThen(Collector<T,A,R>, Function<R,RR>)` | `RR`                    | `Collector`로 reducing 후 `Function` 적용          | `int howManyMembers = memberStream.collect(Collectors.collectingAndThen(Collectors.toList(), List::size));`          |
-| `groupingBy(Function<? super T, ? extends K>)`        | `Map<K, List<T>>`       | stream의 element를 `Function`의 결과로 grouping      | `Map<Team, Leader> memberByTeam = memberStream.collect(Collectors.groupingBy(Leader::getTeam));`                     |
-| `partitioningBy(Predicate<? super T>)`                | `Map<Boolean, List<T>>` | stream의 element를 `Predicate`의 결과로 partitioning | `Map<Boolean, List<Leader>> partitionedMember = memberStream.collect(Collectors.partitioningBy(Leader::isKorean));`  |
+| `groupingBy(Function<? super T, ? extends K>)`        | `Map<K, List<T>>`       | stream의 element를 `Function`의 결과로 grouping      | `Map<Team, Member> memberByTeam = memberStream.collect(Collectors.groupingBy(Member::getTeam));`                     |
+| `partitioningBy(Predicate<? super T>)`                | `Map<Boolean, List<T>>` | stream의 element를 `Predicate`의 결과로 partitioning | `Map<Boolean, List<Member>> partitionedMember = memberStream.collect(Collectors.partitioningBy(Member::isKorean));`  |
 
 ## 1. Collectors in a nutshell
 
 - imperative-style : result를 얻기 위해 **what**에 집중
-    - 중첩 loop, 조건문
-    - 가독성 떨어짐, 수정이 어려움
+  - 중첩 loop, 조건문
+  - 가독성 떨어짐, 수정이 어려움
 - functional-style : result를 얻기 위해 **how**에 집중
-    - e.g. `collect()`의 인자로 `Collector`를 전달
+  - e.g. `collect()`의 인자로 `Collector`를 전달
 
 ### 1.1  Collectors as advanced reductions
 
 <img src="img.png"  width="80%"/>
 
 - `collect()`
-    - reduction operation : `Collector` 를 인자로 넘길 때
-    - element를 탐색하고 `Collector`가 연산하게 함
-    - `Collector` lamda : reduction operation을 수행할지 정의
+  - reduction operation : `Collector` 를 인자로 넘길 때
+  - element를 탐색하고 `Collector`가 연산하게 함
+  - `Collector` lamda : reduction operation을 수행할지 정의
 
 #### `Collectors`의 static method
 
@@ -94,7 +94,7 @@ List<Transaction> trnsactions = transactionsStream.collect(Collectors.toList());
 ### 1.2 Predefined collectors
 
 - `Collectors`는 다양한 종류의 유용한 factory method를 제공
-    - e.g. `groupingBy()`, `partitioningBy()` 등
+  - e.g. `groupingBy()`, `partitioningBy()` 등
 
 #### 주요 기능
 
@@ -112,12 +112,12 @@ long howManyMembers2 = memberList.stream().collect(Collectors.counting());
 ### 2.1 Finding maximum and minimum in a stream of values
 
 - `Collectors.maxBy()`, `Collectors.minBy()`
-    - `Comparator`를 인자로 받음
-    - `Comparator`를 이용해 `max` or `min` element를 찾음
+  - `Comparator`를 인자로 받음
+  - `Comparator`를 이용해 `max` or `min` element를 찾음
 
 ````
-Comparator<Leader> memberAgeComparator = Comparator.comparingInt(Leader::getAge);
-Optional<Leader> oldestMember = memberList.stream().collect(Collectors.maxBy(memberAgeComparator));  
+Comparator<Member> memberAgeComparator = Comparator.comparingInt(Member::getAge);
+Optional<Member> oldestMember = memberList.stream().collect(Collectors.maxBy(memberAgeComparator));  
 ````
 
 ### 2.2 Summarization
@@ -129,12 +129,12 @@ Optional<Leader> oldestMember = memberList.stream().collect(Collectors.maxBy(mem
 
 ````
 
-int totalAge = memberList.stream().collect(Collectors.summingInt(Leader::getAge));
-double avgAge = memberList.stream().collect(Collectors.averagingDouble(Leader::getAge));
+int totalAge = memberList.stream().collect(Collectors.summingInt(Member::getAge));
+double avgAge = memberList.stream().collect(Collectors.averagingDouble(Member::getAge));
 
 // static
 
-IntSummaryStatistics memberStatics = memberList.stream().collect(Collectors.summarizingInt(Leader::getAge));
+IntSummaryStatistics memberStatics = memberList.stream().collect(Collectors.summarizingInt(Member::getAge));
 System.out.println("memberStatics = " + memberStatics);
 ````
 
@@ -149,13 +149,13 @@ memberStatics = IntSummaryStatistics{count=12, sum=271, min=18, average=22.58333
 
 ````
 String allMemberName = memberList.stream()
-                                  .map(Leader::getName)
+                                  .map(Member::getName)
                                   .collect(Collectors.joining());
 
 System.out.println("allMemberName = " + allMemberName);
 
 String allMemberName2 = memberList.stream()
-                                    .map(Leader::getName)
+                                    .map(Member::getName)
                                     .collect(Collectors.joining(", "));
 ````
 
@@ -168,11 +168,11 @@ allMemberName2 = karina, winter, gisele, ningning, irene, seulgi, wendy, joy, ye
 
 ````
 int totalAge = memberList.stream()
-                          .collect(Collectors.reducing(0, Leader::getAge
+                          .collect(Collectors.reducing(0, Member::getAge
                                                         , (i, j) -> i + j));
                                                           
 int maxAge = memberList.stream()
-                       .collect(Collectors.reducing(0, Leader::getAge
+                       .collect(Collectors.reducing(0, Member::getAge
                                                      , (i, j) -> i > j ? i : j));
                                                           
 ````
@@ -198,11 +198,11 @@ List<Integer> numbers = stream.reduce(new ArrayList<Integer>()
 ````
 
 - 의미적 오류
-    - `Stream.reduce()` : 2개의 value로 하나의 새로운 value를 만듦 (immutable reduction)
-    - `Stream.collect()`: 컨테이너를 변형하여 새로운 컨테이너를 만듦 (mutable reduction)
+  - `Stream.reduce()` : 2개의 value로 하나의 새로운 value를 만듦 (immutable reduction)
+  - `Stream.collect()`: 컨테이너를 변형하여 새로운 컨테이너를 만듦 (mutable reduction)
 - 실질적 오류
-    - `Stream.reduce()` : 병렬 처리 안됨. 스레드가 동시에 동일한 컨테이너에 접근하면서 문제 발생
-    - `Stream.collect()` : 병렬 처리 가능. 가변 컨테이너에 접근함
+  - `Stream.reduce()` : 병렬 처리 안됨. 스레드가 동시에 동일한 컨테이너에 접근하면서 문제 발생
+  - `Stream.collect()` : 병렬 처리 가능. 가변 컨테이너에 접근함
 
 #### COLLECTION FRAMEWORK FLEXIBILITY: DOING THE SAME OPERATION IN DIFFERENT WAYS
 
@@ -213,24 +213,24 @@ List<Integer> numbers = stream.reduce(new ArrayList<Integer>()
 ````
 // method reference
 int totalAge = memberList.stream()
-                         .collect(Collectors.reducing(0, Leader::getAge
+                         .collect(Collectors.reducing(0, Member::getAge
                                                        , Integer::sum));
 
 // mapping function
 int totalAge = memberList.stream()
-                         .map(Leader::getAge)
+                         .map(Member::getAge)
                          .reduce(0, Integer::sum) // return Optional<Integer>
                          .get();
                          
 // more safety with Optional
 int totalAge = memberList.stream()
-                         .map(Leader::getAge)
+                         .map(Member::getAge)
                          .reduce(Integer::sum)
                          .orElse(0);
 
 // IntStream
 int totalAge = memberList.stream()
-                         .mapToInt(Leader::getAge)
+                         .mapToInt(Member::getAge)
                          .sum();
 ````
 
@@ -243,7 +243,7 @@ int totalAge = memberList.stream()
 // 성능 : Intstream은 auto-unboxing을 피함
 // 가독성 : 가장 간결
 int totalAge = memberList.stream()
-                         .mapToInt(Leader::getAge)
+                         .mapToInt(Member::getAge)
                          .sum();
 ````````
 
@@ -256,41 +256,41 @@ int totalAge = memberList.stream()
 <img src="img_3.png"  width="80%"/>
 
 ````
-Map<Leader.Team, List<Leader>> memberByTeam = memberList.stream()
-                                                        .collect(Collectors.groupingBy(Leader::getTeam));
+Map<Member.Team, List<Member>> memberByTeam = memberList.stream()
+                                                        .collect(Collectors.groupingBy(Member::getTeam));
                                                         
-Map<Leader.AgeLevel, List<Leader>> memberByAgeLevel = memberList.stream()
+Map<Member.AgeLevel, List<Member>> memberByAgeLevel = memberList.stream()
                                                                 .collect(Collectors.groupingBy(member -> {
                                                                     if (member.getAge() < 20) {
-                                                                        return Leader.AgeLevel.CHILD;
+                                                                        return Member.AgeLevel.CHILD;
                                                                     } else if (member.getAge() < 40) {
-                                                                        return Leader.AgeLevel.ADULT;
+                                                                        return Member.AgeLevel.ADULT;
                                                                     } else {
-                                                                        return Leader.AgeLevel.SENIOR;
+                                                                        return Member.AgeLevel.SENIOR;
                                                                     }
                                                                 }));
 ````
 
 - `groupBy()` 에 **classfication function**을 전달
-    - classification function : stream의 element를 분류함
+  - classification function : stream의 element를 분류함
 
 ### 3.1 Manipulating grouped elements
 
 `groupBy()`의 두번쨰 파라미터로 group의 필터 조건 전달
 
 ````
-Map<Leader.Team, List<Leader>> member20ByTeam1 = memberList.stream()
+Map<Member.Team, List<Member>> member20ByTeam1 = memberList.stream()
                                                           .filter(member -> member.getAge() == 20)
-                                                          .collect(Collectors.groupingBy(Leader::getTeam));
+                                                          .collect(Collectors.groupingBy(Member::getTeam));
 
-Map<Leader.Team, List<Leader>> member20ByTeam2 = memberList.stream()
-                                                            .collect(Collectors.groupingBy(Leader::getTeam
+Map<Member.Team, List<Member>> member20ByTeam2 = memberList.stream()
+                                                            .collect(Collectors.groupingBy(Member::getTeam
                                                               , filtering(member -> member.getAge() == 20
                                                                 , Collectors.toList())));
 
-Map<Leader.Team, List<String>> memberByTeam3 = memberList.stream()
-                                                          .collect(groupingBy(Leader::getTeam
-                                                          , mapping(Leader::getName
+Map<Member.Team, List<String>> memberByTeam3 = memberList.stream()
+                                                          .collect(groupingBy(Member::getTeam
+                                                          , mapping(Member::getName
                                                             , toList())));
 
 System.out.println("member20ByTeam1 = " + member20ByTeam1);
@@ -306,15 +306,15 @@ memerByTeam3 = {REDVELVET=[joy, seulgi, ...], AESPA=[karina, winter, ...], ...}
 ```
 
 ````
-Map<Leader.Team, List<String>> teamTags = new HashMap<>();
-teamTags.put(Leader.Team.AESPA, Arrays.asList("4인조", "SM", "여자", "블랙맘바"));
-teamTags.put(Leader.Team.NEW_JEANS, Arrays.asList("5인조", "신인", "여자"));
-teamTags.put(Leader.Team.IVE, Arrays.asList("6인조", "여자", "다국적 그룹"));
-teamTags.put(Leader.Team.RED_VELVET, Arrays.asList("5인조", "SM", "여자", "꽃가루를 날려"));
+Map<Member.Team, List<String>> teamTags = new HashMap<>();
+teamTags.put(Member.Team.AESPA, Arrays.asList("4인조", "SM", "여자", "블랙맘바"));
+teamTags.put(Member.Team.NEW_JEANS, Arrays.asList("5인조", "신인", "여자"));
+teamTags.put(Member.Team.IVE, Arrays.asList("6인조", "여자", "다국적 그룹"));
+teamTags.put(Member.Team.RED_VELVET, Arrays.asList("5인조", "SM", "여자", "꽃가루를 날려"));
 
-Map<Leader.Team, Set<String>> teamWithTag 
+Map<Member.Team, Set<String>> teamWithTag 
     = memberList.stream()
-                 .collect(groupingBy(Leader::getTeam
+                 .collect(groupingBy(Member::getTeam
                     , flatMapping(member -> teamTags.get(member.getTeam()).stream()
                       , toSet())));
 
@@ -332,18 +332,18 @@ teamWithTag = {REDVELVET=[꽃가루를 날려, SM, ...], AESPA=[블랙맘바, �
 - outer `groupingBy()` : 1차 그룹
 - inner `groupingBy()` : 2차 그룹
 - **bucket** : 하나의 key에 여러개의 value를 가질 수 있는 자료구조
-    - bucket dpeth를 늘려서 n차 그룹을 만들 수 있음
+  - bucket dpeth를 늘려서 n차 그룹을 만들 수 있음
 
 ````
-Map<Leader.Team, Map<Leader.AgeLevel, List<Leader>>> memberByTeamAndAgeLevel
-        = memberList.stream().collect(groupingBy(Leader::getTeam,
+Map<Member.Team, Map<Member.AgeLevel, List<Member>>> memberByTeamAndAgeLevel
+        = memberList.stream().collect(groupingBy(Member::getTeam,
                                               groupingBy(member -> {
                                                   if (member.getAge() <= 20) {
-                                                      return Leader.AgeLevel.CHILD;
+                                                      return Member.AgeLevel.CHILD;
                                                   } else if (member.getAge() < 40) {
-                                                      return Leader.AgeLevel.ADULT;
+                                                      return Member.AgeLevel.ADULT;
                                                   } else {
-                                                      return Leader.AgeLevel.SENIOR;
+                                                      return Member.AgeLevel.SENIOR;
                                                   }
                                               })
                                       ));
@@ -360,15 +360,15 @@ memberByTeamAndAgeLevel = {REDVELVET={ADULT=[...]}
 ### 3.3 Collecting data in subgroups
 
 ````
-Map<Leader.Team, Long> memberCountByTeam = memberList.stream()
-  .collect(groupingBy(Leader::getTeam, counting()));
+Map<Member.Team, Long> memberCountByTeam = memberList.stream()
+  .collect(groupingBy(Member::getTeam, counting()));
 
 System.out.println("memberCountByTeam = " + memberCountByTeam);
 
 // Collectors.maxBy() : Optional<T> 반환, 값이 없으면 Optional이 아니라 null 반환 (주의)
-Map<Leader.Team, Optional<Leader>> memberOldestByTeam = memberList.stream()
-  .collect(groupingBy(Leader::getTeam
-        , maxBy(Comparator.comparingInt(Leader::getAge))));
+Map<Member.Team, Optional<Member>> memberOldestByTeam = memberList.stream()
+  .collect(groupingBy(Member::getTeam
+        , maxBy(Comparator.comparingInt(Member::getAge))));
         
 System.out.println("memberOldestByTeam = " + memberOldestByTeam);
 
@@ -377,9 +377,9 @@ System.out.println("memberOldestByTeam = " + memberOldestByTeam);
 ```bash
 memberCountByTeam = {REDVELVET=5, AESPA=4, NEWJEANS=5, IVE=6}
 
-memberOldestByTeam = {RED_VELVET=Optional[Leader{name='irene', isDebut=true, team=RED_VELVET, age=28}]
-                        , AESPA=Optional[Leader{name='karina', isDebut=true, team=AESPA, age=23}]
-                        , NEW_JEANS=Optional[Leader{name='hani', isDebut=false, team=NEW_JEANS, age=20}]}
+memberOldestByTeam = {RED_VELVET=Optional[Member{name='irene', isDebut=true, team=RED_VELVET, age=28}]
+                        , AESPA=Optional[Member{name='karina', isDebut=true, team=AESPA, age=23}]
+                        , NEW_JEANS=Optional[Member{name='hani', isDebut=false, team=NEW_JEANS, age=20}]}
 
 ````
 
@@ -387,18 +387,18 @@ memberOldestByTeam = {RED_VELVET=Optional[Leader{name='irene', isDebut=true, tea
 
 ````
 // groupBy([transform function], [wrapping collector])
-Map<Leader.Team, Leader> memberOldestByTeam = memberList.stream()
-  .collect(groupingBy(Leader::getTeam // classification function
-          , collectingAndThen(maxBy(Comparator.comparingInt(Leader::getAge)) // wrapping collector
+Map<Member.Team, Member> memberOldestByTeam = memberList.stream()
+  .collect(groupingBy(Member::getTeam // classification function
+          , collectingAndThen(maxBy(Comparator.comparingInt(Member::getAge)) // wrapping collector
                                   , Optional::get))); // transformation function
 
 System.out.println("memberOldestByTeam = " + memberOldestByTeam);
 ````
 
 ```bash      
-memberOldestByTeam = {RED_VELVET=Leader{name='irene', isDebut=true, team=RED_VELVET, age=28}
-                        , AESPA=Leader{name='karina', isDebut=true, team=AESPA, age=23}
-                        , NEW_JEANS=Leader{name='hani', isDebut=false, team=NEW_JEANS, age=20}}
+memberOldestByTeam = {RED_VELVET=Member{name='irene', isDebut=true, team=RED_VELVET, age=28}
+                        , AESPA=Member{name='karina', isDebut=true, team=AESPA, age=23}
+                        , NEW_JEANS=Member{name='hani', isDebut=false, team=NEW_JEANS, age=20}}
 ```
 
 <img src="img_5.png"  width="70%"/>
@@ -406,15 +406,15 @@ memberOldestByTeam = {RED_VELVET=Leader{name='irene', isDebut=true, team=RED_VEL
 #### OTHER EXAMPLES OF COLLECTORS USED IN CONJUNCTION WITH GROUPINGBY
 
 ````
-Map<Leader.Team, Set<Leader.AgeLevel>> ageLevelByTeam = memberList.stream()
+Map<Member.Team, Set<Member.AgeLevel>> ageLevelByTeam = memberList.stream()
   .collect(
-          groupingBy(Leader::getTeam, mapping(member -> {
+          groupingBy(Member::getTeam, mapping(member -> {
                       if (member.getAge() < 20) {
-                          return Leader.AgeLevel.CHILD;
+                          return Member.AgeLevel.CHILD;
                       } else if (member.getAge() < 40) {
-                          return Leader.AgeLevel.ADULT;
+                          return Member.AgeLevel.ADULT;
                       } else {
-                          return Leader.AgeLevel.SENIOR;
+                          return Member.AgeLevel.SENIOR;
                       }
                   }, toSet())
           )
@@ -423,15 +423,15 @@ System.out.println("ageLevelByTeam = " + ageLevelByTeam);
 
 // HashSet 반환
 
-Map<Leader.Team, Set<Leader.AgeLevel>> ageLevelBYTeamCollection = memberList.stream()
+Map<Member.Team, Set<Member.AgeLevel>> ageLevelBYTeamCollection = memberList.stream()
   .collect(
-          groupingBy(Leader::getTeam, mapping(member -> {
+          groupingBy(Member::getTeam, mapping(member -> {
                       if (member.getAge() < 20) {
-                          return Leader.AgeLevel.CHILD;
+                          return Member.AgeLevel.CHILD;
                       } else if (member.getAge() < 40) {
-                          return Leader.AgeLevel.ADULT;
+                          return Member.AgeLevel.ADULT;
                       } else {
-                          return Leader.AgeLevel.SENIOR;
+                          return Member.AgeLevel.SENIOR;
                       }
                   }, toCollection(HashSet::new))
           )
@@ -448,47 +448,47 @@ ageLevelByTeam = {RED_VELVET=[ADULT], AESPA=[CHILD, ADULT], NEW_JEANS=[CHILD, AD
 - paritioning function : return Boolean, true와 false로 그룹을 나눔
 
 ````
-Map<Boolean, List<Leader>> partitionedMember = memberList.stream()
-  .collect(partitioningBy(Leader::isKorean));
+Map<Boolean, List<Member>> partitionedMember = memberList.stream()
+  .collect(partitioningBy(Member::isKorean));
 
 System.out.println("partitionedMember = " + partitionedMember);
 
 ... 
-List<Leader> korean = partitionedMember.get(true);
+List<Member> korean = partitionedMember.get(true);
 
-List<Leader> koreanMember1 = partitionedMember.get(true);
-List<Leader> notKoreanMember = memberList.stream().filter(m -> !m.isKorean()).collect(toList());
+List<Member> koreanMember1 = partitionedMember.get(true);
+List<Member> notKoreanMember = memberList.stream().filter(m -> !m.isKorean()).collect(toList());
 ````
 
 ```bash
-partitionedMember = {false=[Leader{name='gisele', ...}, Leader{name='ningning', team=AESPA, ...},...
-                    , true=[Leader{name='karina', team=AESPA, ...}, Leader{name='winter', team=AESPA, ...}, ...]}
+partitionedMember = {false=[Member{name='gisele', ...}, Member{name='ningning', team=AESPA, ...},...
+                    , true=[Member{name='karina', team=AESPA, ...}, Member{name='winter', team=AESPA, ...}, ...]}
 ```
 
 ### 4.1 Advantages of partitioning
 
 ````
-Map<Boolean, Map<Leader.Nation, List<Leader>>> partitionedMember1 = memberList.stream()
-        .collect(partitioningBy(Leader::isKorean
-                , groupingBy(Leader::getNation)));
+Map<Boolean, Map<Member.Nation, List<Member>>> partitionedMember1 = memberList.stream()
+        .collect(partitioningBy(Member::isKorean
+                , groupingBy(Member::getNation)));
 
 System.out.println("partitionedMember1 = " + partitionedMember1);
 
-Map<Boolean, Leader> partitionedMemberOldest = memberList.stream()
-        .collect(partitioningBy(Leader::isKorean
-                , collectingAndThen(maxBy(Comparator.comparingInt(Leader::getAge)), Optional::get)));
+Map<Boolean, Member> partitionedMemberOldest = memberList.stream()
+        .collect(partitioningBy(Member::isKorean
+                , collectingAndThen(maxBy(Comparator.comparingInt(Member::getAge)), Optional::get)));
 
 System.out.println("partitionedMemberOldest = " + partitionedMemberOldest);
 ````
 
 ```bash
-partitionedMember1 = {false={AUSTRAILIAN=[Leader{name='hani', ...}]
-    , AMERICAN=[Leader{name='gisele', ...}, Leader{name='wendy', ...}]
-    , CHINESE=[Leader{name='ningning', ...}]}
+partitionedMember1 = {false={AUSTRAILIAN=[Member{name='hani', ...}]
+    , AMERICAN=[Member{name='gisele', ...}, Member{name='wendy', ...}]
+    , CHINESE=[Member{name='ningning', ...}]}
   , true={KOREAN=[...]}}
   
-partitionedMemberOldest = {false=Leader{name='wendy', team=RED_VELVET, isDebut=true, age=27, nation=AMERICAN}
-  , true=Leader{name='irene', team=RED_VELVET, isDebut=true, age=28, nation=KOREAN}}
+partitionedMemberOldest = {false=Member{name='wendy', team=RED_VELVET, isDebut=true, age=27, nation=AMERICAN}
+  , true=Member{name='irene', team=RED_VELVET, isDebut=true, age=28, nation=KOREAN}}
 
 ````
 
@@ -539,7 +539,7 @@ public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
 ````
 
 - Collector interface : reduction operation의 명세
-    - e.g. `toList()`, `groupingBy()`
+  - e.g. `toList()`, `groupingBy()`
 - `T` : stream element type
 - `A` : accumulator type
 - `R` : result type
@@ -549,8 +549,8 @@ public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
 <img src="img_6.png"  width="80%"/>
 
 ````
-List<Leader> members1 = memberList.stream().collect(toList());
-List<Leader> members2 = memberList.stream().collect(new ToListCollector<>()); // same as above
+List<Member> members1 = memberList.stream().collect(toList());
+List<Member> members2 = memberList.stream().collect(new ToListCollector<>()); // same as above
 ````
 
 #### MAKING A NEW RESULT CONTAINER: THE SUPPLIER METHOD
@@ -566,7 +566,7 @@ public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
 ````
 
 - `supplier()` : collection process 동안 사용할 빈 result container를 생성하는 method
-    - return `Supplier<A>`
+  - return `Supplier<A>`
 
 #### ADDING AN ELEMENT TO A RESULT CONTAINER: THE ACCUMULATOR METHOD
 
@@ -581,7 +581,7 @@ public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
 ````
 
 - `accumulator()` : stream element를 result container에 추가하는 method
-    - return `BiConsumer<A, T>`
+  - return `BiConsumer<A, T>`
 
 #### APPLYING THE FINAL TRANSFORMATION TO THE RESULT CONTAINER: THE FINISHER METHOD
 
@@ -595,7 +595,7 @@ public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
 ````
 
 - `finisher()` : 연산 마지막에 호출되어야하는 함수를 반환
-    - return `Function<A, R>`
+  - return `Function<A, R>`
 
 #### MERGING TWO RESULT CONTAINERS: THE COMBINER METHOD
 
@@ -614,8 +614,8 @@ public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
 ````
 
 - `combiner()` : 각 subpart의 결과를 합치는 method
-    - return `BinaryOperator<A>`
-    - 병렬 stream에서 사용되는 method
+  - return `BinaryOperator<A>`
+  - 병렬 stream에서 사용되는 method
 
 #### THE CHARACTERISTICS METHOD
 
@@ -628,10 +628,10 @@ public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
 ````
 
 - enum `Characteristics` : `Collector`의 characteristics를 정의
-    - `CONCURRENT` : accumulator function이 concurrent하게 수행될 수 있음
-    - `UNORDERED` : stream element의 순서가 보장되지 않음
-    - `IDENTITY_FINISH` : `finisher()`가 `identity` function을 리턴함
-        - 추갖거인 transformation이 필요하지 않음
+  - `CONCURRENT` : accumulator function이 concurrent하게 수행될 수 있음
+  - `UNORDERED` : stream element의 순서가 보장되지 않음
+  - `IDENTITY_FINISH` : `finisher()`가 `identity` function을 리턴함
+    - 추갖거인 transformation이 필요하지 않음
 
 ### 5.2 Putting them all together
 
@@ -680,14 +680,14 @@ public class ToListCollector<T> implements Collector<T, List<T>, List<T>> {
 ```
 
 ````
-List<Leader> members1 = memberList.stream().collect(toList());
-List<Leader> members2 = memberList.stream().collect(new ToListCollector<>()); // same as above
+List<Member> members1 = memberList.stream().collect(toList());
+List<Member> members2 = memberList.stream().collect(new ToListCollector<>()); // same as above
 ````
 
 #### PERFORMING A CUSTOM COLLECT WITHOUT CREATING A COLLECTOR IMPLEMENTATION
 
 ````
-List<Leader> member3 = memberList.stream().collect(ArrayList::new, List::add, List::addAll);
+List<Member> member3 = memberList.stream().collect(ArrayList::new, List::add, List::addAll);
 ````
 
 - `Collector`를 구현하지 않고도 custom collector를 사용할 수 있음
@@ -738,7 +738,7 @@ public static boolean isPrime(List<Integer> primes, int cadidate){
 public class PrimeNumbersCollector implements Collector<Integer // stream element type
         , Map<Boolean, List<Integer>>  // accumulator의 result type
         , Map<Boolean, List<Integer>>> { // collector의 result type
-    // ...
+  // ...
 }
 ````
 
@@ -750,21 +750,21 @@ public class PrimeNumbersCollector implements Collector<Integer
         , Map<Boolean, List<Integer>>
         , Map<Boolean, List<Integer>>> {
 
-    @Override
-    public Supplier<Map<Boolean, List<Integer>>> supplier() {
-        return () -> new HashMap<Boolean, List<Integer>>() {{
-            put(true, new ArrayList<>());
-            put(false, new ArrayList<>());
-        }};
-    }
+  @Override
+  public Supplier<Map<Boolean, List<Integer>>> supplier() {
+    return () -> new HashMap<Boolean, List<Integer>>() {{
+      put(true, new ArrayList<>());
+      put(false, new ArrayList<>());
+    }};
+  }
 
-    @Override
-    public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator() {
-        return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
-            acc.get(isPrime(acc.get(true), candidate))
-                    .add(candidate);
-        };
-    }
+  @Override
+  public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator() {
+    return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
+      acc.get(isPrime(acc.get(true), candidate))
+              .add(candidate);
+    };
+  }
 }
 ````
 
@@ -775,18 +775,18 @@ public class PrimeNumbersCollector implements Collector<Integer
         , Map<Boolean, List<Integer>>
         , Map<Boolean, List<Integer>>> {
 
-    // ...
+  // ...
 
-    @Override
-    public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
-        return (Map<Boolean, List<Integer>> map1, Map<Boolean, List<Integer>> map2) -> {
-            map1.get(true).addAll(map2.get(true));
-            map1.get(false).addAll(map2.get(false));
-            return map1;
-        };
+  @Override
+  public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
+    return (Map<Boolean, List<Integer>> map1, Map<Boolean, List<Integer>> map2) -> {
+      map1.get(true).addAll(map2.get(true));
+      map1.get(false).addAll(map2.get(false));
+      return map1;
+    };
 
-        // or throw new UnsupportedOperationException(); // 병렬 실행을 막음
-    }
+    // or throw new UnsupportedOperationException(); // 병렬 실행을 막음
+  }
 }
 ````
 
@@ -802,40 +802,40 @@ public class PrimeNumbersCollector implements Collector<Integer
         , Map<Boolean, List<Integer>>
         , Map<Boolean, List<Integer>>> {
 
-    @Override
-    public Supplier<Map<Boolean, List<Integer>>> supplier() {
-        return () -> new HashMap<Boolean, List<Integer>>() {{
-            put(true, new ArrayList<>());
-            put(false, new ArrayList<>());
-        }};
-    }
+  @Override
+  public Supplier<Map<Boolean, List<Integer>>> supplier() {
+    return () -> new HashMap<Boolean, List<Integer>>() {{
+      put(true, new ArrayList<>());
+      put(false, new ArrayList<>());
+    }};
+  }
 
-    @Override
-    public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator() {
-        return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
-            acc.get(isPrime(acc.get(true), candidate))
-                    .add(candidate);
-        };
-    }
+  @Override
+  public BiConsumer<Map<Boolean, List<Integer>>, Integer> accumulator() {
+    return (Map<Boolean, List<Integer>> acc, Integer candidate) -> {
+      acc.get(isPrime(acc.get(true), candidate))
+              .add(candidate);
+    };
+  }
 
-    @Override
-    public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
-        return (Map<Boolean, List<Integer>> map1, Map<Boolean, List<Integer>> map2) -> {
-            map1.get(true).addAll(map2.get(true));
-            map1.get(false).addAll(map2.get(false));
-            return map1;
-        };
-    }
+  @Override
+  public BinaryOperator<Map<Boolean, List<Integer>>> combiner() {
+    return (Map<Boolean, List<Integer>> map1, Map<Boolean, List<Integer>> map2) -> {
+      map1.get(true).addAll(map2.get(true));
+      map1.get(false).addAll(map2.get(false));
+      return map1;
+    };
+  }
 
-    @Override
-    public Function<Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> finisher() {
-        return Function.identity();
-    }
+  @Override
+  public Function<Map<Boolean, List<Integer>>, Map<Boolean, List<Integer>>> finisher() {
+    return Function.identity();
+  }
 
-    @Override
-    public Set<Characteristics> characteristics() {
-        return Collections.unmodifiableSet(EnumSet.of(IDENTITY_FINISH));
-    }
+  @Override
+  public Set<Characteristics> characteristics() {
+    return Collections.unmodifiableSet(EnumSet.of(IDENTITY_FINISH));
+  }
 }
 ````
 
@@ -880,7 +880,7 @@ Fastest execution done in 8 msecs
 ## 7. Summary
 
 - `collect()` : collector를 인자로 받는 terminal operation
-    - collector : stream의 요소를 요약된 결과로 취합
+  - collector : stream의 요소를 요약된 결과로 취합
 - 정의되어있는 collector : 최소, 최대, 평균 등
 - `groupingBy()`, `partitioningBy()` : collector를 사용해서 그룹화
 - collector를 사용해서 n-level의 그룹화, 파티션, reduction 가능

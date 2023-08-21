@@ -15,7 +15,7 @@
 
 - 기존의 코드를 람다 표현식을 활용해서 refactoring 하는 방법
 - lamda를 활용한 디자인 패턴
-    - strategy, template method, observer, chain of responsibility, factory
+  - strategy, template method, observer, chain of responsibility, factory
 - lamda expression과 Stream API의 테스트, 디버깅
 
 ---
@@ -30,9 +30,9 @@
 - 가독성은 주관적
 - 가독성 : 다른 사람이 얼마나 쉽게 이해 가능한가
 - **Java 8 을 사용하여 refactoring 하기**
-    - anonymous class -> lambda expression
-    - lambda expression -> method reference
-    - imperative data processing -> Stream API
+  - anonymous class -> lambda expression
+  - lambda expression -> method reference
+  - imperative data processing -> Stream API
 
 ### 1.2 From anonymous classes to lambda expressions
 
@@ -98,45 +98,45 @@ doSomething((Task)() -> System.out.println("Danger danger!!")); // OK
 
 ````
 // lamda
-Map<Leader.AgeLevel, List<Leader>> byTeam = memberList.stream()
+Map<Member.AgeLevel, List<Member>> byTeam = memberList.stream()
     .collect(groupingBy(member -> {
         member.getAgeLevel();
     }));
     
 // method reference
-Map<Leader.AgeLevel, List<Leader>> byTeam = memberList.stream()
-    .collect(groupingBy(Leader::getAgeLevel));
+Map<Member.AgeLevel, List<Member>> byTeam = memberList.stream()
+    .collect(groupingBy(Member::getAgeLevel));
     
 // lamda
-memberList.sort((Leader m1, Leader m2) -> m1.getAge().compareTo(m2.getAge()));
+memberList.sort((Member m1, Member m2) -> m1.getAge().compareTo(m2.getAge()));
 
 // method reference
-memberList.sort(comparing(Leader::getAge));
+memberList.sort(comparing(Member::getAge));
 
 // lamda
 int totalAge = memberList.stream()
-  .map(Leader::getAge).reduce(0, (a, b) -> a + b);
+  .map(Member::getAge).reduce(0, (a, b) -> a + b);
   
 // method reference + reduction operation + built-in helper method
 int totalAge = memberList.stream()
- .collect(summingInt(Leader::getAge));
+ .collect(summingInt(Member::getAge));
 ````
 
 - helper static method : `comparing()`, `maxBy()`, ...
 - reduction operation : `sum()`, `maximum()`, `average()`, ...
-    - built-in helper method : `summingInt()`, `maxBy()`, `averagingInt()`, ...
+  - built-in helper method : `summingInt()`, `maxBy()`, `averagingInt()`, ...
 
 ### 1.4 From imperative data processing to Streams
 
 - collection을 활용해서 데이터를 처리 -> Stream API
 - 의도가 명확, Streams API 내부적으로 이미 최적화 되어있음
-    - short-circuiting, lazy evaluation, parallel processing
+  - short-circuiting, lazy evaluation, parallel processing
 - 제어 흐름을 못함 (`break()`, `continue()`, `return`)
 
 ````
 // imperative data processing
 List<String> memberAespa = new ArrayList<>();
-for(Leader member : memberList) {
+for(Member member : memberList) {
     if(member.getTeam().equals(Aespa)) {
         memberAespa.add(member.getName());
     }
@@ -145,7 +145,7 @@ for(Leader member : memberList) {
 // Streams API
 memberList.stream()
     .filter(member -> member.getTeam().equals(Aespa))
-    .map(Leader::getName)
+    .map(Member::getName)
     .collect(toList());
 ````
 
@@ -155,8 +155,8 @@ memberList.stream()
 
 - lamda는 functional interface 없이 사용 불가능
 - lamda 표현식을 위한 코딩 패턴
-    - conditional deferred execution
-    - execute around
+  - conditional deferred execution
+  - execute around
 
 #### CONDITIONAL DEFERRED EXECUTION
 
@@ -179,17 +179,17 @@ logger.log(Level.FINER, () -> "Problem: " + generateDiagnostic()); // Supplier<S
 
 @FunctionalInterface
 public interface MemberProcessor {
-    String process(Leader member);
+    String process(Member member);
 }
 
 public static String processMember(MemberProcessor p) {
-    Leader member = memberService.getFavoriteMember(); // DB Connection
+    Member member = memberService.getFavoriteMember(); // DB Connection
     return p.process(member);
 }
 
-String nameWtihTeam = processMember((Leader member) -> member.getName() + " | " + member.getTeam());
-String nameWithAge = processMember((Leader member) -> member.getName() + " | " + member.getAge());
-String nameWIthTeanAndAge = processMember((Leader member) -> member.getName() + " | " + member.getTeam() + " | " + member.getAge());
+String nameWtihTeam = processMember((Member member) -> member.getName() + " | " + member.getTeam());
+String nameWithAge = processMember((Member member) -> member.getName() + " | " + member.getAge());
+String nameWIthTeanAndAge = processMember((Member member) -> member.getName() + " | " + member.getTeam() + " | " + member.getAge());
 ````
 
 ## 2. Refactoring object-oriented design patterns with lambdas
@@ -300,10 +300,10 @@ new OnlineBankingLambda().processCustomer(1337
 <img src="img_1.png"  width="80%"/>
 
 - object (_subject_)가 event 발생 시 다른 objects (_observers_)에게 알림
-    - event : state change 등
+  - event : state change 등
 - GUI 버튼 클릭
 - lamda로 변환이 힘든 경우
-    - observer의 세부내이 복잡할 때 (state, methods 등)
+  - observer의 세부내이 복잡할 때 (state, methods 등)
 
 ````java
 interface Observer {
@@ -537,7 +537,7 @@ public class Foo {
 ### 3.1 Testing the behavior of a visible lambda
 
 - lamda는 익명 메서드이기 떄문에 테스트가 어려움
-    - 테스트에서 메서드 이름으로 호출이 어려움
+  - 테스트에서 메서드 이름으로 호출이 어려움
 - lamda :  함수형 인터페이스의 객체를 만들어 Return
 - e.g. `Comparator` 객체를 만들어서 테스트에 활용
 
@@ -598,7 +598,7 @@ memberList.forEach(m -> {
 });
 
 // 별도의 메서드로 분리
-private void printNameAndAge(Leader m) {
+private void printNameAndAge(Member m) {
   if(m.getAge() > 20)
     System.out.println(m.getName() + "is older than 20");
    else
@@ -606,7 +606,7 @@ private void printNameAndAge(Leader m) {
 }
 
 memberList.forEach(m -> printNameAndAge(m)); // lamda
-memberList.forEach(Leader::printNameAndAge); // method reference
+memberList.forEach(Member::printNameAndAge); // method reference
 
 ````
 
@@ -637,7 +637,7 @@ public void testFilter() {
 
 - stack frame : 메서드 호출 시, 메서드의 매개변수, 지역변수, 리턴값 등이 저장되는 메모리 영역
 - program failed 시 _stack trace_를 통해 정보를 얻을 수 있음
-    - stack trace : 프로그램 실행 중 예외가 발생한 위치를 알려주는 메시지
+  - stack trace : 프로그램 실행 중 예외가 발생한 위치를 알려주는 메시지
 
 #### USING LAMDA EXPRESSIONS
 
@@ -711,11 +711,11 @@ after limit : 20
 
 - Lamda 표현식은 가독성과 유연성을 높여줌
 - 익명 클래스 -> lamda 표현식
-    - `this` 키워드, shadowing variable 등 주의
+  - `this` 키워드, shadowing variable 등 주의
 - 메서드 참조는 lamda 보다 가독성이 좋음
 - iterative colleciton processing -> Streams API
 - Lamda는 디자인 패턴에서 중복코드를 없애는데 기여
-    - Strategy, Template Method, Observer, chain of responsibility, Factory
+  - Strategy, Template Method, Observer, chain of responsibility, Factory
 - Lamda 는 유닛 테스트가 가능하지만, 람다의 동작을 테스트 하는 것에 집중할 것 (람다 내부 로직 보다)
 - 복잡한 Lamda를 일반 메서드로 분리해도 됨
 - Lamda는 stack trace에서 읽기 힘듦
