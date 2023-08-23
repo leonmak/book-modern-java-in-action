@@ -1,16 +1,57 @@
 package org.example.part4;
 
 import java.time.*;
+import java.time.chrono.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.*;
+import java.util.TimeZone;
 
 public class Main12 {
 
     public static void main(String[] args) {
 
 //        ch1();
-        ch2();
+//        ch2();
+        ch3();
+
+    }
+
+    private static void ch3() {
+        // ZoneId {area}/{city}
+        ZoneId zoneSeoul = ZoneId.of("Asia/Seoul");
+        ZoneId zoneIdDefault = TimeZone.getDefault().toZoneId();
+
+        // 특정 시간에 time-zone 적용
+        LocalDate date = LocalDate.of(2023, 8, 23);
+        ZonedDateTime zdt1 = date.atStartOfDay(zoneSeoul); // 2023-08-23T00:00+09:00[Asia/Seoul]
+
+        LocalDateTime dateTime = LocalDateTime.of(2023, 8, 23, 13, 45, 20);
+        ZonedDateTime zdt2 = dateTime.atZone(zoneSeoul); // 2023-08-23T13:45:20+09:00[Asia/Seoul]
+
+        Instant instant = Instant.now();
+        ZonedDateTime zdt3 = instant.atZone(zoneSeoul); // 2023-08-23T11:17:28.524816+09:00[Asia/Seoul]
+
+        ZoneOffset zoneOffsetKorea = ZoneOffset.of("+09:00");
+
+        LocalDateTime dateTime1 = LocalDateTime.of(2023, 8, 23, 13, 45, 20);
+        OffsetDateTime dateTimeInKorea = OffsetDateTime.of(dateTime1, zoneOffsetKorea); // 2023-08-23T13:45:20+09:00
+
+        LocalDate date1 = LocalDate.of(2023, 8, 23);
+        JapaneseDate japaneseDate = JapaneseDate.from(date1); // Japanese Heisei 35-08-23
+
+        Chronology chronologyJapan = Chronology.ofLocale(java.util.Locale.JAPAN);
+        ChronoLocalDate now = chronologyJapan.dateNow(); // Japanese Heisei 35-08-23
+        System.out.println("japaneseDate = " + now);
+
+        HijrahDate dateRamadan = HijrahDate.now() // 현재 날짜 기준
+                .with(ChronoField.DAY_OF_MONTH, 1).with(ChronoField.MONTH_OF_YEAR, 9); // 라마단 달의 첫째 날
+
+        Temporal ramadanBegin = IsoChronology.INSTANCE.date(dateRamadan);
+        Temporal ramadanEnd = IsoChronology.INSTANCE.date(dateRamadan.with(TemporalAdjusters.lastDayOfMonth()));
+
+        System.out.println("ramadanBegin = " + ramadanBegin);
+        System.out.println("ramadanEnd = " + ramadanEnd);
     }
 
     private static void ch2() {

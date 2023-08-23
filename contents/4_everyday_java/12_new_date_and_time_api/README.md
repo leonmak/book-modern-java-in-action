@@ -241,5 +241,78 @@ DateTimeFormatter formatterKoreanManner = new DateTimeFormatterBuilder().appendT
 
 ## 3. Working with different time zones and calendars
 
+- `java.time.ZoneId` : `java.util.TimeZone`의 대체제, time zone 표현
+
+### 3.1 Using time zones
+
+- **_time zone_** : 지역별로 시간을 표현하는 표준 시간대
+- `ZoneRules`에 40개의 time zone 정보가 저장되어 있음
+    - `java.time.ZoneId.getRules()` : `ZoneRules`를 반환하는 method
+
+<img src="img.png"  width="60%"/>
+
+````
+// ZoneId {area}/{city}
+ZoneId zoneSeoul = ZoneId.of("Asia/Seoul");
+ZoneId zoneIdDefault = TimeZone.getDefault().toZoneId();
+
+// 특정 시간에 time-zone 적용
+LocalDate date = LocalDate.of(2023, 8, 23);
+ZonedDateTime zdt1 = date.atStartOfDay(zoneSeoul); // 2023-08-23T00:00+09:00[Asia/Seoul]
+
+LocalDateTime dateTime = LocalDateTime.of(2023, 8, 23, 13, 45, 20);
+ZonedDateTime zdt2 = dateTime.atZone(zoneSeoul); // 2023-08-23T13:45:20+09:00[Asia/Seoul]
+
+Instant instant = Instant.now();
+ZonedDateTime zdt3 = instant.atZone(zoneSeoul); // 2023-08-23T11:17:28.524816+09:00[Asia/Seoul]
+````
+
+### 3.2 Fixed offset form UTC/Greenwich
+
+- "한국은 UTC+09:00 이다" 라고 표현하는 방법
+- `java.time.ZoneOffset` : UTC/Greenwich와의 차이를 표현하는 클래스
+    - **DST <sup>Daylight Saving Time</sup> 을 고려하지 않음**
+- `java.time.OffsetDateTime` : date-time + UTC/Greenwich offset in ISO-8601 calendar system
+
+````
+ZoneOffset zoneOffsetKorea = ZoneOffset.of("+09:00");
+
+LocalDateTime dateTime = LocalDateTime.of(2023, 8, 23, 13, 45, 20);
+OffsetDateTime dateTimeInKorea = OffsetDateTime.of(dateTime, zoneOffsetKorea); // 2023-08-23T13:45:20+09:00
+````
+
+### 3.3 Using alternative calendar systems
+
+- ISO-8601 calendar system 외의 시스템
+- `java.time.chrono.ThaiBuddhistDate`, `java.time.chrono.MinguoDate`, `java.time.chrono.JapaneseDate`, `java.time.chrono.HijrahDate`
+- 모두 `java.time.chrono.ChronoLocalDate`를 구현
+- **`ChronoLocalDate` 대신 `LocalDate`를 사용하는 것이 좋음**
+    - 특수한 경우 (local issue)에만 사용
+
+````
+LocalDate date1 = LocalDate.of(2023, 8, 23);
+JapaneseDate japaneseDate = JapaneseDate.from(date1); // Japanese Heisei 35-08-23
+
+Chronology chronologyJapan = Chronology.ofLocale(ja
+````
+
+#### ISLAMIC CALENDAR
+
+- `java.time.chrono.HijrahDate` : Islamic calendar system (Hijrah)
+- lunar month 기반, 변형이 많음
+- `withVariant()`을 통해 원하는 변형 선택
+    - Java 8 은 Umm Al-Qura 를 표준으로 지원
+
+````
+HijrahDate dateRamadan = HijrahDate.now() // 현재 날짜 기준
+        .with(ChronoField.DAY_OF_MONTH, 1).with(ChronoField.MONTH_OF_YEAR, 9); // 라마단 달의 첫째 날
+
+Temporal ramadanBegin = IsoChronology.INSTANCE.date(dateRamadan);
+Temporal ramadanEnd = IsoChronology.INSTANCE.date(dateRamadan.with(TemporalAdjusters.lastDayOfMonth()));
+
+System.out.println("ramadanBegin = " + ramadanBegin);
+System.out.println("ramadanEnd = " + ramadanEnd);
+````
+
 ## 4. summary
 
