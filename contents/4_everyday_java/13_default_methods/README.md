@@ -190,6 +190,73 @@ public interface Collection<E> extends Iterable<E> {
 
 ## 3. Usage patterns for default methods
 
+### 3.1 Optional methods
+
+```java
+interface Iterator<E> {
+    boolean hasNext();
+
+    E next();
+
+    // 구체 클래스는 remove를 무시해도 됨 / 사용하지 않을 메서드를 구현할 필요가 없음
+    default void remove() {
+        throw new UnsupportedOperationException("remove");
+    }
+}
+```
+
+### 3.2 Multiple inheritance of behavior
+
+<img src="img_2.png"  width="30%"/>
+
+- **_Multiple inheritance of behavior_** 가 가능함
+
+````java
+public class ArrayList<E> extends AbstractList<E> // class 하나만 확장
+        implements List<E>, RandomAccess, Cloneable, java.io.Serializable { // interface 여러개 구현
+    //...
+}
+````
+
+- MULTIPLE INHERITANCE OF TYPES : `ArrayList`는 7개 타입의 subtype
+
+#### MINIMAL INTERFACES WITH ORTHOGONAL FUNCTIONALITIES
+
+````java
+public interface Rotatable {
+    void setRotationAngle(int angleInDegrees);
+
+    int getRotationAngle();
+
+    // 구체 클래스는 자동으로 rotateBy() method를 사용할 수 있음 (구현이 필요 없음)
+    default void rotateBy(int angleInDegrees) {
+        setRotationAngle((getRotationAngle() + angleInDegrees) % 360);
+    }
+}
+
+````
+
+#### COMPOSING INTERFACES
+
+<img src="img_3.png"  width="60%"/>
+
+````
+public Idol implements Dancing, Singing, Acting {
+    //...
+}
+
+public Actor implements Acting {
+    //...
+}
+````
+
+#### Inheritance considered harmful
+
+- 상속이 무조건 코드 재사용의 해답이 아님
+- 100개의 메서드를 가진 클래스의 1개 메서드 상속을 위해 99개의 메서드를 상속받는 것은 비효율적
+- `final` class로 선언하여 상속을 금할 수 있음
+- interface도 default method를 사용하여 interface의 후손에 대한 불필요한 상속량을 줄일 수 있음
+
 ## 4. Resolution rules
 
 ## 5. Summary
