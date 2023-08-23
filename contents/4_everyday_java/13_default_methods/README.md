@@ -154,6 +154,40 @@ public interface Resizable extends Drawable {
 
 ## 2. Default methods in a nutshell
 
+- interface에 defatult 접근제어자를 가진 method
+- body는 일반 method와 같음
+- Java 8의 많은 defautl method들이 추가됨
+    - e.g. `java.util.Collection.stream()`, `java.util.List.sort()`, `Predicate.and()`, `Function.andThen()`, ...
+    - 주로 funcitonal interface에 추가됨 (1 abstract method + n default method)
+
+```java
+public interface Collection<E> extends Iterable<E> {
+    //...
+    // Collection interface에 추가된 default method
+    // Collection을 구현한 ArrayList, LinkedList, HashSet, TreeSet, ... 등에서 바로 사용 가능
+    default boolean removeIf(Predicate<? super E> filter) {
+        Objects.requireNonNull(filter);
+        boolean removed = false;
+        final Iterator<E> each = iterator();
+        while (each.hasNext()) {
+            if (filter.test(each.next())) {
+                each.remove();
+                removed = true;
+            }
+        }
+        return removed;
+    }
+    //...
+}
+```
+
+#### Abstract class vs interface in Java 8
+
+| 항목              | abstract class        | interface                |
+|-----------------|-----------------------|--------------------------|
+| instance fields | O                     | X                        |
+| 확장과 구현          | 하나만 확장 (`extends`) 가능 | 여러개 구현 (`implements`) 가능 |
+
 ## 3. Usage patterns for default methods
 
 ## 4. Resolution rules

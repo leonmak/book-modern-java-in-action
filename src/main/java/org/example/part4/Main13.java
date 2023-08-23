@@ -9,6 +9,5 @@ public class Main13 {
         numbers.sort(Comparator.naturalOrder());
 
         numbers.stream();
-
     }
 }
