@@ -133,6 +133,112 @@ Period twoYearsSixMonthsOneDay = Period.of(2, 6, 1);
 
 ## 2. Manipulating, parsing, and formatting dates
 
+````
+LocalDate date1 = LocalDate.of(2023, 8, 23); // 2023-08-23
+LocalDate date2 = date1.withYear(2024); // 2024-08-23
+LocalDate date3 = date2.withDayOfMonth(25); // 2024-08-25
+LocalDate date4 = date3.with(ChronoField.MONTH_OF_YEAR, 9); // 2024-09-25
+
+// declarative manner
+LocalDate date5 = date1.plusWeeks(1); // 2023-08-30
+LocalDate date6 = date5.minusYears(3); // 2020-08-30
+LocalDate date7 = date6.plus(6, ChronoUnit.MONTHS); // 2021-02-28
+
+LocalDate date = LocalDate.of(2014, 3, 18);
+date = date.with(ChronoField.MONTH_OF_YEAR, 9); // 2014-09-18
+date = date.plusYears(2).minusDays(10); // 2016-09-08
+System.out.println(date); // 2016-09-08
+
+date.withYear(2011); // LocalDate는 불변
+System.out.println(date); // 2016-09-08
+````
+
+### 2.1 Working with TemporalAdjusters
+
+- `java.time.temporal.TemporalAdjuster` : 향상된 날짜 연산 가능
+    - e.g. 다음 월요일, 다음 월의 첫번째 화요일, 다음 월의 마지막 날 등
+- `TemporalAdjusters` : `TemporalAdjuster`를 구현, static factory method 제공
+- `with()`를 사용하여 `TemporalAdjuster`를 적용할 수 있음
+- `java.time.temporal.TemporalAdjuster`를 직접 구현해서 사용할 수 있음
+
+````
+LocalDate date1 = LocalDate.of(2023, 8, 23); // 2023-08-23
+LocalDate date2 = date1.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)); // 2023-08-27
+LocalDate date3 = date2.with(TemporalAdjusters.lastDayOfMonth()); // 2023-08-31
+````
+
+| method                                | description         |
+|---------------------------------------|---------------------|
+| `dayOfWeekInMonth()`                  | 월의 n번째 요일           |
+| `firstDayOfMonth()`                   | 월의 첫번째 날            |
+| `firstDayOfNextMonth()`               | 다음 월의 첫번째 날         |
+| `firstDayOfNextYear()`                | 다음 해의 첫번째 날         |
+| `firstDayOfYear()`                    | 해의 첫번째 날            |
+| `firstInMonth()`                      | 월의 첫번째 요일           |
+| `lastDayOfMonth()`                    | 월의 마지막 날            |
+| `lastDayOfNextMonth()`                | 다음 월의 마지막 날         |
+| `lastDayOfNextYear()`                 | 다음 해의 마지막 날         |
+| `lastDayOfYear()`                     | 해의 마지막 날            |
+| `lastInMonth()`                       | 월의 마지막 요일           |
+| `next()`<br/>`previous()`             | 다음/이전 날짜            |
+| `nextOrSame()`<br/>`previousOrSame()` | 다음/이전 날짜, 같은 날짜는 유지 |
+
+```java
+
+@FunctionalInterface
+public interface TemporalAdjuster {
+    Temporal adjustInto(Temporal temporal);
+}
+
+public static class NextWorkingDay implements TemporalAdjuster {
+    @Override
+    public Temporal adjustInto(Temporal temporal) {
+        DayOfWeek dow = DayOfWeek.of(temporal.get(ChronoField.DAY_OF_WEEK)); // 현재 요일
+        int dayToAdd = 1; // 기본으로 +1 일
+        if (dow == DayOfWeek.FRIDAY) dayToAdd = 3; // 금요일이면 +3 일
+        else if (dow == DayOfWeek.SATURDAY) dayToAdd = 2; // 토요일이면 +2 일
+        return temporal.plus(dayToAdd, ChronoUnit.DAYS);
+    }
+}
+```
+
+```
+LocalDate nextWorkingDate = date1.with(new NextWorkingDay());
+```
+
+### 2.2 Printing and parsing date-time objects
+
+- `java.time.fomrat` package : 날짜를 formatting하고 parsing하는 클래스 제공
+- `java.time.fomrat.DateTimeFormatter` : `java.text.SimpleDateFormat`의 대체제
+    - thread-safe함
+
+````
+LocalDate date1 = LocalDate.parse("20230823", DateTimeFormatter.BASIC_ISO_DATE);
+LocalDate date2 = LocalDate.parse("2023-08-23", DateTimeFormatter.ISO_LOCAL_DATE);
+
+// pattern 지정
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+LocalDate date3 = LocalDate.of(2023, 8, 23);
+String formattedDate = date3.format(formatter); // 23/08/2023
+LocalDate date4 = LocalDate.parse(formattedDate, formatter);
+
+// java.util.Locale 이용
+DateTimeFormatter formatterKorean = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일", java.util.Locale.KOREAN);
+LocalDate date5 = LocalDate.of(2023, 8, 23);
+String formattedDateKorean = date5.format(formatterKorean); // 2023년 08월 23일
+LocalDate date6 = LocalDate.parse(formattedDateKorean, formatterKorean);
+
+// builer pattern : DateTimeFormatterBuilder
+DateTimeFormatter formatterKoreanManner = new DateTimeFormatterBuilder().appendText(ChronoField.YEAR)
+        .appendLiteral("년 ")
+        .appendText(ChronoField.MONTH_OF_YEAR)
+        .appendLiteral("월 ")
+        .appendText(ChronoField.DAY_OF_MONTH)
+        .appendLiteral("일")
+        .parseCaseInsensitive() // 대소문자 구분 없이 (Mar == MAR == mAr)
+        .toFormatter(java.util.Locale.KOREAN);
+````
+
 ## 3. Working with different time zones and calendars
 
 ## 4. summary
