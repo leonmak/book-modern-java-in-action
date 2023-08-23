@@ -61,6 +61,97 @@ public interface List<E> extends Collection<E> {
 
 ## 1. Evolving APIs
 
+> ### library 관리 시나리오
+>
+> - `Resizable` interface, 구현체 `Square`, `Rectangle` 제공
+> - 다른 개발자들이 구현체 `Ellipse`를 만들어서 사용하고 있음
+> - `Resizable` interface에 `setAbsoluteSize()` method를 추가하고 싶음
+> - **문제  : `Ellipse`는 `setAbsoluteSize()` method를 구현하지 않았기 때문에, 컴파일 에러 발생**
+
+### 1.1 API version 1
+
+```java
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
+public interface Resizable extends Drawable {
+    int getWidth();
+
+    int getHeight();
+
+    void setWidth(int width);
+
+    void setHeight(int height);
+
+    void setRelativeSize(int width, int height);
+}
+
+// USER IMPLEMENTATION
+public class Ellipse implements Resizable {
+    // ...
+}
+
+public class Game {
+    public static void main(String[] args) {
+        List<Resizable> resizableList = Arrays.asList(
+                new Square(),
+                new Rectangle(),
+                new Ellipse()
+        );
+        Utils.paint(resizableList);
+    }
+}
+
+public class Utils {
+    public static void paint(List<Resizable> l) {
+        l.forEach(r -> {
+            r.setAbsoluteSize(42, 42);
+            r.draw();
+        });
+    }
+}
+```
+
+### 2. API version 2
+
+<img src="img_1.png"  width="70%"/>
+
+- interface 업데이트 : `Resizable` interface에 `setRelativeSize()` method를 추가
+
+```java
+public interface Resizable extends Drawable {
+    int getWidth();
+
+    int getHeight();
+
+    void setWidth(int width);
+
+    void setHeight(int height);
+
+    void setAbsoluteSize(int width, int height);
+
+    // NEW METHOD
+    void setRelativeSize(int wFactor, int hFactor);
+}
+```
+
+#### PROBLEMS FOR YOUR USERS
+
+- `Ellipse`는 `setRelativeSize()` method를 구현하지 않았기 때문에, 컴파일 에러 발생
+- **_binary compatible_** : 이미 컴파일된 코드는 업데이트와 무관하게 실행 중
+- `java.lang.AbastractMethodError` : `Ellipse`는 `setRelativeSize()` method를 구현하지 않았기 때문에, runtime error 발생
+    - `Utils.paint()` method 실행 시
+- compile error `Ellipse ... odes not oveerialize abstract method setRelativeSize(int, int) in Resizable`
+    - 재컴파일하려면 구현하지 않았기 때문에 compile error 발생
+
+#### Different types of compatibilities: binary, srouce, and behavioral
+
+| Compatibility            | Description                 | interface 업데이트 시                        |
+|--------------------------|-----------------------------|-----------------------------------------|
+| Binary compatibility     | 이미 컴파일된 코드는 업데이트와 무관하게 실행 중 | OK                                      |
+| Source compatibility     | 재컴파일 가능 여부                  | NO<br/>compile error : 새로운 method 구현 필요 |
+| Behavioral compatibility | 동일한 input에 대한 동일한 output 보장 | OK<br/> 추가된 method는 호출되지 않음             |
+
 ## 2. Default methods in a nutshell
 
 ## 3. Usage patterns for default methods
