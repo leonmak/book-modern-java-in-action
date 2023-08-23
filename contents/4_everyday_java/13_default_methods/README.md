@@ -18,7 +18,7 @@
 <img src="img.png"  width="80%"/>
 
 - Interface를 업데이트하면, 기존 구현체는 새로운 메소드를 구현해야 함
-- Java 8부터 interface에 **_static method_**와 **_default method_**를 추가할 수 있음
+- Java 8부터 interface에 **_static method_** 와 **_default method_** 를 추가할 수 있음
     - 기존 구현체들은 명시적으로 구현하지 않아도 추가된 메소드를 사용할 수 있음
     - e.g. `java.util.Collection.stream()`, `java.util.List.sort()`
 
@@ -54,7 +54,7 @@ public interface List<E> extends Collection<E> {
 
 </details>
 
-#### Static method and instances
+### Static method and instances
 
 - Interface에 static method를 추가할 수 있게 되면서,
 - Utility class의 역할을 하는 interface를 만들 수 있게 됨
