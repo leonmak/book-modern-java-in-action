@@ -316,3 +316,13 @@ System.out.println("ramadanEnd = " + ramadanEnd);
 
 ## 4. summary
 
+- Java 8 이전에는 `java.util.Date`로 날짜를 연산했고, 문제가 많았음
+- Java 8의 새로운 날짜 API는 모두 불변
+- API가 사람과 기계 양쪽의 요구사항을 충족 가능 (`LocalDateTime`, `Instant`)
+- 상대적, 절대적으로 날짜 연산 가능
+- `TemporalAdjuster`를 이용해 복잡한 날짜 연산 가능
+    - 직접 구현하여 사용 가능
+- formatter를 직접 정의 가능, thread-safe
+- time zone을 표현하고, UTC/Greenwich로부터의 고정 offset 표현 가능
+    - 날짜 객체에 time zone을 적용 가능
+- ISO-8061 시스템 외의 달력 시스템 사용 가능
