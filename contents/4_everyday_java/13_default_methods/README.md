@@ -144,7 +144,7 @@ public interface Resizable extends Drawable {
 - compile error `Ellipse ... odes not oveerialize abstract method setRelativeSize(int, int) in Resizable`
     - 재컴파일하려면 구현하지 않았기 때문에 compile error 발생
 
-#### Different types of compatibilities: binary, srouce, and behavioral
+#### Different types of compatibilities: binary, source, and behavioral
 
 | Compatibility            | Description                 | interface 업데이트 시                        |
 |--------------------------|-----------------------------|-----------------------------------------|
@@ -207,7 +207,7 @@ interface Iterator<E> {
 
 ### 3.2 Multiple inheritance of behavior
 
-<img src="img_2.png"  width="30%"/>
+<img src="img_2.png"  width="70%"/>
 
 - **_Multiple inheritance of behavior_** 가 가능함
 
