@@ -394,3 +394,12 @@ public class D implements B, C {
 > 3. 위의 두 규칙이 적용되지 않을 경우, 명시적으로 어떤 method를 사용할지 선택
 
 ## 5. Summary
+
+- Java 8의 인터페이스는 default method와 static method를 사용할 수 있음
+- default method는 `default` 키워드를 사용하여 작성
+- 공개된 interface에 abstract method를 추가하면 code incompatibility 발생
+- default method는 라이브러리 개발자들에게 API를 변경할 수 있는 유연성을 제공
+- default method는 optional method와 behavior의 다중상속을 제공
+- class, super class의 mehtod declaration이 default method보다 우선순위가 높음
+    - method signature 같은 default method 중 더 구체적인 method가 우선순위가 높음
+- default method의 구체적인 정도가 같으면 명시적으로 어떤 method를 사용할지 선택
