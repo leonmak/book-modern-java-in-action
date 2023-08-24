@@ -17,13 +17,13 @@
 
 <img src="img.png"  width="80%"/>
 
-- Interface를 업데이트하면, 기존 구현체는 새로운 메소드를 구현해야 함
+- Interface에 새로운 method를 추가하면, 기존 구현체는 새로운 메소드를 구현해야 함
 - Java 8부터 interface에 **_static method_** 와 **_default method_** 를 추가할 수 있음
     - 기존 구현체들은 명시적으로 구현하지 않아도 추가된 메소드를 사용할 수 있음
     - e.g. `java.util.Collection.stream()`, `java.util.List.sort()`
 
 <details>
-<summary>java.util.Collection.stream(), java.util.List.sort()</summary>
+<summary>e.g. java.util.Collection.stream(), java.util.List.sort()</summary>
 
 ```java
 package java.util;
@@ -56,15 +56,16 @@ public interface List<E> extends Collection<E> {
 
 ### Static method and instances
 
+- **Utility 목적의 static class와 Interface를 분리할 필요 없음**
 - Interface에 static method를 추가할 수 있게 되면서,
 - Utility class의 역할을 하는 interface를 만들 수 있게 됨
 
 ## 1. Evolving APIs
 
-> #### library 관리 시나리오
+> #### library 관리 시나리오 (예시)
 >
 > - `Resizable` interface, 구현체 `Square`, `Rectangle` 제공
-> - 다른 개발자들이 구현체 `Ellipse`를 만들어서 사용하고 있음
+> - API 사용자가 구현체 `Ellipse`를 만들어서 사용하고 있음
 > - `Resizable` interface에 `setAbsoluteSize()` method를 추가하고 싶음
 > - **문제  : `Ellipse`는 `setAbsoluteSize()` method를 구현하지 않았기 때문에, 컴파일 에러 발생**
 
@@ -121,14 +122,7 @@ public class Utils {
 ```java
 public interface Resizable extends Drawable {
     int getWidth();
-
-    int getHeight();
-
-    void setWidth(int width);
-
-    void setHeight(int height);
-
-    void setAbsoluteSize(int width, int height);
+    // ...
 
     // NEW METHOD
     void setRelativeSize(int wFactor, int hFactor);
@@ -146,7 +140,7 @@ public interface Resizable extends Drawable {
 
 #### Different types of compatibilities: binary, source, and behavioral
 
-| Compatibility            | Description                 | interface 업데이트 시                        |
+| Compatibility            | Description                 | interface에 method 추가                    |
 |--------------------------|-----------------------------|-----------------------------------------|
 | Binary compatibility     | 이미 컴파일된 코드는 업데이트와 무관하게 실행 중 | OK                                      |
 | Source compatibility     | 재컴파일 가능 여부                  | NO<br/>compile error : 새로운 method 구현 필요 |
@@ -240,12 +234,12 @@ public interface Rotatable {
 
 <img src="img_3.png"  width="60%"/>
 
-````
-public Idol implements Dancing, Singing, Acting {
+```java
+public class Idol implements Dancing, Singing, Acting {
     //...
 }
 
-public Actor implements Acting {
+public class Actor implements Acting {
     //...
 }
 ````
@@ -261,7 +255,7 @@ public Actor implements Acting {
 
 - Java 8 부터 1 개 이상의 동일한 method signature 상속받을 수 있음
 
-<img src="img_4.png"  width="60%"/>
+<img src="img_4.png"  width="70%"/>
 
 ```java
 public interface A {
@@ -287,9 +281,9 @@ public class C implements B, A {
 
 > #### 같은 signature를 상속받을 경우 3가지 규칙
 >
-> 1. 인터페이스보다 클래스가 가장 우선 : 다른 default method 보다 우선권이 높음
-> 2. subinterface가 우선 : 같은 default method를 상속받을 경우, subinterface가 우선권이 높음, 가장 구체적으로 구현된 method가 우선권을 가짐
-> 3. 명시적으로 상속받을 메서드 선택 가능
+> 1. class나 superclass의 명시적인 method 선언 > default method
+> 2. interface의 mehtod signature가 동일한 method 중 더 구체적인 method 우선순위가 높음
+> 3. 2번까지 우선순위가 같을 경우, 명시적으로 어떤 method를 사용할지 선택해야함 (compile error 발생)
 
 ### 4.2 Most specific default providing interface wins
 
@@ -389,9 +383,9 @@ public class D implements B, C {
 
 > #### 같은 signature를 상속받을 경우 3가지 규칙 (보완)
 >
-> 1. class나 superclass의 명시적인 method 선언이 default method 보다 우선순위가 높음
-> 2. interface의 mehtod signature가 동일한 method 중 더 구체적인 method가 우선순위가 높음
-> 3. 위의 두 규칙이 적용되지 않을 경우, 명시적으로 어떤 method를 사용할지 선택
+> 1. class나 superclass의 명시적인 method 선언 > default method
+> 2. interface의 mehtod signature가 동일한 method 중 더 구체적인 method 우선순위가 높음
+> 3. 2번까지 우선순위가 같을 경우, 명시적으로 어떤 method를 사용할지 선택해야함 (compile error 발생)
 
 ## 5. Summary
 
