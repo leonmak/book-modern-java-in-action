@@ -61,7 +61,7 @@ public interface List<E> extends Collection<E> {
 
 ## 1. Evolving APIs
 
-> ### library 관리 시나리오
+> #### library 관리 시나리오
 >
 > - `Resizable` interface, 구현체 `Square`, `Rectangle` 제공
 > - 다른 개발자들이 구현체 `Ellipse`를 만들어서 사용하고 있음
@@ -285,7 +285,7 @@ public class C implements B, A {
 
 ### 4.1 Three resolution rules to know
 
-> ### 같은 signature를 상속받을 경우 3가지 규칙
+> #### 같은 signature를 상속받을 경우 3가지 규칙
 >
 > 1. 인터페이스보다 클래스가 가장 우선 : 다른 default method 보다 우선권이 높음
 > 2. subinterface가 우선 : 같은 default method를 상속받을 경우, subinterface가 우선권이 높음, 가장 구체적으로 구현된 method가 우선권을 가짐
@@ -387,7 +387,7 @@ public class D implements B, C {
 
 - `A`는 `D`의 superinterface
 
-> ### 같은 signature를 상속받을 경우 3가지 규칙 (보완)
+> #### 같은 signature를 상속받을 경우 3가지 규칙 (보완)
 >
 > 1. class나 superclass의 명시적인 method 선언이 default method 보다 우선순위가 높음
 > 2. interface의 mehtod signature가 동일한 method 중 더 구체적인 method가 우선순위가 높음

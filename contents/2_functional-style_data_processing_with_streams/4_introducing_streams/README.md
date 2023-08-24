@@ -89,7 +89,7 @@ NEWJEANS = [MINZI, HANI, ...], ...
 }
 ````
 
-> ### Other libraries : Guava, Apache, lamdaj
+> #### Other libraries : Guava, Apache, lamdaj
 >
 > - Collection을 다루는 많은 라이브러리들
 > - Guava : Google의 Java 라이브러리

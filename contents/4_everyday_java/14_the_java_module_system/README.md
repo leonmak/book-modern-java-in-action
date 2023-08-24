@@ -29,7 +29,7 @@
 
 ### 1.1 Separation of concerns (SoC)
 
-> ### SOC의 장점
+> #### SOC의 장점
 >
 > - 개별 작업 분리 가능 (팀 협업 향상)
 > - 분리된 part의 재사용성
