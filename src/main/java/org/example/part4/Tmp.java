@@ -16,5 +16,9 @@ public class Tmp {
 
     public class C implements B, A {
 
+        @Override
+        public void hello() {
+            B.super.hello(); // B의 default 메서드 호출
+        }
     }
 }
