@@ -259,4 +259,138 @@ public Actor implements Acting {
 
 ## 4. Resolution rules
 
+- Java 8 부터 1 개 이상의 동일한 method signature 상속받을 수 있음
+
+<img src="img_4.png"  width="60%"/>
+
+```java
+public interface A {
+    default void hello() {
+        System.out.println("Hello from A");
+    }
+}
+
+public interface B extends A {
+    default void hello() {
+        System.out.println("Hello from B");
+    }
+}
+
+public class C implements B, A {
+    public static void main(String... args) {
+        new C().hello(); // "Hello from B"
+    }
+}
+```
+
+### 4.1 Three resolution rules to know
+
+> ### 같은 signature를 상속받을 경우 3가지 규칙
+>
+> 1. 인터페이스보다 클래스가 가장 우선 : 다른 default method 보다 우선권이 높음
+> 2. subinterface가 우선 : 같은 default method를 상속받을 경우, subinterface가 우선권이 높음, 가장 구체적으로 구현된 method가 우선권을 가짐
+> 3. 명시적으로 상속받을 메서드 선택 가능
+
+### 4.2 Most specific default providing interface wins
+
+<img src="img_5.png"  width="60%"/>
+
+````java
+public class D implements A {
+    // class `D`는 `A`를 구현하고, overriding 하지 않음
+}
+
+public class C extends D implements B, A {
+    public static void main(String... args) {
+        new C().hello(); // "Hello from B"
+    }
+}
+````
+
+```java
+public class D implements A {
+
+    // class `D`는 `A`를 구현하고, overriding
+    @Override
+    public void hello() {
+        System.out.println("Hello from D");
+    }
+}
+
+public class C extends D implements B, A {
+    public static void main(String... args) {
+        new C().hello(); // "Hello from D"
+    }
+}
+```
+
+### 4.3 Conflicts and explicit disambiguation
+
+<img src="img_6.png"  width="70%"/>
+
+```java
+
+public interface A {
+    default void hello() {
+        System.out.println("Hello from A");
+    }
+}
+
+public interface B {
+    default void hello() {
+        System.out.println("Hello from B");
+    }
+}
+
+// comiple error : Error: class C inherits unrelated defaults for hello()from types B and A
+public class C implements B, A {
+}
+```
+
+#### RESOLVING THE CONFLICT
+
+- overriding 하고, 명시적으로 어떤 method를 사용할지 선택
+
+```java
+
+public class D implements A, B {
+    @Override
+    public void hello() {
+        B.super.hello(); // 명시적으로 `B`의 `hello()` method를 사용
+    }
+}
+``` 
+
+### 4.4 Diamond problem
+
+<img src="img_7.png"  width="70%"/>
+
+```java
+public interface A {
+    default void hello() {
+        System.out.println("Hello from A");
+    }
+}
+
+public interface B extends A {
+}
+
+public interface C extends A {
+}
+
+public class D implements B, C {
+    public static void main(String... args) {
+        new D().hello(); // "Hello from A"
+    }
+}
+```
+
+- `A`는 `D`의 superinterface
+
+> ### 같은 signature를 상속받을 경우 3가지 규칙 (보완)
+>
+> 1. class나 superclass의 명시적인 method 선언이 default method 보다 우선순위가 높음
+> 2. interface의 mehtod signature가 동일한 method 중 더 구체적인 method가 우선순위가 높음
+> 3. 위의 두 규칙이 적용되지 않을 경우, 명시적으로 어떤 method를 사용할지 선택
+
 ## 5. Summary
