@@ -23,9 +23,9 @@
 
 ```
 return idol
-    .getLeaderr() // nullable
-    .getCar()    // nullable
-    .getName();  // nullable
+    .getLeaderr() // nullable (NPE)
+    .getCar()    // nullable (NPE)
+    .getName();  // nullable (NPE)
 ```
 
 <details><summary>Idol, Leader, Car</summary>
@@ -91,15 +91,15 @@ return car.getName();
 ```
 
 - 가독성이 떨어짐
-- error-prone : 특정 필드 체크를 잊을 수 있음
+- error-prone : 특정 필드 체크 코드를 누락할 수 있음
 
 ### 1.2 Problems with null
 
 - **_source of error_** : Java의 가장 흔한 Exception
 - **_bloats your code_** : null check 코드가 많아짐
-- **_meaningless_** : null reference는 의미가 없음
-- **_breaks Java philosophy_** : Java는 pointer를 숨기지만 null pointer는 그렇지 않음
-- **_creates a hole in the type system_** : null은 모든 타입에 참조 가믕
+- **_meaningless_** : null reference 자체는 의미가 없음
+- **_breaks Java philosophy_** : Java는 pointer를 숨기지만 null pointer는 노출됨
+- **_creates a hole in the type system_** : null은 모든 타입이 참조 가능
 
 ### 1.3 What are the alternatives to null in other languages?
 
@@ -121,7 +121,7 @@ def idolMemberCarName = idol?.member?.car?.name ?: "Unknown"
 
 ![img_1.png](img_1.png)
 
-- Haskell, Scala로부터 영감을 받아 추가한 `java.util.Optional<T>` class
+- Haskell, Scala로부터 영감을 받아 추가한 `java.util.Optional<T>` 
 - optional value를 캡슐화
 - value가 있으면 `Optional`이 wrapping, 없으면 `Optional.empty()` 반환
 - null reference vs `Optional.empty()`
@@ -348,7 +348,7 @@ Object karina = map.get("specific key"); // return nullable value
 Optional<Object> optKarina = Optional.ofNullable(map.get("specific key");
 ````
 
-- 기존 API의 시그니처를 바꿀 수 없어도, `Optional`로 wrapping 가능
+- 기존 API의 시그니처를 바꿀 수 없는 상황에서는 `Optional`로 wrapping
 
 ### 4.2 Exceptions vs Optional
 
