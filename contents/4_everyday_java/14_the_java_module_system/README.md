@@ -402,6 +402,81 @@ java --module-path \
 
 ## 8. module declaration and clauses
 
+### 8.1 requires
+
+```java
+module com.iteratrlearning.application {
+    requires com.iteratrlearning.ui;
+}
+````
+
+- compile, runtime에 필요한 module 의존성 명시
+
+### 8.2 exports
+
+```java
+module com.iteratrlearning.ui {
+    requires com.iteratrlearning.core;
+    exports com.iteratrlearning.ui.panels;
+    exports com.iteratrlearning.ui.widgets;
+}
+```
+
+- 기본적으로 package는 export되지 않음 (white list)
+- `exports` 절을 통해 export할 수 있음
+
+### 8.3 requires transitive
+
+````
+module com.iteratrlearning.ui {
+   requires transitive com.iteratrlearning.core;
+   
+   exports com.iteratrlearning.ui.panels;
+   exports com.iteratrlearning.ui.widgets;
+}
+
+module com.iteratrlearning.application {
+  requires com.iteratrlearning.ui;
+}
+````
+
+- `requires` 한 다른 module이 pulbic type으로 사용하도록 함
+- `com.iteratrlearning.application`은 `com.iteratrlearning.core`를 명시하지 않아도 됨
+
+### 8.4 exports to
+
+```java
+module com.iteratrlearning.ui {
+    requires com.iteratrlearning.core;
+    exports com.iteratrlearning.ui.panels;
+
+    exports com.iteratrlearning.ui.widgets to
+            com.iteratrlearning.ui.widgetuser;
+}
+```
+
+- 특정 user에게만 `export`할 수 있음
+
+### 8.5 opens and opens
+
+````java
+open module com.iteratrlearning.ui {
+
+}
+````
+
+- 다른 module이 해당 모듈 package에 reflective access 할 수 있게 함
+- Java 9 전에는 private state 에 reflection을 이용하여 검사 가능
+    - e.g. Hibernate와 같은 ORM tool이 이용
+- `opens` : module 선언에서 특정 package에 대해 reflective access를 허용
+- `opens to` : 특정 module에 대해 reflective access를 허용
+
+### 8.6 uses and provides
+
+- module을 service provider로 선언
+- `provides` : service를 제공
+- `uses` : service를 사용
+
 ## 9. A bigger example and where to learn more
 
 ## 10. Summary
