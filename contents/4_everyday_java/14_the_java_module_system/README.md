@@ -88,24 +88,24 @@
 - **_Java Development Kit_** (JDK) : Java compiler, Java runtime, Java API
     - `javac` : Java compiler
     - `java` : Java load and run
-    - `java.lang` : Java API
+    - `java.lang.*` : Java API
 - CORBA와 같은 라이브러리는 사용유무에 관계없이 JDK에 제공
 - Java의도와 달리 `sun.misc.Unsafe` class를 다른 API에서 공개적으로 사용 e.g. Netty, Spring
-- Java 8에 compact profiles 개념이 도입되었지만, 단기적인 해결책
+- Java 8에 compact profiles 개념이 도입되었지만, 미흡
     - compact profiles : JDK 어떤 라이브러리에 관심있는지 지정
 
 ### 2.3 Comparison with OSGi
 
-- Java 9 개발 이전에 OSGi가 Java의 모듈 시스템으로 사용됨
 - Open Service Gateway initiative (OSGi)
+- Java 9 개발 이전에 OSGi가 Java의 모듈 시스템으로 사용됨
 - OSGi, Java 9 module system은 같은 app에서 공존 가능
 - **_bundle_** : OSGi의 module
 - bundle은 6가지 상태로 OSGi framework에 존재
     - INSTALLED, RESOLVED, STARTING, ACTIVE, STOPPING, UNINSTALLED
 - OSGi 의 특징
-    - 재기동 없이 hot-swapping 가능
+    - 재기동 없이 hot-swapping
     - 동시에 다른 버전의 같은 bundle 설치 가능
-        - OSGi는 각 bundle마다 class loader를 가지고 있음
+        - OSGi는 각 bundle마다 class loader를 가짐
 
 ## 3. Java modules : the big picture
 
