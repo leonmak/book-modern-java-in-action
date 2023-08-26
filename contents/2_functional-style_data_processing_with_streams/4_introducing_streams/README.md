@@ -18,17 +18,16 @@
 #### Collection의 문제점
 
 - 프로그래밍에 필요한 기본적인 데이터 구조를 제공
-- `grouping`, `finding`과 같은 작업을 위해 반복문 필요
-  - SQL은 `SELECT ? FROM ?`으로 곧장 탐색 가능
-- 큰 사이즈의 Colleciton을 다루는 것은 성능저하
-  - parallel하게 다루는 코드는 복잡해짐
+- `grouping`, `finding` 같은 작업을 위해 반복문 필요
+    - SQL은 `SELECT ? FROM ?`으로 곧장 탐색 가능
+- 큰 사이즈의 Colleciton을 다루는 것에 대한 성능 저하
+- parallel code는 복잡함
 
 ## 1. What are streams?
 
 - Java API
-- collection을 선언적으로 처리할 수 있음
-- parallel하게 다룰 수 있음
-  - 복잡한 코드를 작성하지 않아도 됨
+- collection을 선언적으로 처리
+- parallel code를 쉽게 작성
 
 ````
 // filtering
@@ -73,8 +72,8 @@ List<String> aespaMemberName = members.parallelStream()
     .collect(toList());
 ````
 
-- **declarative** : 무엇을 원하는지만 명시
-  - Streams이 없으면 구현하는 방법도 명시해야 함
+- **declarative** : 무엇을 원하는지 **명시**
+    - Streams이 없으면 구현하는 방법도 명시해야 함
 - **Composable** : 조합, 유연성
 - **parallelizable** : 병렬처리, 성능
 - 가독성과 의도가 분명해짐 (filter -> sort -> map -> collect)
@@ -185,27 +184,27 @@ List<Member> memberList = Arrays.asList(
 #### stream의 정의
 
 - Sequence of elements
-  - 특정한 타입의 element를 순서를 가지고 보유
-  - Collection은 element를 저장하고, 접근하는 것에 초점
-  - Stream은 element를 계산하는 것에 초점 (filter, sorted, map, collect)
+    - 특정한 타입의 element를 정렬한 자료구조
+    - Collection : element를 저장, 접근하는 것에 초점
+    - Stream : element를 계산하는 것에 초점 (filter, sorted, map, collect)
 - Source
-  - Collection, array, I/O resources에 의해 사용됨
+    - Collection, array, I/O resources로부터 Stream 생성
 - Data-processing operations
-  - database같은 연산 제공
-  - functional-programming language의 기능 제공
-  - filter, sorted, map, collect 등
-  - 병렬 연산 가능
+    - database query 같은 연산 제공
+    - functional-programming language의 기능 제공
+    - filter, sorted, map, collect 등
+    - 병렬 연산
 
 #### stream의 특징
 
 - Pipelining
-  - stream이 스스로 stream을 반환
-  - 연산이 chain되어 있음
-  - laziness, short-circuiting
+    - stream이 스스로 stream을 반환
+    - 연산이 chain되어 있음
+    - laziness, short-circuiting
 - Internal iteration
-  - stream이 내부적으로 iteration을 처리
+    - stream이 내부적으로 iteration을 처리
 
-<img src="img.png"  width="70%"/>
+<img src="img.png"  width="80%"/>
 
 ````
 import static java.util.stream.Collectors.toList;
@@ -224,16 +223,16 @@ List<String> memberNameAdult = members.stream()
 
 ## 3. Streams vs collections
 
-<img src="img_3.png"  width="80%"/>
+<img src="img_3.png"  width="90%"/>
 
-| Collection                                       |       특성        | Stream                                                                         |
-|--------------------------------------------------|:---------------:|--------------------------------------------------------------------------------|
-| in-memory data structure<br/>모든 element를 메모리에 적재 |       메모리       | 고정된 자료구조 <br/>필요한 경우에만 element 연산                                              |
-| 가능                                               | element 추가 / 제거 | 불가능                                                                            |
-| element 추가 전                                     |      연산 시점      | 필요한 시점에 연산                                                                     |
-| supplier-driven : 모든 값들이 미리 계산되어 메모리에 저장         |       특징        | producer-comsumer : consumer는 소비만 하면 됨<br/>demand-driven :consumer가 필요한 순간에 연산 |
-| 불가능에 가까움                                         | 무한한 개수의 element | 가능                                                                             |
-| external iteration : iterator를 사용해 element에 접근   |    iteration    | internal iteration : stream이 element에 접근<br/>stream은 element를 저장하지 않음          |
+| Collection                                       |       특성        | Stream                                                                          |
+|--------------------------------------------------|:---------------:|---------------------------------------------------------------------------------|
+| in-memory data structure<br/>모든 element를 메모리에 적재 |       메모리       | 고정된 자료구조 <br/>필요한 경우에만 element 연산                                               |
+| 가능                                               | element 추가 / 제거 | 불가능                                                                             |
+| element 추가 전                                     |      연산 시점      | 필요한 시점에 연산                                                                      |
+| supplier-driven : 모든 값들이 미리 계산되어 메모리에 저장         |       특징        | producer-comsumer : consumer는 소비만 하면 됨<br/>demand-driven : consumer가 필요한 시점에 연산 |
+| 불가능에 가까움                                         | 무한한 개수의 element | 가능                                                                              |
+| external iteration : iterator를 사용해 element에 접근   |    iteration    | internal iteration : stream이 element에 접근<br/>stream은 element를 저장하지 않음           |
 
 ### 3.1 Traversable only once
 
@@ -245,12 +244,12 @@ s.forEach(System.out::println); // java.lang.IllegalStateException: stream has a
 ````
 
 - stream은 한 번만 탐색 가능
-  - iterator와 비슷
+    - iterator와 비슷
 - consumed : 탐색이 완료됨
 
 ### 3.2 External vs internal iteration
 
-<img src="img_2.png"  width="80%"/>
+<img src="img_2.png"  width="70%"/>
 
 ````
 // external iteration
@@ -269,21 +268,21 @@ List<String> memberNameList = members.stream()
 ````
 
 - internal interation의 장점
-  - 병렬로 실행할 수 있음
-  - 더 효율적인 순서로 실행할 수 있음
-  - 이미 API에 안에서 최적화되어 있음
+    - 병렬로 실행할 수 있음
+    - 더 효율적인 순서로 실행할 수 있음
+    - 이미 API에 안에서 최적화되어 있음
 
 ## 4. Stream operations
 
-<img src="img_4.png"  width="60%"/>
+<img src="img_4.png"  width="70%"/>
 
 - `java.util.stream.Stream` interface에 정의되어있는 operation
 - intermediate operations
-  - stream을 반환, pipeline을 구성하는 데 사용
-  - `filter`, `map`, `limit`
+    - stream을 반환, pipeline을 구성하는 데 사용
+    - `filter`, `map`, `limit`
 - terminal operations
-  - pipeline을 실행하고 닫음
-  - `collect`
+    - pipeline을 실행하고 닫음
+    - `collect`
 - builder pattern과 유사
 
 ### 4.1 Intermediate operations
@@ -335,14 +334,14 @@ aespaMemberName3.stream().forEach(memberName -> System.out.println("memberName =
 ## 6. Summary
 
 - Streams :  elements의 sequence
-  - data source로부터 생성됨
-  - data-processing operations을 통해 처리됨
+    - data source로부터 생성됨
+    - data-processing operations을 통해 처리됨
 - Streams은 internal iteration을 통해 element에 접근
-  - `filter`, `map`, `sorted`
+    - `filter`, `map`, `sorted`
 - stream operation의 2 종류
-  - intermediate operations : chain 형식으로 구성
-    - e.g. `filter`, `map`, `sorted`
-  - terminal operations : pipeline을 실행하고 stream을 닫음, 결과를 반환
-    - e.g. `collect`, `forEach`
+    - intermediate operations : chain 형식으로 구성
+        - e.g. `filter`, `map`, `sorted`
+    - terminal operations : pipeline을 실행하고 stream을 닫음, 결과를 반환
+        - e.g. `collect`, `forEach`
 - stream의 element는 **lazily**하게 연산함
 
