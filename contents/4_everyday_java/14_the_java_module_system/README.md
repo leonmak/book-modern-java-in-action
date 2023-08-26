@@ -192,6 +192,71 @@ java --module-path expenses-applicaion.jar \
 
 ## 5. Working with several modules
 
+### 5.1 THe exports clause
+
+```java
+module expenses.readers {
+    exports com.example.expenses.readers;
+    exports com.example.expenses.readers.file;
+    exports com.example.expenses.readers.http;
+}
+```
+
+- `exports` 절 : 다른 module에 대한 접근제어
+- whitelist : 기본적으로, 모든 것을 module 내에 캡슐화
+
+````
+
+|─ expenses.application
+   |─ module-info.java
+   |─ com
+       |─ example
+           |─ expenses
+               |─ application
+                  |─ ExpensesApplication.java
+                  
+|─ expenses.readers
+   |─ module-info.java
+       |─ com
+           |─ example
+               |─ expenses
+                   |─ readers
+                      |─ Reader.java
+                   |─ file
+                      |─ FileReader.java
+                   |─ http
+                      |─ HttpReader.java
+````
+
+### 5.2 The requires clause
+
+```java
+module expenses.readers {
+    requires java.base; // 기본적으로 포함
+
+    exports com.example.expenses.readers;
+    exports com.example.expenses.readers.file;
+    exports com.example.expenses.readers.http;
+}
+```
+
+- `requires` 절 : module dependency
+    - module 이 의존하는 것을 명시
+- 기본적으로 module platform `java.base`을 포함
+    - e.g. `java.net`, `java.io`, `java.util`, ...
+
+| class visibility                          | Before Java 9 | Java 9 |
+|-------------------------------------------|---------------|--------|
+| 모든 public class를 모두에게 public으로 공개         | O             | O      |
+| 특정 public class를 모두에게 public으로 공개         | X             | O      |
+| 모든 public class를 module 안에서만 사용           | X             | O      |
+| `protected`, `pacakge-private`, `private` | O             | O      |
+
+### 5.3 Naming
+
+- **_Oracle_** : Domain Naming e.g. com.example.expenses
+    - module 이름이 주요 `export` API package 이름과 일치해야함
+
 ## 6. Compiling and packaging
 
 ## 7. Automatic modules
