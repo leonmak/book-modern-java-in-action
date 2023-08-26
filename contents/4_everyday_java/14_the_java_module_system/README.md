@@ -192,7 +192,7 @@ java --module-path expenses-applicaion.jar \
 
 ## 5. Working with several modules
 
-### 5.1 THe exports clause
+### 5.1 The exports clause
 
 ```java
 module expenses.readers {

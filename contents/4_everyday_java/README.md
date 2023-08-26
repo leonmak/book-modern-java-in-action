@@ -1,6 +1,6 @@
 ## PART 4 Everyday Java
 
-- ` java.util.Optional` : 더 나은 API 설계, NPE 방지
+- `java.util.Optional` : 더 나은 API 설계, NPE 방지
 - Date and Time API : 기존의 error-prone한 Date, time 작업의 문제점을 해결
 - 큰 시스템을 설계하기 위한 Java 8, 9의 기능들
 - default method
