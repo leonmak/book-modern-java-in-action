@@ -119,6 +119,77 @@
 
 ## 4. Developing an application with the Java Module System
 
+### 4.1 Setting up an application
+
+- 비용 지출 데이터 종합 application
+
+#### 요구사항
+
+- file이나 URL로부터 비용지출을 read
+- 비용관련 문자열 parsing
+- 통계 데이터 계산
+- 동계 데이터 출력
+- task 실행 / 종료 조건 제공
+
+#### 관심사
+
+- source로부터 data를 read `Reader`, `HttpReader`, `FileReader`
+- data를 parsing `Parser`, `JSONParser`, `ExpenseJSONParser`
+- domain object `Expense`
+- 통계 계산 `SummaryCalculator`, `SummaryStatistics`
+- 관심사 통합 `ExpenseApplication`
+
+#### 모듈화 (Fine-grained modularization)
+
+- expenses.readers
+    - expenses.readers.http
+    - expenses.readers.file
+- expenses.parsers
+    - expenses.parsers.json
+- expenses.model
+- expenses.statistics
+- expenses.application
+
+### 4.2 Fine-grained and coarse-grained modularization
+
+- fine-grained scheme : pacakge마다 module을 가짐
+- coarse-grained scheme : 모든 package를 하나의 module로 묶음
+
+### 4.3 java Module System basics
+
+```
+|─ expenses.application
+    |─ module-info.java
+    |─ com
+        |─ example
+            |─ expenses
+                |─ application
+                    |─ ExpensesApplication.java
+```
+
+- `module-info.java` : module descriptor
+    - moodule source file의 root에 위치해야함
+
+```java
+module expenses.application {
+    // ...
+}
+```
+
+#### compile, package, run
+
+```bash
+javac module-info.java com/example/expenses/application/ExpensesApplication.java -d target
+jar cvfe expenses-application.jar com.example.expenses.application.ExpensesApplication -C target
+
+java --module-path expenses-applicaion.jar \
+  --module expenses/com.example.expenses.application.ExpensesApplication
+
+```
+
+- `--module-path` : load 대상 module 경로
+- `--module` : 실행할 module
+
 ## 5. Working with several modules
 
 ## 6. Compiling and packaging

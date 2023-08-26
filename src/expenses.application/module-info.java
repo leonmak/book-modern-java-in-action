@@ -1,0 +1,2 @@
+module expenses.application {
+}
