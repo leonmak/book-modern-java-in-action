@@ -358,6 +358,48 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 ## 7. Automatic modules
 
+```java
+module expenses.readers {
+    requires java.base;
+    requires org.apache.httpcomponents.httpclient;
+
+    exports com.example.expenses.readers;
+    exports com.example.expenses.readers.file;
+    exports com.example.expenses.readers.http;
+}
+```
+
+```xml
+<!--expenses.readers pom.xml-->
+
+<dependencies>
+    <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.3</version>
+    </dependency>
+</dependencies>
+
+````
+
+- `httpclient`에 대한 의존성을 `pom.xml`에 명시
+- Maven은 pom.xml을 읽어 묵시적으로 module로 변환하여 의존성 주입
+- `--describe-module` : module 정보를 출력
+- `--module-path` : module 경로를 지정
+
+```bash
+jar --file=./expenses.readers/target/dependency/httpclient-4.5.3.jar \
+  --describe-module
+httpclient@4.5.3 automatic
+
+java --module-path \
+  ./expenses.application/target/expenses.application-1.0.jar: ./expenses.readers/target/expenses.readers-1.0.jar \
+  ./expenses.readers/target/dependency/httpclient-4.5.3.jar \
+  --module \
+  expenses.application/com.example.expenses.application.ExpensesApplication
+
+```
+
 ## 8. module declaration and clauses
 
 ## 9. A bigger example and where to learn more
