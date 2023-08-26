@@ -479,5 +479,34 @@ open module com.iteratrlearning.ui {
 
 ## 9. A bigger example and where to learn more
 
+```java
+module com.example.foo {
+
+    // com.example.foo.http module에 의존 
+    requires com.example.foo.http;
+    // java.logging module에 의존
+    requires java.logging;
+    // com.example.foo.network를 transitive 의존으로 선언
+    requires transitive com.example.foo.network;
+
+    // com.example.foo.bar module을 외부에 공개
+    exports com.example.foo.bar;
+    // com.example.foo.internal module을 com.example.foo.probe, com.example.foo.network에 공개
+    exports com.example.foo.internal to com.example.foo.probe;
+
+    // com.example.foo.quux pacakage reflective access 허용
+    opens com.example.foo.quux;
+    // com.example.foo.internal package reflective access 허용 (com.example.foo.network, com.example.foo.probe에만)
+    opens com.example.foo.internal to com.example.foo.network,
+            com.example.foo.probe;
+
+    // com.example.foo.spi.Intf를 사용
+    uses com.example.foo.spi.Intf;
+
+    // com.example.foo.Impl를 com.example.foo.spi.Intf의 구현체로 제공
+    provides com.example.foo.spi.Intf with com.example.foo.Impl;
+}
+```
+
 ## 10. Summary
 
