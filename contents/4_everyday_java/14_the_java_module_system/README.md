@@ -259,6 +259,103 @@ module expenses.readers {
 
 ## 6. Compiling and packaging
 
+**_Maven_** build tool을 사용
+
+````
+|─ pom.xml
+|─ expenses.application
+   |─ pom.xml
+   |─ src
+       |─ main
+           |─ java
+           |─ module-info.java
+             |─ com
+              ...
+              
+|─ expenses.readers
+   |─ pom.xml
+   |─ src
+       |─ main
+           |─ java
+           |─ module-info.java
+               |─ com
+                ...
+````
+
+````
+<!-- global pom.xml -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  
+...
+
+  <modules>
+    <module>expenses.application</module>
+    <module>expenses.readers</module>
+  </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.7.0</version>
+          <configuration>
+            <source>9</source>
+            <target>9</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+  </build>
+</project>
+
+<!-- expenses.readers pom.xml -->
+
+...
+<groupId>com.example</groupId>
+<artifactId>expenses.readers</artifactId>
+<version>1.0</version>
+<packaging>jar</packaging>
+
+<dependencies>
+    <dependency>
+        <groupId>com.example</groupId>
+        <artifactId>expenses</artifactId>
+        <version>1.0</version>
+    </dependency>
+</dependencies>
+
+<!-- expenses.application pom.xml -->
+
+...
+
+<groupId>com.example</groupId>
+<artifactId>expenses.application</artifactId>
+<version>1.0</version>
+<packaging>jar</packaging>
+
+<parent>
+    <groupId>com.example</groupId>
+    <artifactId>expenses</artifactId>
+    <version>1.0</version>
+</parent>
+
+<dependencies>
+    <dependency>
+        <groupId>com.example</groupId>
+        <artifactId>expenses.readers</artifactId>
+        <version>1.0</version>
+    </dependency>
+</dependencies>
+    
+...
+````
+
 ## 7. Automatic modules
 
 ## 8. module declaration and clauses
