@@ -254,7 +254,7 @@ module expenses.readers {
 
 ### 5.3 Naming
 
-- **_Oracle_** : Domain Naming e.g. com.example.expenses
+- **_Oracle_** : Reverse Domain Naming e.g. com.example.expenses
     - module 이름이 주요 `export` API package 이름과 일치해야함
 
 ## 6. Compiling and packaging
@@ -510,3 +510,15 @@ module com.example.foo {
 
 ## 10. Summary
 
+- 관심사의 분리, 정보 은닉은 중요한 2가지 소프트웨어 설계 원칙
+- Java 9 이전에는 package 단위까지만 관심사 분리가 가능하고, 캡슐화가 충분치 않았음
+- The Class Path Hell 문제는 app간의 의존관계 파악을 어렵게 함
+- Java 9 이전의 monolithic은 높은 유지보수 비용과 진화 한계를 가짐
+- Java 9 module system을 공개
+    - `module-info.java`, `requires`, `exports` 절을 통해 module을 선언
+- `requires` : 다른 module에 대한 의존성
+- `exports` : 다른 module에 대한 접근제어
+- 선호되는 module naming convention : reverse domain name e.g. com.example.expenses
+- 모든 JAR는 `module-info` 없이 automatic module로 변환 가능
+- automatic module은 묵시적으로 자신의 package를 export
+- Maven은 Java 9 Module System을 지원
