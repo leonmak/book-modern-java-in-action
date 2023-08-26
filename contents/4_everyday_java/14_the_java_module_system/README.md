@@ -109,6 +109,14 @@
 
 ## 3. Java modules : the big picture
 
+<img src="img_1.png"  width="70%"/>
+
+- `module-info.java` : module descriptor
+- `requires` : module dependency
+- `exports` : 다른 module에 대한 접근제어
+
+<img src="img_2.png"  width="70%"/>
+
 ## 4. Developing an application with the Java Module System
 
 ## 5. Working with several modules
