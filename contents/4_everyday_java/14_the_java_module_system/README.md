@@ -62,6 +62,51 @@
 
 ## 2. Why the java Module System was designed
 
+### 2.1 Modularity limitations
+
+- classes < packages < JARs < modules (Java 9)
+- class의 접근제어와 캡슐화는 제공되지만, package, JAR 단위의 캡슐화는 제공되지 않음
+- Java의 접근제어 `public`, `protected`, `package-level`, `private`
+
+#### LIMITED VISIBILITY CONTROL
+
+- **package 단위**의 접근제어가 불가능
+- class나 interface가 다른 package에 보이려면 `public`으로 선언해야 함
+
+#### CLASS PATH
+
+- 실행할 class를 모두 compile해서 JAR에 담아야 함
+- JVM은 **class path**로부터 동적으로 class를 load
+- 단점 1 : class의 버전을 명시할 수 없음 (버전 호환성)
+- 단점 2 : class path에서 class간의 의존성을 명시적으로 선언할 수 없음
+    - JAR Hell, Class Path Hell
+    - compile-time에 의존성을 확인할 수 없어, runtime에 `ClassNotFoundException` 발생
+    - Maven, Gradle 과 같은 build-tool 필요
+
+### 2.2 Monolithic JDK
+
+- **_Java Development Kit_** (JDK) : Java compiler, Java runtime, Java API
+    - `javac` : Java compiler
+    - `java` : Java load and run
+    - `java.lang` : Java API
+- CORBA와 같은 라이브러리는 사용유무에 관계없이 JDK에 제공
+- Java의도와 달리 `sun.misc.Unsafe` class를 다른 API에서 공개적으로 사용 e.g. Netty, Spring
+- Java 8에 compact profiles 개념이 도입되었지만, 단기적인 해결책
+    - compact profiles : JDK 어떤 라이브러리에 관심있는지 지정
+
+### 2.3 Comparison with OSGi
+
+- Java 9 개발 이전에 OSGi가 Java의 모듈 시스템으로 사용됨
+- Open Service Gateway initiative (OSGi)
+- OSGi, Java 9 module system은 같은 app에서 공존 가능
+- **_bundle_** : OSGi의 module
+- bundle은 6가지 상태로 OSGi framework에 존재
+    - INSTALLED, RESOLVED, STARTING, ACTIVE, STOPPING, UNINSTALLED
+- OSGi 의 특징
+    - 재기동 없이 hot-swapping 가능
+    - 동시에 다른 버전의 같은 bundle 설치 가능
+        - OSGi는 각 bundle마다 class loader를 가지고 있음
+
 ## 3. Java modules : the big picture
 
 ## 4. Developing an application with the Java Module System
