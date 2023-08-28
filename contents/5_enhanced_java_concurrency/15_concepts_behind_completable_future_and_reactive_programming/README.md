@@ -173,6 +173,221 @@ ExecutorService newFixedThreadPool(int nThreads)
 
 ## 2. Synchronous and asynchronous APIs
 
+````
+int y = f(x);
+int z = g(x);
+
+System.out.println(y + z);
+````
+
+```java
+public class ThreadExample {
+
+    public static void main(String[] args) throws InterruptedException {
+        int x = 1337;
+        Result result = new Result();
+
+        Thread thread1 = new Thread(() -> {
+            result.left = f(x);
+        });
+
+        Thread thread2 = new Thread(() -> {
+            result.right = g(x);
+        });
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+    }
+
+    private static class Result {
+        private int left;
+        private int right;
+    }
+}
+
+```
+
+````
+//  Future API 사용
+ExecutorService executorService = Executors.newFixedThreadPool(2);
+Future<Integer> y = executorService.submit(() -> f(x));
+Future<Integer> z = executorService.submit(() -> g(x));
+System.out.println(y.get() + z.get());
+executorService.shutdown();
+````
+
+- `f(x)`와 `g(x)`가 서로 독립 실행 가능 조건 : `f(x)`와 `g(x)`가 서로 의존하지 않음
+- 각각 다른 CPU core에서 실행 가능
+- 그러나 여전히 중복 코드가 많음 (thread 관리 관련)
+- **_asynchronous_** API를 사용해 편하게 관리
+    - Java 8 : `Future<>` 대신 `CompletableFuture<>`
+    - Java 9 " publish-subscribe protocol 기반의 `Flow` API
+
+### 2.1 Future-style API
+
+````
+Future<Integer> f(int x);
+Future<Integer> g(int x);
+
+...
+
+Future<Integer> y = f(x);
+Future<Integer> z = g(x);
+System.out.println(y.get() + z.get());
+````
+
+- 메서드가 `Future`를 반환
+- `get()` 호출 시, blocking 연산 후 결과 반환
+
+### 2.2 Reactive-style API
+
+````
+void f(int x, IntConsumer dealWithResult);
+void g(int x, IntConsumer dealWithResult);
+````
+
+- callback-style 적용
+- `f()`안에서 task를 만들어 lamda 실행
+
+```java
+import java.util.function.IntConsumer;
+
+public class CallbackStyleExample {
+
+    public static void main(String[] args) {
+        int x = 1337;
+        Result result = new Result();
+
+        f(x, (int y) -> {
+            result.left = y;
+            System.out.println((result.left + result.right));
+        });
+
+        g(x, (int z) -> {
+            result.right = z;
+            System.out.println((result.left + result.right));
+        });
+    }
+}
+
+```
+
+- 원래 의도와 다름
+    - `f()`와 `g()`가 서로 독립적이지 않음
+    - 값이 2번 출력됨
+- 적절한 lock이 필요 or `if-then-else`로 callback 2개 호출 여부 확인
+- 장점
+    - 명시적인 thread 관리 중복 코드 제거
+    - 긴 실행시간을 가진 task에 대한 비동기 처리
+    - network, 인간의 입력 등을 기다리기 위해 blocking하는 대신, callback을 등록
+
+### 2.3 Sleeping (and other blocking operations) considered harmful
+
+````
+work1();
+Thread.sleep(1000); // blocking : sleep 1 sec
+work2();
+````
+
+- `sleep()`의 해로움
+- blocking
+- System resource 점유
+- blocking의 분류
+    - 다른 작업의 무언가를 기다림 e.g. `Future.get()`
+    - interface 장치로부터 외부 상호작용을 기다림 e.g. DB read, network xhdtls
+
+#### 해결방안 : _before_ and _after_
+
+- task를 _before_, _after_ 로 분리
+- _after_는 blocking이 없을 때만 실행
+- before와 after는 각자 다른 thread에서 실행
+- **_before_가 종료되는 즉시 thread를 종료** (non-blocking)
+    - `slepp()` 을 서버의 몇 byte 수준의 memory 사용으로 대체
+- `ExecutorService`를 사용해 thread 관리
+- I/O 작업에 유용
+    1. _before_ :  외부 장치에 read 요청
+    2. thread 종료
+    3. 외부 장치에서 read 완료
+    4. _after_ : 외부 장치에서 read한 데이터를 처리
+
+````java
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+public class ScheduledExecutorServiceExample {
+
+    public static void main(String[] args) {
+
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+
+        work1();
+        executorService.schedule(ScheduledExecutorServiceExample::work2, 10, TimeUnit.SECONDS); // 10 seconds delay
+
+        executorService.shutdown();
+    }
+
+    // before
+    private static void work1() {
+        System.out.println("Hello from work1!");
+    }
+
+    // after
+    private static void work2() {
+        System.out.println("Hello from work2!");
+    }
+
+}
+
+````
+
+### 2.4 Reality check
+
+- 모든 blocking operation을 asychronous로 바꾸는 것이 best?
+- Java의 API를 정확히 알고, 비동기에 대해 주의하며 프로그래밍할 것
+- `Netty` library 참고
+    - network server를 위한 일관된 동기/비동기 API 제공
+
+### 2.5 How do exceptions work with asynchronous APIs?
+
+````
+void f(int x, Consumer<Integer> dealWithResult, Consumer<Throwable> dealWithException);
+````
+
+- `Future` : `get()` 호출 시, `ExecutionException` 발생
+    - `exceptionally()` 사용
+- Reactive style API : 예외 전용 callback 추가
+    - Java 8 :  `Consumer<Throwable>` 사용
+    - Java 9 : `java.util.concurrent.Subscriber<T>` interface 사용
+
+````
+// Java 9 Flow API
+void onComple(); // produce finished
+void onError(Throwable throwable); // exception occurred
+void onNext(T item); // value is available
+
+...
+void f(int x, Subscriber<Integer> dealWithResult){
+  ...
+  dealWithReulst.onError(t); // t : Throwable
+}
+````
+
+#### 키보드 입력 예시
+
+- _event_ : 키보드 문자 입력
+- _producer_ : 키보드
+- _consumer_ : 키보드 문자 입력을 받는 thread
+- _event handler_ : 키보드 문자 입력에 대한 callback
+- _event loop_ : 키보드 문자 입력을 기다리는 thread
+- `onNext()` : 키보드 문자 입력에 대한 callback
+- `onError()` : 키보드 문자 입력에 대한 예외 처리
+- `onComplete()` : 키보드 문자 입력에 대한 종료 처리
+
 ## 3. The box-and-channel model
 
 ## 4. CompletableFuture and combinators for concurrency
