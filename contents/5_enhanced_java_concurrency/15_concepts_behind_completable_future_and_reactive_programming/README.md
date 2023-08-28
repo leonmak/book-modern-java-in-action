@@ -45,14 +45,14 @@
 
 ## 1. Evolving Java support for expressing concurrency
 
-- 초기 Java lock : `synchronized` class/method, `Runnable`, `Thread`
-- Java 5 : `java.util.concurrent` package
-    - `ExecutorService` interface, `Callable<T>`, `Future<T>`
+- 초기 Java lock : `synchronized` class/method, `java.lang.Runnable`, `java.lang.Thread`
+- Java 5 : `java.util.concurrent`
+    - `java.util.concurrent.ExecutorService`, `java.util.concurrent.Callable<T>`, `java.util.concurrent.Future<T>`
 - Java 7 : `java.util.concurrent.RecurrsiveTask<T>`
     - fork-join framework 구현
 - Java 8
     - `Stream` 에 parallelism
-    - `Future` 구현체 `CompletableFuture`
+    - `Future` 구현체 `java.util.concurrent.CompletableFuture`
 - Java 9
     - 명시적인 분산 비동기 프로그래밍 지원
     - **_reactive programming_**, **_publish-subscribe protocol_**
@@ -69,8 +69,8 @@ sum = Arrays.stream(stats).parallel().sum();
     - OS가 process 들을 가상의 주소 공간에 할당
     - process들이 CPU를 공유해서 process user마다 독립된 CPU를 사용하는 것처럼 보임
 - multi-core (concurrent + parallel)
+    - 단순하게, 4-core는 4배 빠름
     - process, thread를 활용하지 않으면 CPU 효율이 떨어짐 (극대화 못함)
-    - 이론적으로, 4-core는 4배 빠름
 
 ````
 // single thread
@@ -91,7 +91,8 @@ for(int i = 0; i < 250_000; i++) {
  sum1 += stats[i];
 }
 
-... 
+...
+
 // thread 4
 for(int i = 750_000; i < 1_000_000; i++) {
  sum4 += stats[i];
@@ -107,7 +108,7 @@ sum = sum1 + ... + sum4;
 
 #### PROBLEMS WITH THREADS
 
-- Java thread가 OS thread에 직접 접근
+- Java thread가 OS thread에 **직접** 접근
 - OS Thread는 생성/제거 비용이 비쌈, thread 개수가 제한됨
 - Java 코드가 hardware spec에 의존 (program이 portable하지 않음)
 
@@ -123,7 +124,7 @@ ExecutorService newFixedThreadPool(int nThreads)
     - factory method로 thread pool을 생성
     - FCFS 알고리즘으로 pool 운용
 - programmer는 **_task_** 를 만들고, **_task_** 를 thread pool에 제출
-    - **_task_** : `Runnalbe`, `Callable<T>`
+    - **_task_** : `java.lang.Runnable`, `Callable<T>`
 
 #### THREAD POOLS AND WHY THEY’RE WORSE
 
@@ -147,8 +148,9 @@ ExecutorService newFixedThreadPool(int nThreads)
 
 <img src="img_5.png"  width="50%"/>
 
-- **_strict fork/join_** : subtask가 완료될 때까지 기존의 method call이 block됨
-- **_relaxed fork/join_** : subtask는 다른 method call로부터 `join`될 수 있음
+- **_strict fork/join_** : sub-task가 완료될 때까지 method call이 block됨
+- **_relaxed fork/join_** : sub-task는 외부 method call로부터 `join`되어 반환 가능
+    - mehtod caller는 해당 동작을 모름
 - asynchronous method (Java 8, 9)
     - ongoing thread (실행 상태의 thread) 가 동시적으로 실행되므로 데이터 race condition에 유의
     - Java `main()`이 ongoing thread 종료보다 먼저 return 된다면? (2가지 가능)
@@ -157,10 +159,12 @@ ExecutorService newFixedThreadPool(int nThreads)
         - 모든 ongoing thread를 종료
             - **불완전 종료에 따른 문제 발생 가능성**
     - 따라서 thread를 잘 추적해야함
-- Java thread **_daemon_**, **_non-daemon_**
-    - `setDaemon(boolean on)`으로 결정
-    - Daemon thread : 종료시 죽음
-        - `main`에서 return시, 다른 non-daemon thread의 종료를 기다림
+
+#### **_daemon_**, **_non-daemon_**
+
+- `setDaemon(boolean on)`으로 결정
+- Daemon thread : thread 종료 시 killed
+    - `main`에서 반환 시, 다른 non-daemon thread의 종료를 기다림
 
 ### 1.4 What do you want for threads?
 
