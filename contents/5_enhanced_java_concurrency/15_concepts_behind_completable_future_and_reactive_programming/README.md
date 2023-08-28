@@ -225,7 +225,7 @@ executorService.shutdown();
 - 그러나 여전히 중복 코드가 많음 (thread 관리 관련)
 - **_asynchronous_** API를 사용해 편하게 관리
     - Java 8 : `Future<>` 대신 `CompletableFuture<>`
-    - Java 9 " publish-subscribe protocol 기반의 `Flow` API
+    - Java 9 : publish-subscribe protocol 기반의 `Flow` API
 
 ### 2.1 Future-style API
 
@@ -243,7 +243,7 @@ System.out.println(y.get() + z.get());
 - 메서드가 `Future`를 반환
 - `get()` 호출 시, blocking 연산 후 결과 반환
 
-### 2.2 Reactive-style API
+### 2.2 Reactive-style API (Java 8)
 
 ````
 void f(int x, IntConsumer dealWithResult);
@@ -251,7 +251,7 @@ void g(int x, IntConsumer dealWithResult);
 ````
 
 - callback-style 적용
-- `f()`안에서 task를 만들어 lamda 실행
+- `f()` body에서 task를 만들어 lamda 실행
 
 ```java
 import java.util.function.IntConsumer;
@@ -294,18 +294,18 @@ work2();
 ````
 
 - `sleep()`의 해로움
-- blocking
-- System resource 점유
+    - blocking
+    - System resource 점유
 - blocking의 분류
     - 다른 작업의 무언가를 기다림 e.g. `Future.get()`
-    - interface 장치로부터 외부 상호작용을 기다림 e.g. DB read, network xhdtls
+    - interface 장치로부터 외부 상호작용을 기다림 e.g. DB read, network 통신 결과
 
-#### 해결방안 : _before_ and _after_
+#### 해결 방안 : _before_ and _after_
 
 - task를 _before_, _after_ 로 분리
-- _after_는 blocking이 없을 때만 실행
+- _after_ 는 blocking이 없을 때만 실행
 - before와 after는 각자 다른 thread에서 실행
-- **_before_가 종료되는 즉시 thread를 종료** (non-blocking)
+- **_before_ 가 종료되는 즉시 thread를 종료** (non-blocking)
     - `slepp()` 을 서버의 몇 byte 수준의 memory 사용으로 대체
 - `ExecutorService`를 사용해 thread 관리
 - I/O 작업에 유용
@@ -358,8 +358,7 @@ public class ScheduledExecutorServiceExample {
 void f(int x, Consumer<Integer> dealWithResult, Consumer<Throwable> dealWithException);
 ````
 
-- `Future` : `get()` 호출 시, `ExecutionException` 발생
-    - `exceptionally()` 사용
+- `Future` : `exceptionally()` 사용
 - Reactive style API : 예외 전용 callback 추가
     - Java 8 :  `Consumer<Throwable>` 사용
     - Java 9 : `java.util.concurrent.Subscriber<T>` interface 사용
@@ -371,6 +370,7 @@ void onError(Throwable throwable); // exception occurred
 void onNext(T item); // value is available
 
 ...
+
 void f(int x, Subscriber<Integer> dealWithResult){
   ...
   dealWithReulst.onError(t); // t : Throwable
