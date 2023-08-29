@@ -446,6 +446,84 @@ p.thenBoth(q1, q2).thenCombine(r);
 
 ## 4. CompletableFuture and combinators for concurrency
 
+- `java.util.concurrent.CompletableFuture` : `Future`의 구현체
+    - `Future`의 조합
+    - `Callable`, `get()` 없이 `Future` 생성
+    - `complete()` : 나중에 다른 thread가 완료시킬 수 있음
+
+```java
+public class CFCompleteBlocking {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        int x = 1337;
+
+        CompletableFuture<Integer> a = new CompletableFuture<>();
+        executorService.submit(() -> a.complete(f(x))); // asynchronous
+        int b = g(x); // synchronous
+
+        System.out.println("f(x) + g(x) = " + (a.get() + b)); // a.get() blocks until the result is ready
+
+        executorService.shutdown();
+    }
+
+    private static int f(int x) {
+        int result = x + 10;
+        System.out.println("f(" + x + ") = " + result);
+
+        return result;
+    }
+
+    private static int g(int x) {
+        int result = x + 1;
+        System.out.println("g(" + x + ") = " + result);
+        return result;
+    }
+}
+```
+
+```bash
+g(1337) = 1338
+f(1337) = 1347
+f(x) + g(x) = 2685
+```
+
+#### blocking 없이 비동기 처리
+
+<img src="img_7.png"  width="70%"/>
+
+- `thenCombine()` : 앞선 두 thread가 완료되어야지만 세번쩨 연산이 실행됨
+- 동시에 thread를 최대 2개로 유지
+
+````
+CompletableFuture<V> thenCombine(CompletableFuture<U> other, BiFunction<T, U, V> fn)
+````
+
+```java
+
+public class CFCompleteBlockingNone {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        int x = 1337;
+
+        CompletableFuture<Integer> a = new CompletableFuture<>(); // f(x)
+        CompletableFuture<Integer> b = new CompletableFuture<>(); // g(x)
+        CompletableFuture<Integer> c = a.thenCombine(b, (y, z) -> y + z); // f(x) + g(x) or g(x) + f(x)
+
+        executorService.submit(() -> a.complete(f(x))); // asynchronous
+        executorService.submit(() -> b.complete(g(x))); // asynchronous
+
+        System.out.println("f(x) + g(x) = " + c.get());
+
+        executorService.shutdown();
+    }
+}
+```
+
+- `a`, `b` : thread pool에서 실행할 내용을 스케쥴링
+- `c` : `a`, `b` 의 결과가 나와야만, 실행 상태 돌입
+    - **_waiting_ 없음**
+    - `a`, `b`의 결과가 모두 나오기 전까지 `c.get()`은 blocking되지 않음
+
 ## 5. Reactive systems vs reactive programming
 
 ## 6. Road map
