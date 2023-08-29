@@ -1,4 +1,4 @@
-# 15. Concepts behind CompletableFuture and reactive programming (Java 9)
+# 15. Concepts behind CompletableFuture and reactive programming (Java 8, 9)
 
 1. Evolving Java support for expressing concurrency
 2. Synchronous and asynchronous APIs
@@ -491,8 +491,8 @@ f(x) + g(x) = 2685
 
 <img src="img_7.png"  width="70%"/>
 
-- `thenCombine()` : 앞선 두 thread가 완료되어야지만 세번쩨 연산이 실행됨
-- 동시에 thread를 최대 2개로 유지
+- `thenCombine()` : 앞선 두 thread가 완료되어야지만 세번째 연산 실행 시작 (**waiting 없음**)
+- 동시에 thread를 **최대 2개**로 유지
 
 ````
 CompletableFuture<V> thenCombine(CompletableFuture<U> other, BiFunction<T, U, V> fn)
@@ -512,7 +512,7 @@ public class CFCompleteBlockingNone {
         executorService.submit(() -> a.complete(f(x))); // asynchronous
         executorService.submit(() -> b.complete(g(x))); // asynchronous
 
-        System.out.println("f(x) + g(x) = " + c.get());
+        System.out.println("f(x) + g(x) = " + c.get()); // a, b가 완료되어야지만 실행 시작
 
         executorService.shutdown();
     }
@@ -522,7 +522,7 @@ public class CFCompleteBlockingNone {
 - `a`, `b` : thread pool에서 실행할 내용을 스케쥴링
 - `c` : `a`, `b` 의 결과가 나와야만, 실행 상태 돌입
     - **_waiting_ 없음**
-    - `a`, `b`의 결과가 모두 나오기 전까지 `c.get()`은 blocking되지 않음
+    - `a`, `b`의 결과가 모두 나오기 전까지 `c.get()`은 **blocking되지 않음**
 
 ## 5. Reactive systems vs reactive programming
 
