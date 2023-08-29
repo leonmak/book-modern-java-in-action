@@ -390,6 +390,60 @@ void f(int x, Subscriber<Integer> dealWithResult){
 
 ## 3. The box-and-channel model
 
+<img src="img_6.png"  width="70%"/>
+
+- **_box-and-channel model_** : box와 channel로 구성된 모델
+    - box : data를 저장하는 공간
+    - channel : box를 연결하는 공간
+    - **concurent system을 높은 추상화된 표현으로 설계하는 수단**
+
+````
+int t = p(x);
+System.out.println(r(q1(t), q2(t)));
+
+// parallel
+int t = p(x);
+Future<Integer> a1 = executorService.submit(() -> q1(t));
+Future<Integer> a2 = executorService.submit(() -> q2(t));
+
+System.out.println(r(a1.get(), a2.get()));
+````
+
+#### 문제점 : system이 커져서 box의 부피가 늘어난다면?
+
+- `get()` 호출 시 blocking time이 늘어남
+- deadlock 발생 확률이 높아짐
+- hardware 활용 효율은 오히려 낮아짐
+- system 구조 파악이 힘듦
+
+#### 해결책 : Java 8 `java.util.concurrent.CompletableFuture`
+
+- `CompletableFuture` : _combinators_
+
+````
+Function<Integer, Integer> myFun = add1.addThen(dble);
+````
+
+````
+int t = p(x);
+System.out.println(r(q1(t), q2(t)));
+
+// parallel
+int t = p(x);
+Future<Integer> a1 = executorService.submit(() -> q1(t));
+Future<Integer> a2 = executorService.submit(() -> q2(t));
+
+System.out.println(r(a1.get(), a2.get()));
+
+// Java 8 : CompletableFuture
+Function p = ...;
+Function q1 = ...;
+Function q2 = ...;
+BiFunction r = ...;
+
+p.thenBoth(q1, q2).thenCombine(r);
+````
+
 ## 4. CompletableFuture and combinators for concurrency
 
 ## 5. Reactive systems vs reactive programming
