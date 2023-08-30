@@ -5,8 +5,9 @@
 3. The box-and-channel model
 4. CompletableFuture and combinators for concurrency
 5. Publish-subscribe and reactive programming
-6. Road map
-7. Summary
+6. Reactive systems vs. reactive programming
+7. Road map
+8. Summary
 
 > ### This chapter covers
 >
@@ -577,7 +578,7 @@ public class PubSubEx {
         SimpleCell c2 = new SimpleCell("C2"); // publisher
         SimpleCell c3 = new SimpleCell("C3"); // subscriber
 
-        c1.subscribe(c3); 
+        c1.subscribe(c3);
 
         c1.onNext(10); // c1 event 발행
         c2.onNext(20); // c2 event 발행
@@ -651,8 +652,8 @@ C2 : 20
 #### upstream, downstream
 
 - 데이터가 publisher에서 subscriber로 흐름
-  - _upstream_ : publisher -> subscriber
-  - _downstream_ : subscriber -> publisher
+    - _upstream_ : publisher -> subscriber
+    - _downstream_ : subscriber -> publisher
 - publisher : producer
 - subscriber : consumer
 - `onNext()` : 새로운 데이터 (_event_)를 받음
@@ -697,7 +698,28 @@ interface Subscription {
 - _Subscriber_ 가 준비되지 않은 경우 발생한 event는 어떻게 처리할지
 - _reactive pull-based_ backpressure : _Subscriber_ 가 _Publisher_ 에게 정보를 요구
 
-## 6. Road map
+## 6. Reactive systems vs. reactive programming
 
-## 7. Summary
+#### _reactive system_
+
+- 프로그램의 architecture가 runtime 환경에서 변화에 react
+- responsive + resilient + elastic + message-driven
+- Responsive : input에 대해 실시간으로 응답
+- Resilent : failure에 대해 자동으로 복구
+    - 하나의 component가 failed -> 다른 component
+- Elastic : workload에 반응하여 효율적으로 실행
+    - thread 수를 조절하여 idle thread를 최소화
+
+#### _reactive programming_ : reactive system을 구현하기 위한 programming paradigm
+
+- Java에선 `Flow` API를 사용
+- _message-driven_ 을 구현
+- _message-driven_
+    - box-and-chanel model 기반
+    - component는 input을 기다리고, input이 발생하면 react
+    - result를 다른 component에게 전달
+
+## 7. Road map
+
+## 8. Summary
 
