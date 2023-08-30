@@ -573,14 +573,14 @@ interface Subscriber<T> {
 public class PubSubEx {
 
     public static void main(String[] args) {
-        SimpleCell c1 = new SimpleCell("C1");
-        SimpleCell c2 = new SimpleCell("C2");
-        SimpleCell c3 = new SimpleCell("C3");
+        SimpleCell c1 = new SimpleCell("C1"); // publisher
+        SimpleCell c2 = new SimpleCell("C2"); // publisher
+        SimpleCell c3 = new SimpleCell("C3"); // subscriber
 
-        c1.subscribe(c3); // c3가 c1을 구독
+        c1.subscribe(c3); 
 
-        c1.onNext(10); // c1에 10을 전달 -> c3에 10이 전달
-        c2.onNext(20); // c2에 20을 전달
+        c1.onNext(10); // c1 event 발행
+        c2.onNext(20); // c2 event 발행
 
     }
 
@@ -648,9 +648,11 @@ C2 : 20
 
 </details>
 
-#### 명명법
+#### upstream, downstream
 
 - 데이터가 publisher에서 subscriber로 흐름
+  - _upstream_ : publisher -> subscriber
+  - _downstream_ : subscriber -> publisher
 - publisher : producer
 - subscriber : consumer
 - `onNext()` : 새로운 데이터 (_event_)를 받음
@@ -659,12 +661,12 @@ C2 : 20
 #### pressure, backpressure 문제
 
 - thread 활용면에서 중요함
-- 만일 발행할 event 개수가 많아진다면?
+- **만일 발행할 event 개수가 많아진다면?**
 
 ### 5.2 Backpressure (flow control)
 
 - subscriber에게 event 발행 속도를 제한하는 것
-- _Subscriber_가 _Publisher_ 에게 보내는 message
+- _Subscriber_ 가 _Publisher_ 에게 보내는 message
 
 ```java
 interface Subscriber<T> {
@@ -693,7 +695,7 @@ interface Subscription {
     - 아니면, 각 _Subscriber_ 가 별도의 queue를 가지고 있을 것인가?
 - _Subscriber_ queue 가 지나치게 커진다면 어떤 일이 일어날지
 - _Subscriber_ 가 준비되지 않은 경우 발생한 event는 어떻게 처리할지
-- _reactive pull_ -based backpressure : _Subscriber_ 가 _Publisher_ 에게 정보를 요구
+- _reactive pull-based_ backpressure : _Subscriber_ 가 _Publisher_ 에게 정보를 요구
 
 ## 6. Road map
 
