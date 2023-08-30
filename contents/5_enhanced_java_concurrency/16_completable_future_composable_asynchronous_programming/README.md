@@ -326,6 +326,242 @@ CompletableFuture.supplyAsync(() -> String.format("%s price is %.2f",
 
 ## 4. Pipelining asynchronous tasks
 
+<details>
+<summary>Enum : Code</summary>
+
+````
+// return [shopName]:[price]:[DiscountCode]
+public String getPrice(String product) {
+    double price = calculatePrice(product);
+    Discount.Code code = Discount.Code.values()[new Random().nextInt(Discount.Code.values().length)];
+    return String.format("%s:%.2f:%s", name, price, code);
+}
+
+````
+
+```java
+public class Discount {
+    public enum Code {
+        NONE(0), SILVER(5), GOLD(10), PLATINUM(15), DIAMOND(20);
+        private final int percentage;
+
+        Code(int percentage) {
+            this.percentage = percentage;
+        }
+    }
+}
+```
+
+</details>
+
+### 4.1 Implementing a discount service
+
+```java
+// 가격 정보 문자열을 파싱해서 캡슐화
+public class Quote {
+    private final String shopName;
+    private final double price;
+    private final Discount.Code discountCode;
+
+    public Quote(String shopName, double price, Discount.Code code) {
+        this.shopName = shopName;
+        this.price = price;
+        this.discountCode = code;
+    }
+
+    // 문자열을 파싱해서 Quote 객체를 만드는 factory 메서드
+    public static Quote parse(String s) {
+        String[] split = s.split(":");
+        String shopName = split[0]; // 상점명
+        double price = Double.parseDouble(split[1]); // 가격
+        Discount.Code discountCode = Discount.Code.valueOf(split[2]); // 할인 코드
+        return new Quote(shopName, price, discountCode); // Quote 객체 생성
+    }
+
+    public String getShopName() {
+        return shopName;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public Discount.Code getDiscountCode() {
+        return discountCode;
+    }
+}
+
+public class Discount {
+    public enum Code {
+        // ...
+    }
+
+    // 할인 적용
+    public static String applyDiscount(Quote quote) {
+        return quote.getShopName() + " price is " +
+                Discount.apply(quote.getPrice(),
+                        quote.getDiscountCode());
+    }
+
+    // 가격 계산
+    private static double apply(double price, Code code) {
+        delay();
+        return Math.round(price * (100 - code.percentage) / 100);
+    }
+}
+```
+
+### 4.2 Using the Discount service
+
+````
+public List<String> findPrices(String product) {
+    return shops.stream()
+            .map(shop -> shop.getPrice(product)) // return Stream<String> [shopName]:[price]:[DiscountCode]
+            .map(Quote::parse) // return Stream<Quote>
+            .map(Discount::applyDiscount)// return Stream<String> [shopName] price is [price]
+            .collect(toList());
+}
+
+@Test
+public void tst2() {
+    long start = System.nanoTime();
+    System.out.println(findPrices("Aespa - MY WORLD (정규 3집)"));
+    long duration = (System.nanoTime() - start) / 1_000_000;
+    System.out.println("Done in " + duration + " msecs");
+}
+
+````
+
+<details>
+<summary>실행 결과</summary>
+
+```bash
+[11번가 price is 131.0, G마켓 price is 98.0, 옥션 price is 151.0, 쿠팡 price is 104.0, 위메프 price is 145.0]
+Done in 10051 msecs
+```
+
+</details>
+
+- 10 sec 이상 소요
+- 5초 (`getPrice()`) + 5초 (`applyDiscount()`) + @
+
+### 4.3 Composing synchronous and asynchronous operations
+
+````
+public List<String> findPricesAsync(String product) {
+  List<CompletableFuture<String>> priceFutures = shops.stream() // return Stream<Shop>
+    .map(shop -> CompletableFuture.supplyAsync(()
+            -> shop.getPrice(product), customExecutor))// return Stream<CompletableFuture<String>>, async
+    .map(future -> future.thenApply(Quote::parse))// return Stream<CompletableFuture<Quote>>, sync
+    .map(future -> future.thenCompose(quote ->
+            CompletableFuture.supplyAsync(() ->
+                    Discount.applyDiscount(quote), customExecutor))) // return Stream<CompletableFuture<String>>, async
+    .collect(toList());
+
+  return priceFutures.stream()
+    .map(CompletableFuture::join) // return Stream<String>
+    .collect(toList());
+}
+````
+
+<img src="img_2.png"  width="70%"/>
+
+#### GETTING THE PRICES `getPrice()`
+
+- asynchronous operation
+- `supplyAsync()` factory method 이용
+- return `Stream<CompletableFuture<String>>`
+
+#### PARSING THE QUOTES `Quote::parse`
+
+- synchronous operation
+- `delay()`가 없기 때문에 동기로 실행
+- `thenApply()` 이용
+- **주의 : `thenApply()`는 block되지 않음. 앞선 `map()` 과정이 끝나야 실행 시작**
+
+#### COMPOSING THE FUTURES FOR CALCULATING THE DISCOUNTED PRICE `Discount::applyDiscount`
+
+- asynchronous operation
+- `thenCompose()` : 2개의 async 연산을 pipeline
+    - 첫번째 async 연산이 완료되면 두번째 async 연산 실행
+- 첫번째 async 연산 : 가격 parasing + `Quote` 캡슐화 (`map 1 ~ 2`)
+- 두번째 async 연산 : 할인 적용 (`map 3`)
+- `thenComposeAsync()` : 첫번째 연산과 다른 thread에서 두번째 연산 실행
+    - _Spring_ 처럼 직접 thread pool을 관리하는 경우 같은 thread에서 실행될 수 있음을 주의
+
+#### 실행 결과
+
+```bash
+[11번가 price is 136.0, G마켓 price is 97.0, 옥션 price is 136.0, 쿠팡 price is 136.0, 위메프 price is 152.0]
+Done in 2035 msecs
+```
+
+### 4.4 Combining two CompletableFuture dependent and independent
+
+- 2개의 `CompletableFutures`가 서로 독립적일 떄 (비동기로 실행 하고 싶을 때)
+- `thenCombine()` : 2번째 인자로 `java.util.function.BiFunction`을 받음
+    - `BiFunciton`에 어떻게 2가지를 merge할 지 정의
+- `thenCombineAsync()` : `thenCombine()`과 동일하게 동작하나, `BiFunction`을 다른 thread에서 실행
+
+````
+Future<Double> futurePriceInUSD =
+    CompletableFuture.supplyAsync(() -> shop.getPrice(product)) // 첫번쨰 비동기 연산, return CompletableFuture<String>
+        .thenCombine(
+            CompletableFuture.supplyAsync(() -> 
+                exchangeService.getRate(Money.EUR, Money.USD)) // 두번째 비동기 연산, return CompletableFuture<Double>
+                , (price, rate) -> price * rate)); // 두 연산의 결과를 merge하는 BiFunction
+````
+
+<img src="img_3.png"  width="70%"/>
+
+### 4.5 Reflecting on Future vs CompletableFuture
+
+````
+ExecutorService executor = Executors.newCachedThreadPool();
+
+// Java 7 이전 : Future
+final Future<Double> futureRate = executor.submit(new Callable<Double>() {
+    public Double call() {
+       return exchangeService.getRate(Money.EUR, Money.USD);
+    }
+});
+
+Future<Double> futurePriceInUSD = executor.submit(new Callable<Double>() {
+    public Double call() {
+        double priceInEUR = shop.getPrice(product);
+        return priceInEUR * futureRate.get();
+    }
+});
+
+// Java 8 : CompletableFuture
+CompletableFuture<Double> futurePriceInUSD = CompletableFuture.supplyAsync(() -> shop.getPrice(product))
+    .thenCombine(CompletableFuture.supplyAsync(() -> 
+        exchangeService.getRate(Money.EUR, Money.USD))
+            , (price, rate) -> price * rate);
+````
+
+### 4.6 Using timeouts effectively
+
+- 무한 blocking을 방지하기 위해 항상 timout 설정
+- _Java 9_ `orTimeout()` : `ScheduledThreadExecutor`을 사용해서 timeout 설정
+    - `CompletableFuture`가 완료되지 않으면 `TimeoutException` 발생하고, 새로운 `CompletableFuture`를 반환
+- `completeOnTimeout()` : `CompletableFuture`가 완료되지 않으면 기본 값을 사용하고, `CompletableFuture`를 반환
+
+````
+CompletableFuture<Double> futurePriceInUSD = CompletableFuture.supplyAsync(() -> shop.getPrice(product))
+    .thenCombine(CompletableFuture.supplyAsync(() -> 
+        exchangeService.getRate(Money.EUR, Money.USD))
+            , (price, rate) -> price * rate)
+    .orTimeout(3, TimeUnit.SECONDS); // 3초 이상 걸리면 TimeoutException 발생
+
+// Execption 없이 기본 값을 반환하고 싶을 때
+CompletableFuture<Double> futurePriceInUSD = CompletableFuture.supplyAsync(() -> shop.getPrice(product))
+    .thenCombine(CompletableFuture.supplyAsync(() -> 
+        exchangeService.getRate(Money.EUR, Money.USD))
+            .completeOnTimeout(DEFAULT_RATE, 1, TimeUnit.SECONDS) // 1초 이상 걸리면 DEFAULT_RATE 반환
+        , (price, rate) -> price * rate)
+````
+
 ## 5. Reacting to a CompletableFuture completion
 
 ## 6. Read map

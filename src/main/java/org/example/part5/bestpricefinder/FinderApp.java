@@ -35,8 +35,12 @@ public class FinderApp {
             }
         }
 
-        public double getPrice(String product) {
-            return calculatePrice(product);
+
+        // return [shopName]:[price]:[DiscountCode]
+        public String getPrice(String product) {
+            double price = calculatePrice(product);
+            Discount.Code code = Discount.Code.values()[new Random().nextInt(Discount.Code.values().length)];
+            return String.format("%s:%.2f:%s", name, price, code);
         }
 
         public Future<Double> getPriceAsync(String product) {
@@ -81,7 +85,7 @@ public class FinderApp {
     }
 
     private List<Shop> shops = List.of(new Shop("11번가"), new Shop("G마켓"), new Shop("옥션"), new Shop("쿠팡"), new Shop("위메프"));
-    private final Executor customeExecutor = Executors.newFixedThreadPool(Math.min(shops.size(), 100), new ThreadFactory() {
+    private final Executor customExecutor = Executors.newFixedThreadPool(Math.min(shops.size(), 100), new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
             Thread t = new Thread(r);
@@ -92,37 +96,34 @@ public class FinderApp {
     });
 
     public List<String> findPrices(String product) {
-//        return shops.stream()
-//                .map(shop -> String.format("%s price is %.2f",
-//                        shop.getName(), shop.getPrice(product)))
-//                .collect(toList());
+        return shops.stream()
+                .map(shop -> shop.getPrice(product)) // 가격 세팅 [shopName]:[price]:[DiscountCode]
+                .map(Quote::parse) // 가격 정보 파싱, Quote 객체 생성
+                .map(Discount::applyDiscount)// Quote 기반 할인 가격 문자열 생성, [shopName] price is [price]
+                .collect(toList());
+    }
 
-//        return shops.parallelStream()
-//                .map(shop -> String.format("%s price is %.2f",
-//                        shop.getName(), shop.getPrice(product)))
-//                .collect(toList());
-
-        List<CompletableFuture<String>> priceFutures = shops.stream()
-                .map(shop -> CompletableFuture.supplyAsync(() -> String.format("%s price is %.2f",
-                        shop.getName(), shop.getPrice(product)), customeExecutor))
-                .collect(toList())
-                .stream()
-                // .map(CompletableFuture::join) // join을 사용하면 supplyAsync() 완료될 때까지 블록킹
+    public List<String> findPricesAsync(String product) {
+        List<CompletableFuture<String>> priceFutures = shops.stream() // return Stream<Shop>
+                .map(shop -> CompletableFuture.supplyAsync(()
+                        -> shop.getPrice(product), customExecutor))// return Stream<CompletableFuture<String>>, async
+                .map(future -> future.thenApply(Quote::parse))// return Stream<CompletableFuture<Quote>>, sync
+                .map(future -> future.thenCompose(quote ->
+                        CompletableFuture.supplyAsync(() ->
+                                Discount.applyDiscount(quote), customExecutor))) // return Stream<CompletableFuture<String>>, async
                 .collect(toList());
 
         return priceFutures.stream()
-                .map(CompletableFuture::join)
+                .map(CompletableFuture::join) // return Stream<String>
                 .collect(toList());
     }
 
     @Test
     public void tst2() {
-        System.out.println("Runtime.getRuntime().availableProcessors() = " + Runtime.getRuntime().availableProcessors());
         long start = System.nanoTime();
-        System.out.println(findPrices("Aespa - MY WORLD (정규 3집)"));
+        System.out.println(findPricesAsync("Aespa - MY WORLD (정규 3집)"));
         long duration = (System.nanoTime() - start) / 1_000_000;
         System.out.println("Done in " + duration + " msecs");
     }
-
 
 }
