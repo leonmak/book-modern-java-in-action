@@ -1,24 +1,30 @@
 package org.example.part5.bestpricefinder;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+
+import static java.util.stream.Collectors.toList;
 
 public class FinderApp {
 
 
-    public class Shopp {
+    public class Shop {
 
         private String name;
 
-        public Shopp() {
+        public Shop() {
         }
 
-        public Shopp(String name) {
+        public Shop(String name) {
             this.name = name;
+        }
+
+        public String getName() {
+            return name;
         }
 
         public static void delay() {
@@ -58,8 +64,9 @@ public class FinderApp {
     }
 
     @Test
+    @Disabled
     public void tst1() throws ExecutionException, InterruptedException {
-        Shopp shop = new Shopp("Best Shop");
+        Shop shop = new Shop("Best Shop");
 
         long start = System.nanoTime();
         Future<Double> futurePrice = shop.getPriceAsync("IPhone 12");
@@ -72,5 +79,50 @@ public class FinderApp {
         long retrievalTime = ((System.nanoTime() - start) / 1_000_000);
         System.out.println("Price returned after " + retrievalTime + " msecs");
     }
+
+    private List<Shop> shops = List.of(new Shop("11번가"), new Shop("G마켓"), new Shop("옥션"), new Shop("쿠팡"), new Shop("위메프"));
+    private final Executor customeExecutor = Executors.newFixedThreadPool(Math.min(shops.size(), 100), new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            // 데몬 스레드로 설정
+            t.setDaemon(true);
+            return t;
+        }
+    });
+
+    public List<String> findPrices(String product) {
+//        return shops.stream()
+//                .map(shop -> String.format("%s price is %.2f",
+//                        shop.getName(), shop.getPrice(product)))
+//                .collect(toList());
+
+//        return shops.parallelStream()
+//                .map(shop -> String.format("%s price is %.2f",
+//                        shop.getName(), shop.getPrice(product)))
+//                .collect(toList());
+
+        List<CompletableFuture<String>> priceFutures = shops.stream()
+                .map(shop -> CompletableFuture.supplyAsync(() -> String.format("%s price is %.2f",
+                        shop.getName(), shop.getPrice(product)), customeExecutor))
+                .collect(toList())
+                .stream()
+                // .map(CompletableFuture::join) // join을 사용하면 supplyAsync() 완료될 때까지 블록킹
+                .collect(toList());
+
+        return priceFutures.stream()
+                .map(CompletableFuture::join)
+                .collect(toList());
+    }
+
+    @Test
+    public void tst2() {
+        System.out.println("Runtime.getRuntime().availableProcessors() = " + Runtime.getRuntime().availableProcessors());
+        long start = System.nanoTime();
+        System.out.println(findPrices("Aespa - MY WORLD (정규 3집)"));
+        long duration = (System.nanoTime() - start) / 1_000_000;
+        System.out.println("Done in " + duration + " msecs");
+    }
+
 
 }

@@ -204,6 +204,128 @@ public Future<Double> getPriceAsync(String product) {
 
 ## 3. Making your code nonblocking
 
+````
+private List<Shop> shops = List.of(new Shop("11번가"), new Shop("G마켓"), new Shop("옥션"), new Shop("쿠팡"), new Shop("위메프"));
+public List<String> findPrices(String product) {
+    return shops.stream()
+            .map(shop -> String.format("%s price is %.2f",
+                    shop.getName(), shop.getPrice(product)))
+            .collect(toList());
+}
+
+@Test
+public void tst2() {
+    long start = System.nanoTime();
+    System.out.println(findPrices("Aespa - MY WORLD (정규 3집)"));
+    long duration = (System.nanoTime() - start) / 1_000_000;
+    System.out.println("Done in " + duration + " msecs");
+}
+````
+
+<details>
+<summary>실행 결과</summary>
+
+```bash
+[11번가 price is 156.03 
+, G마켓 price is 131.27 
+, 옥션 price is 142.56 
+, 쿠팡 price is 133.57 
+, 위메프 price is 101.21 
+]
+Done in 5044 msecs
+```
+
+</details>
+- `calculatePrice()`를 동기적으로 실행
+- 5초 이상 (shop 수 만큼) 소요
+
+### 3.1 Parallelizing requests using a parallel Stream
+
+````
+public List<String> findPrices(String product) {
+    return shops.parallelStream()
+            .map(shop -> String.format("%s price is %.2f",
+                    shop.getName(), shop.getPrice(product)))
+            .collect(toList());
+}
+
+````
+
+- `Done in 1038 msecs`
+
+### 3.2 Making asynchronous requests with CompletableFuture
+
+````
+public List<String> findPrices(String product) {
+
+    List<CompletableFuture<String>> priceFutures = shops.stream()
+            .map(shop -> CompletableFuture.supplyAsync(() -> String.format("%s price is %.2f",
+                    shop.getName(), shop.getPrice(product))))
+            .collect(toList())
+            .stream()
+            // .map(CompletableFuture::join) // join을 사용하면 supplyAsync() 완료될 때까지 블록킹
+            .collect(toList());
+
+    return priceFutures.stream()
+            .map(CompletableFuture::join)
+            .collect(toList());
+}
+````
+
+<img src="img_1.png"  width="70%"/>
+
+### 3.3 Looking for the solution that scales better
+
+#### thread 수에 따른 성능 변화 (thread 5개 가정)
+
+| shop | synchrnous | parallelStream | CompletableFuture |
+|------|------------|----------------|-------------------|
+| 2    | 2 sec      | 1 sec ~        | 1 sec ~           |
+| 5    | 5 sec      | 1 sec ~        | 1 sec ~           |
+| 6    | 6sec       | 2 sec ~        | 2 sec ~           |
+
+- parallelStream, `CompletableFuture` 모두 `Runtime.getRuntime().availableProcessors()` 수만큼 thread를 사용
+- `CompletableFuture`은 직접 executor를 지정 할 수 있음
+
+### 3.4 Using a custom Executor
+
+> ### thread pool 사이즈 정하는 공식 (book _Java Concurrency in Practice_ Addison-Wesley, 2006)
+>
+> N<sup>threads</sup> = N<sup>CPU</sup> * U<sub>CPU</sub> * (1 + W/C)
+>
+> - N<sup>CPU</sup> : CPU 수 (코어 수, `Runtime.getRuntime().availableProcessors()`)
+> - U<sub>CPU</sub> : CPU 사용률 (0 ~ 1)
+> - W/C : wait time / compute time
+
+- e.g. 4 core | 100% CPU 사용 | 대기 50ms, 계산 5ms
+    - N<sup>threads</sup> = 4 * 1 * (1 + 50/5) = **44**
+
+````
+private final Executor customExecutor = Executors.newFixedThreadPool(Math.min(shops.size(), 44) // shop size < thread pool size < 44
+    , (Runnable r) -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true); // daemon thread
+        return t;
+    });
+    
+...
+
+CompletableFuture.supplyAsync(() -> String.format("%s price is %.2f",
+                    shop.getName(), shop.getPrice(product))
+                    , customExecutor); // custom executor 지정
+
+````
+
+- daemon thread : main thread가 종료되면 함께 종료되는 thread
+
+##### Parallelism: via Streams or CompletableFutures?
+
+|     | Stream                              | CompletableFuture                          |
+|-----|-------------------------------------|--------------------------------------------|
+| 사용처 | I/O가 없는 무거운 계산                      | I/O waiting이 포함된 연산                        |
+| 특징  | Stream API 사용, 간단한 구현               | thread pool 사이즈 지정 가능                      |
+| 단점  | I/O 가 있으면 Stream의 lazy로 인해 디버깅이 어려움 | 코드가 길어짐, hardware 의존적 (thread pool 사이즈 지정) |
+
 ## 4. Pipelining asynchronous tasks
 
 ## 5. Reacting to a CompletableFuture completion
