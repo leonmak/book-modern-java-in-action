@@ -721,5 +721,17 @@ interface Subscription {
 
 ## 7. Road map
 
+- Chapter 16 : `CompletableFuture`의 세부적인 사용법
+- Chapter 17 : Flow API (Java 9), publish-subscribe
+
 ## 8. Summary
 
+- Java의 동시성 지원은 계속 진화 중, Thread pool 이 도움이되지만 blocking 이슈
+- 비동기 method는 parallelism을 극대화하고, 보완
+- box-and-channel 모델을 사용해서 비동기 시스템 도식화
+    - `CompletableFuture` (Java 8), `Flow` API (Java 9)
+- `CompletableFuture`은 one-shot 비동기 연산 (blocking)
+    - Combinator를 사용해 비동기 연산을 조합 (blocking 없이)
+- `Flow` API는 publish-subscribe protocol을 기본으로 함
+    - backpressure, reactive programming 포함
+- reactive programming으로 reactive system 구현
