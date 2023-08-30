@@ -88,6 +88,120 @@ try {
 
 ## 2. Implementing an asynchronous API
 
+````java
+public class Shop {
+
+    public double getPrice(String product) {
+        return calculatePrice(product);
+    }
+
+    private double calculatePrice(String product) {
+        delay(); // 1초간 delay
+        return new Random().nextDouble() * product.charAt(0) + product.charAt(1);
+    }
+}
+
+````
+
+- 사용자가 `getPrice()`를 호출하면, blocking되어 1초 이상 소요 후 결과 반환
+- 100개의 상품을 조회하면 100초 이상 소요
+
+### 2.1 Converting a synchronous method into an asynchronous one
+
+```
+// public double getPrice(String product) { .. .}
+public Future<Double> getPriceAsync(String product) { ... }
+```
+
+````
+public Future<Double> getPriceAsync(String product) {
+    CompletableFuture<Double> futurePrice = new CompletableFuture<>();
+    new Thread(() -> {
+        double price = calculatePrice(product);
+        futurePrice.complete(price);
+    }).start();
+    return futurePrice;
+}
+````
+
+- `getPrice()`를 비동기로 만듦
+
+```
+
+@Test
+public void tst1() throws ExecutionException, InterruptedException {
+    Shopp shop = new Shopp("Best Shop");
+
+    long start = System.nanoTime();
+    Future<Double> futurePrice = shop.getPriceAsync("IPhone 12"); // 즉시 return & 비동기 연산 시작
+    long invocationTime = ((System.nanoTime() - start) / 1_000_000);
+    System.out.println("Invocation returned after " + invocationTime + " msecs");
+
+    double price = futurePrice.get(); // blocking (연산이 완료될 때까지 기다림)
+    System.out.printf("Price is %.2f%n", price);
+
+    long retrievalTime = ((System.nanoTime() - start) / 1_000_000);
+    System.out.println("Price returned after " + retrievalTime + " msecs");
+}
+
+```
+
+<details>
+<summary>실행 결과</summary>
+
+```bash
+Invocation returned after 0 msecs
+Price is 112.66
+Price returned after 1020 msecs
+```
+
+</details>
+
+### 2.2 Dealing with errors
+
+```
+public Future<Double> getPriceAsync(String product) {
+    CompletableFuture<Double> futurePrice = new CompletableFuture<>();
+        new Thread( () -> {
+            try {
+                double price = calculatePrice(product);
+                futurePrice.complete(price);
+            } catch (Exception ex) {
+                futurePrice.completeExceptionally(ex); // 에러 발생시 exception을 포함하여 complete
+            }
+        }).start();
+    return futurePrice;
+}
+```
+
+- `completeExceptionally()` : `CompletableFuture`에 에러를 포함하여 complete
+- client는 `get()`을 호출할 때 `ExecutionException`을 받음
+
+<details>
+<summary>예외 발생시 console</summary>
+
+```bash
+java.util.concurrent.ExecutionException: java.lang.RuntimeException: [에러 메시지 예시]
+  at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:396)
+  at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2073)
+...
+```
+
+</details>
+
+#### CREATING A COMPLETABLEFUTURE WITH THE SUPPLYASYNC FACTORY METHOD
+
+````
+public Future<Double> getPriceAsync(String product) {
+    return CompletableFuture.supplyAsync(() -> calculatePrice(product));
+}
+````
+
+- `supplyAsync()` : `Supplier`를 인수로 받아 `CompletableFuture`를 rturn
+- 비동기로 Supplier를 실행
+- `Supplier`는 ForkJoinPool의 `Executor`를 사용하여 실행
+- 예외처리도 동일하게 구현되어있음
+
 ## 3. Making your code nonblocking
 
 ## 4. Pipelining asynchronous tasks
