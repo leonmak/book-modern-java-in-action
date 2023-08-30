@@ -327,7 +327,7 @@ CompletableFuture.supplyAsync(() -> String.format("%s price is %.2f",
 ## 4. Pipelining asynchronous tasks
 
 <details>
-<summary>Enum : Code</summary>
+<summary>Enum : Discount.Code</summary>
 
 ````
 // return [shopName]:[price]:[DiscountCode]
@@ -449,9 +449,10 @@ Done in 10051 msecs
 
 ````
 public List<String> findPricesAsync(String product) {
+
   List<CompletableFuture<String>> priceFutures = shops.stream() // return Stream<Shop>
-    .map(shop -> CompletableFuture.supplyAsync(()
-            -> shop.getPrice(product), customExecutor))// return Stream<CompletableFuture<String>>, async
+    .map(shop -> CompletableFuture.supplyAsync(() -> 
+        shop.getPrice(product), customExecutor))// return Stream<CompletableFuture<String>>, async
     .map(future -> future.thenApply(Quote::parse))// return Stream<CompletableFuture<Quote>>, sync
     .map(future -> future.thenCompose(quote ->
             CompletableFuture.supplyAsync(() ->
@@ -461,6 +462,7 @@ public List<String> findPricesAsync(String product) {
   return priceFutures.stream()
     .map(CompletableFuture::join) // return Stream<String>
     .collect(toList());
+    
 }
 ````
 
@@ -468,26 +470,26 @@ public List<String> findPricesAsync(String product) {
 
 #### GETTING THE PRICES `getPrice()`
 
-- asynchronous operation
+- _asynchronous_ operation
 - `supplyAsync()` factory method 이용
 - return `Stream<CompletableFuture<String>>`
 
 #### PARSING THE QUOTES `Quote::parse`
 
-- synchronous operation
+- _synchronous_ operation
 - `delay()`가 없기 때문에 동기로 실행
 - `thenApply()` 이용
 - **주의 : `thenApply()`는 block되지 않음. 앞선 `map()` 과정이 끝나야 실행 시작**
 
 #### COMPOSING THE FUTURES FOR CALCULATING THE DISCOUNTED PRICE `Discount::applyDiscount`
 
-- asynchronous operation
+- _asynchronous_ operation
 - `thenCompose()` : 2개의 async 연산을 pipeline
     - 첫번째 async 연산이 완료되면 두번째 async 연산 실행
 - 첫번째 async 연산 : 가격 parasing + `Quote` 캡슐화 (`map 1 ~ 2`)
 - 두번째 async 연산 : 할인 적용 (`map 3`)
 - `thenComposeAsync()` : 첫번째 연산과 다른 thread에서 두번째 연산 실행
-    - _Spring_ 처럼 직접 thread pool을 관리하는 경우 같은 thread에서 실행될 수 있음을 주의
+    - **_Spring_ 처럼 직접 thread pool을 관리하는 경우 같은 thread에서 실행될 수 있음 주의**
 
 #### 실행 결과
 
@@ -498,17 +500,16 @@ Done in 2035 msecs
 
 ### 4.4 Combining two CompletableFuture dependent and independent
 
-- 2개의 `CompletableFutures`가 서로 독립적일 떄 (비동기로 실행 하고 싶을 때)
+- 2개의 `CompletableFutures`가 서로 독립적일 때 (비동기로 실행 하고 싶을 때)
 - `thenCombine()` : 2번째 인자로 `java.util.function.BiFunction`을 받음
-    - `BiFunciton`에 어떻게 2가지를 merge할 지 정의
+    - `BiFunciton`이 어떻게 두가지를 merge할 지 정의
 - `thenCombineAsync()` : `thenCombine()`과 동일하게 동작하나, `BiFunction`을 다른 thread에서 실행
 
 ````
 Future<Double> futurePriceInUSD =
     CompletableFuture.supplyAsync(() -> shop.getPrice(product)) // 첫번쨰 비동기 연산, return CompletableFuture<String>
-        .thenCombine(
-            CompletableFuture.supplyAsync(() -> 
-                exchangeService.getRate(Money.EUR, Money.USD)) // 두번째 비동기 연산, return CompletableFuture<Double>
+        .thenCombine(CompletableFuture.supplyAsync(() -> 
+            exchangeService.getRate(Money.EUR, Money.USD)) // 두번째 비동기 연산, return CompletableFuture<Double>
                 , (price, rate) -> price * rate)); // 두 연산의 결과를 merge하는 BiFunction
 ````
 
@@ -542,7 +543,7 @@ CompletableFuture<Double> futurePriceInUSD = CompletableFuture.supplyAsync(() ->
 
 ### 4.6 Using timeouts effectively
 
-- 무한 blocking을 방지하기 위해 항상 timout 설정
+- 무한 blocking을 방지하기 위해 **항상** timout 설정
 - _Java 9_ `orTimeout()` : `ScheduledThreadExecutor`을 사용해서 timeout 설정
     - `CompletableFuture`가 완료되지 않으면 `TimeoutException` 발생하고, 새로운 `CompletableFuture`를 반환
 - `completeOnTimeout()` : `CompletableFuture`가 완료되지 않으면 기본 값을 사용하고, `CompletableFuture`를 반환
