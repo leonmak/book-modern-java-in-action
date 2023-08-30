@@ -289,22 +289,22 @@ public List<String> findPrices(String product) {
 
 ### 3.4 Using a custom Executor
 
-> ### thread pool 사이즈 정하는 공식 (book _Java Concurrency in Practice_ Addison-Wesley, 2006)
+> #### thread pool 사이즈 정하는 공식 (book _Java Concurrency in Practice_ Addison-Wesley, 2006)
 >
 > N<sup>threads</sup> = N<sup>CPU</sup> * U<sub>CPU</sub> * (1 + W/C)
 >
 > - N<sup>CPU</sup> : CPU 수 (코어 수, `Runtime.getRuntime().availableProcessors()`)
 > - U<sub>CPU</sub> : CPU 사용률 (0 ~ 1)
 > - W/C : wait time / compute time
-
-- e.g. 4 core | 100% CPU 사용 | 대기 50ms, 계산 5ms
-    - N<sup>threads</sup> = 4 * 1 * (1 + 50/5) = **44**
+> - e.g. 4 core | 100% CPU 사용 | 대기 50ms, 계산 5ms
+> - N<sup>threads</sup> = 4 * 1 * (1 + 50/5) = **44**
 
 ````
-private final Executor customExecutor = Executors.newFixedThreadPool(Math.min(shops.size(), 44) // shop size < thread pool size < 44
+private final Executor customExecutor 
+  = Executors.newFixedThreadPool(Math.min(shops.size(), 44) // shop size < thread pool size < 44
     , (Runnable r) -> {
         Thread t = new Thread(r);
-        t.setDaemon(true); // daemon thread
+        t.setDaemon(true); // daemon thread : main thread가 종료되면 함께 종료되는 thread
         return t;
     });
     
@@ -316,13 +316,11 @@ CompletableFuture.supplyAsync(() -> String.format("%s price is %.2f",
 
 ````
 
-- daemon thread : main thread가 종료되면 함께 종료되는 thread
-
 ##### Parallelism: via Streams or CompletableFutures?
 
 |     | Stream                              | CompletableFuture                          |
 |-----|-------------------------------------|--------------------------------------------|
-| 사용처 | I/O가 없는 무거운 계산                      | I/O waiting이 포함된 연산                        |
+| 사용처 | I/O 없는 무거운 계산                       | I/O waiting이 포함된 연산                        |
 | 특징  | Stream API 사용, 간단한 구현               | thread pool 사이즈 지정 가능                      |
 | 단점  | I/O 가 있으면 Stream의 lazy로 인해 디버깅이 어려움 | 코드가 길어짐, hardware 의존적 (thread pool 사이즈 지정) |
 
