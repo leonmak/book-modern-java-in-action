@@ -4,7 +4,7 @@
 2. Synchronous and asynchronous APIs
 3. The box-and-channel model
 4. CompletableFuture and combinators for concurrency
-5. Reactive systems vs reactive programming
+5. Publish-subscribe and reactive programming
 6. Road map
 7. Summary
 
@@ -524,7 +524,176 @@ public class CFCompleteBlockingNone {
     - **_waiting_ 없음**
     - `a`, `b`의 결과가 모두 나오기 전까지 `c.get()`은 **blocking되지 않음**
 
-## 5. Reactive systems vs reactive programming
+## 5. Publish-subscribe and reactive programming
+
+#### reactive programming?
+
+- 시간이 지남에 따라 여러 결과를 생산해낼 수 있는 `Future` 객체
+    - e.g. n초 간격으로 온도를 제공하는 온도계, web server 의 listner
+- _reactive_ : 여러 결과 중 특정 결과에 반응
+    - e.g. 온도가 100도를 넘으면 경고음을 울림
+- Stream과 다른점
+    - Stream은 한번만 사용 가능 (선형 pipeline)
+
+#### `java.util.concurrent.Flow` API (Java 9)
+
+- reactive programming을 위한 API
+- publish-subscribe protocol (pub-sub)
+
+<img src="img_8.png"  width="70%"/>
+
+> _subscriber_ : _publisher_ 를 subscribe
+> _subscription_ : conneciton
+> _Message_ (event) : connection을 통해 전송
+
+- component가 1개 이상의 publisher를 subscribe
+- component는 1개 이상의 stream을 publish
+
+### 5.1 Example use for summing two flows
+
+- 2개의 event를 조합해서 1개의 event를 만듦 (subscribe -> publish)
+    - e.g. spreadsheet cell C1 + C2 = C3로 지정하면, C1, C2가 변경되면 C3도 변경됨
+- `java.util.concurrent.Publisher<T>` : event를 publish
+    - subscriber를 인자로 받아, connect
+- `java.util.concurrent.Subscriber<T>` : event를 subscribe
+    - `onNext()` : event를 받음
+
+```java
+interface Publisher<T> {
+    void subscribe(Subscriber<? super T> subscriber);
+}
+
+interface Subscriber<T> {
+    void onNext(T t);
+}
+```
+
+````java
+
+public class PubSubEx {
+
+    public static void main(String[] args) {
+        SimpleCell c1 = new SimpleCell("C1");
+        SimpleCell c2 = new SimpleCell("C2");
+        SimpleCell c3 = new SimpleCell("C3");
+
+        c1.subscribe(c3); // c3가 c1을 구독
+
+        c1.onNext(10); // c1에 10을 전달 -> c3에 10이 전달
+        c2.onNext(20); // c2에 20을 전달
+
+    }
+
+    private static class SimpleCell implements Flow.Publisher<Integer>, Flow.Subscriber<Integer> {
+        private int value = 0;
+        private String name;
+
+        private List<Flow.Subscriber> subscribers = new ArrayList<>();
+
+        public SimpleCell(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "SimpleCell{" +
+                    "value=" + value +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
+
+        @Override
+        public void subscribe(Flow.Subscriber<? super Integer> subscriber) {
+            subscribers.add(subscriber);
+        }
+
+        private void notifyAllSubscribers() {
+            subscribers.forEach(subscriber -> subscriber.onNext(this.value));
+        }
+
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+
+        }
+
+        @Override
+        public void onNext(Integer item) {
+            this.value = item; // react
+            System.out.println(this.name + " : " + this.value); // 새로운 값 출력
+            notifyAllSubscribers(); // publish : 새로운 값을 알림
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+
+        }
+
+        @Override
+        public void onComplete() {
+
+        }
+    }
+}
+
+````
+
+<details>
+<summary>실행 결과</summary>
+
+```bash
+C1 : 10
+C3 : 10
+C2 : 20
+```
+
+</details>
+
+#### 명명법
+
+- 데이터가 publisher에서 subscriber로 흐름
+- publisher : producer
+- subscriber : consumer
+- `onNext()` : 새로운 데이터 (_event_)를 받음
+- `notifyAllSubscribers()` : 새로운 데이터를 publish (downstream)
+
+#### pressure, backpressure 문제
+
+- thread 활용면에서 중요함
+- 만일 발행할 event 개수가 많아진다면?
+
+### 5.2 Backpressure (flow control)
+
+- subscriber에게 event 발행 속도를 제한하는 것
+- _Subscriber_가 _Publisher_ 에게 보내는 message
+
+```java
+interface Subscriber<T> {
+    // Publisher와 Subscriber 간의 연결이 처음 만들어질 때 호출
+    void onSubscribe(Subscription subscription);
+}
+
+interface Subscription {
+    void request(long n);
+
+    void cancel();
+}
+```
+
+### 5.3 A simple form of real backpressure
+
+#### 동시에 하나의 event만 처리하는 방법
+
+- `onSubscribe()` 에 의해 전달된 `Subscription` 객체를 가진 _Subscriber_
+- `onSubscribe()`, `onNext()`, `onError()`의 마지막 동작에 `channel.request(1)` 추가
+- _Publisher_ 가 `onNext()`, `onError()`를 호출한 channel에만 event를 전달
+
+#### backpressure의 trade-off
+
+- _Subscriber_ 들에게 가장 느린 속도로 event를 발행할 것인가?
+    - 아니면, 각 _Subscriber_ 가 별도의 queue를 가지고 있을 것인가?
+- _Subscriber_ queue 가 지나치게 커진다면 어떤 일이 일어날지
+- _Subscriber_ 가 준비되지 않은 경우 발생한 event는 어떻게 처리할지
+- _reactive pull_ -based backpressure : _Subscriber_ 가 _Publisher_ 에게 정보를 요구
 
 ## 6. Road map
 
