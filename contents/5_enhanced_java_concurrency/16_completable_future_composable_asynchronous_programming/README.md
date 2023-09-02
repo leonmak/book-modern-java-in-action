@@ -565,6 +565,88 @@ CompletableFuture<Double> futurePriceInUSD = CompletableFuture.supplyAsync(() ->
 
 ## 5. Reacting to a CompletableFuture completion
 
+````
+// 실제 상황에선 딜레이 시간이 램덤
+public static void delay() {
+    int delay = 500 + new Random().nextInt(2000);
+    try {
+        Thread.sleep(delay);
+    } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    }
+}
+````
+
+- 모든 가격이 다 구해면 응답하지 않고, 가장 빨리 구해진 가격을 응답하고 싶음
+
+### 5.1 Refactoring the best-price-finder application
+
+````
+@Test
+@DisplayName("비동기 출력")
+public void tst3() {
+    CompletableFuture[] futures =
+            findPricesStream("Aespa - MY WORLD (정규 3집)")
+                    .map(future -> future.thenAccept(System.out::println)) //return Stream<CompletableFuture<Void>>
+                    .toArray(size -> new CompletableFuture[size]);
+
+    CompletableFuture.allOf(futures).join();
+    // CompletableFuture.anyOf(futures).join(); // 가장 먼저 응답한 가격 하나 출력
+}
+
+public Stream<CompletableFuture<String>> findPricesStream(String product) {
+    return shops.stream()
+        .map(shop ->
+                CompletableFuture.supplyAsync(() -> 
+                    shop.getPrice(product), customExecutor)) // return Stream<CompletableFuture<String>>, async
+        .map(future ->
+                future.thenApply(Quote::parse)) // return Stream<CompletableFuture<Quote>>, sync
+        .map(future ->
+                future.thenCompose(quote -> 
+                    CompletableFuture.supplyAsync(() -> 
+                        Discount.applyDiscount(quote), customExecutor))); // return Stream<CompletableFuture<String>>, async
+}
+
+````
+
+- `thenAccept()`
+    - return `CompletableFuture<Void>`
+- `thenAcceptAsync()` : 인자 `Consumer`를 다른 thread에서 실행
+- `allOf()` : 인자 `CompletableFuture[]`를 받아 모든 `CompletableFuture`가 완료되면 `CompletableFuture<Void>`를 반환
+    - `anyOf()` : 인자 `CompletableFuture[]`를 받아 하나의 `CompletableFuture`가 완료되면 `CompletableFuture<Object>`를 반환
+- `join()` : 실행, `CompletableFuture`가 완료될 때까지 기다림
+
+### 5.2 putting it all together
+
+````
+@Test
+@DisplayName("최종")
+public void tst4() {
+    long start = System.nanoTime();
+    CompletableFuture[] futures = findPricesStream("Aespa - MY WORLD (정규 3집)")
+            .map(f -> f.thenAccept(s ->
+                    System.out.println(s + " (done in " + ((System.nanoTime() - start) / 1_000_000) + " msecs)")))
+            .toArray(size -> new CompletableFuture[size]);
+
+    CompletableFuture.allOf(futures).join();
+    System.out.println("All shops have now responded in " + ((System.nanoTime() - start) / 1_000_000) + " msecs");
+}
+````
+
+<details>
+<summary>실행 결과</summary>
+
+```bash
+G마켓 price is 116.0 (done in 2315 msecs)
+위메프 price is 145.0 (done in 2470 msecs)
+옥션 price is 132.0 (done in 3104 msecs)
+11번가 price is 129.0 (done in 3273 msecs)
+쿠팡 price is 127.0 (done in 3803 msecs)
+All shops have now responded in 3803 msecs
+```
+
+</details>
+
 ## 6. Read map
 
 ## 7. Summary

@@ -1,11 +1,13 @@
 package org.example.part5.bestpricefinder;
 
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -28,8 +30,9 @@ public class FinderApp {
         }
 
         public static void delay() {
+            int delay = 500 + new Random().nextInt(2000);
             try {
-                Thread.sleep(1000L);
+                Thread.sleep(delay);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -118,7 +121,19 @@ public class FinderApp {
                 .collect(toList());
     }
 
+    public Stream<CompletableFuture<String>> findPricesStream(String product) {
+        return shops.stream()
+                .map(shop ->
+                        CompletableFuture.supplyAsync(() -> shop.getPrice(product), customExecutor)) // return Stream<CompletableFuture<String>>, async
+                .map(future ->
+                        future.thenApply(Quote::parse)) // return Stream<CompletableFuture<Quote>>, sync
+                .map(future ->
+                        future.thenCompose(quote -> CompletableFuture.supplyAsync(()
+                                -> Discount.applyDiscount(quote), customExecutor))); // return Stream<CompletableFuture<String>>, async
+    }
+
     @Test
+    @Disabled
     public void tst2() {
         long start = System.nanoTime();
         System.out.println(findPricesAsync("Aespa - MY WORLD (정규 3집)"));
@@ -126,4 +141,29 @@ public class FinderApp {
         System.out.println("Done in " + duration + " msecs");
     }
 
+    @Test
+    @DisplayName("비동기 출력")
+    public void tst3() {
+        CompletableFuture[] futures =
+                findPricesStream("Aespa - MY WORLD (정규 3집)")
+                        .map(future -> future.thenAccept(System.out::println)) //return Stream<CompletableFuture<Void>>
+                        .toArray(size -> new CompletableFuture[size]);
+
+        CompletableFuture.allOf(futures).join();
+        // CompletableFuture.anyOf(futures).join(); // 가장 먼저 응답한 가격 하나 출력
+
+    }
+
+    @Test
+    @DisplayName("최종")
+    public void tst4() {
+        long start = System.nanoTime();
+        CompletableFuture[] futures = findPricesStream("Aespa - MY WORLD (정규 3집)")
+                .map(f -> f.thenAccept(s ->
+                        System.out.println(s + " (done in " + ((System.nanoTime() - start) / 1_000_000) + " msecs)")))
+                .toArray(size -> new CompletableFuture[size]);
+
+        CompletableFuture.allOf(futures).join(); // 가장 먼저 응답한 가격 하나 출력
+        System.out.println("All shops have now responded in " + ((System.nanoTime() - start) / 1_000_000) + " msecs");
+    }
 }
