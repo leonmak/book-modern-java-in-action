@@ -649,4 +649,17 @@ All shops have now responded in 3803 msecs
 
 ## 6. Read map
 
+- Chapter 17. Java 9 Flow API : `CompletableFuture`를 일반화
+    - 연산 후 선택적으로 종료할 수 있음
+
 ## 7. Summary
+
+- 긴시간이 걸리는 연산에 비동기 작업을 적용하면 성능, 응답성이 향상됨
+    - 특히 remote service 간의 통신인 경우
+- client에게 비동기 API를 제공하는 방법 : `java.util.concurrent.CompletableFuture`
+- `CompletableFuture`는 비동기 작업에서 발생한 에러를 처리하는 방법을 제공 (전파 or 처리)
+- 동기 API를 `CompletableFuture`로 wrapping하여 비동기로 만들 수 있음
+- 2개 이상의 비동기 연산을 pipelining 하고 결과를 merge할 수 있음
+- `CompletableFuture`에 callback을 등록할 수 있음
+- `CompletableFuture` 들이 모두 완료되야 응답하거나, 가장 빨리 완료된 연산의 결과를 사용할 수 있음
+- `CompletableFuture`의 `orTimeout()`, `completeOnTimeout()`을 사용하여 timeout 설정 가능 (Java 9)
