@@ -86,6 +86,95 @@
 
 ## 2. Reactive streams and the Flow API
 
+- _**Reactive programming**_ : reactive streams을 사용해서 프로그래밍
+- reative streams : pub-sub 기반의 stream을 비동기로 처리, non-blocking Backpressure를 위한 표준 기술
+- Backpressure : pub-sub 에서 subscriber가 publisher보다 느린 상황을 방지하는 흐름제어 기술
+    - consumer는 producer (upstream)에게 처리 속도를 제어하도록 알려야함
+- reactive stream은 Backpressure 내장 필요
+    - 동기 시스템은 blocking되기 때문에 Backpressure가 필요하지 않음
+- Java 9 `java.util.concurrent.FLow` API에 reactive stream이 포함됨
+    - 3rd-party에서 사용중 e.g. Akka Streams, Reactor, RxJava, Vert.x
+
+### 2.1 Introducing the Flow class
+
+- `java.util.concurrent.Flow` : reactive stream을 구현하는 interface (Java 9에 추가)
+    - static component만 있고, instance화 불가능
+- nested interface : `Publisher`, `Subscriber`, `Subscription`, `Processor`
+- `Pubilsher`는 item을 발행하고 `Subscriber`들이 comsume
+- `Subscription`이 `Publisher`와 `Subscriber`를 연결
+- `Publisher` : 제한없는 순서있는 event 발행
+    - `Subscriber`들의 Backpressure에 의해 제한됨
+
+```java
+
+@FunctionalInterface
+public interface Publisher<T> {
+    void subscribe(Subscriber<? super T> s);
+}
+
+public interface Subscriber<T> {
+    void onSubscribe(Subscription s);
+
+    void onNext(T t);
+
+    void onError(Throwable t);
+
+    void onComplete();
+}
+
+public interface Subscription {
+    void request(long n);
+
+    void cancel();
+}
+
+public interface Processor<T, R> extends Subscriber<T>, Publisher<R> {
+}
+```
+
+#### Subscriber의 동작
+
+<img src="img_2.png"  width="80%"/>
+
+````
+onSubscribe -> onNext* -> (onError | onComplete)?
+````
+
+- `onSubscribe()` : 가장 처음 event
+    - `Subscriber`가 자신을 `Publisher`에 등록했을 때 호출
+    - `Subscription.request()` : `Publisher`가 `Subscriber`에게 event를 발행하도록 요청
+    - `Subscription.cancel()` : `Subscriber`가 event를 더 이상 받지 않도록 요청
+- `onNext()` : 임의의 숫자만큼 실행 (평생 실행 가능)
+- `onError()` : `Publisher`가 error를 발생시키면 실행
+- `onComplete()` : 마지막 event, 더 이상 발행될 event가 없음
+- `Processor` : event의 변환 단계를 나타냄 e.g. error 처리
+    - error가 발생하면 `Subscriver`들에게 전파할지 복구할 건지
+    - 마지막 `Subscriber`가 `cancel`하면 자신의 upstream에 대한 Subscription도 `cancel`
+
+#### Java 9 Flow API rule
+
+- `Publisher`
+    - `Subscriber`가 요청한 양보다 큰 양의 event를 발행하지 않음
+    - `Subscription.request()`를 호출하지 않으면 `Publisher`는 event를 발행하지 않음
+    - `onNext()`하고, 작업이 완료되거나 오류가 있으면 `onComplete()` 또는 `onError()`로 Subscription 종료
+- `Subscriber`
+    - `Publisher`에게 n개의 event를 받을 준비가 되었음을 알려야함
+    - Backpressure 가능
+    - `Publisher`의 terminal signal : `Publisher`가 `onComplete()` 또는 `onError()`를 호출하면 어떤 method도 호출 못함
+    - `Publisher`의 terminal signal을 받을 준비가 되어있어야함
+    - `Subscription.cancel()` 후에도 termianl signal, `onNext()`가 호출될 수 있음
+- `Subscription`
+    - `Publisher`가 `Subscriber`간의 고유한 관계를 설정
+    - `Subscriber`가 동기적으로 `onSubscribe()`, `onNext()` 안에서 `Subscription.request()`를 호출 가능해야함
+    - `cancel()`의 멱등성, thread-safe해야함
+    - 구독 취소여부는 영원히 저장됨
+
+### 2.2 Creating tour first reactive application
+
+### 2.3 Transforming data with a Processor
+
+### 2.4 Why doesn't Java provide an implementation of Flow API?
+
 ## 3. Using the reactive library RxJava
 
 ## 4. Summary
