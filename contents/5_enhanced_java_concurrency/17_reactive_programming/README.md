@@ -171,9 +171,174 @@ onSubscribe -> onNext* -> (onError | onComplete)?
 
 ### 2.2 Creating tour first reactive application
 
+- `Flow` API는 Akka, RxJava 같은 reactive library를 통해 구현됨
+
+#### 예제 : temperature-reporting program
+
+- `TempInfo` : remote 온도계
+    - 랜덤으로 0 ~ 99 사이의 Fahrenheit 온도를 생성
+- `TempSubscriber` : `Subscriber` 구현
+    - `TempInfo`를 구독하고, `Publisher`가 발행한 온도를 출력
+
+<img src="img_4.png"  width="90%"/>
+
+```java
+public class TempInfo {
+    public static final Random random = new Random();
+
+    private final String town;
+    private final int temp;
+
+    public TempInfo(String town, int temp) {
+        this.town = town;
+        this.temp = temp;
+    }
+
+    public static TempInfo fetch(String town) {
+        // 10분의 1 확률로 온도 가져오기 실패
+        if (random.nextInt(10) == 0) {
+            throw new RuntimeException("Error!");
+        }
+        return new TempInfo(town, random.nextInt(100));
+    }
+    // getter, override toString() ...
+}
+
+public class TempSubscription implements Flow.Subscription {
+    private final Flow.Subscriber<? super TempInfo> subscriber;
+    private final String town;
+
+    public TempSubscription(Flow.Subscriber<? super TempInfo> subscriber,
+                            String town) {
+        this.subscriber = subscriber;
+        this.town = town;
+    }
+
+    @Override
+    public void request(long n) {
+        // TODO. element를 전달하는 thread를 별도로 분리할 필요 있음 (stack overflow 방지)
+        for (long i = 0L; i < n; i++) {
+            try {
+                subscriber.onNext(TempInfo.fetch(town)); // 현재 온도를 Subscriber로 전달
+            } catch (Exception e) {
+                subscriber.onError(e);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void cancel() {
+        subscriber.onComplete(); // Subscriber에게 작업 완료를 알림
+    }
+}
+
+public class TempSubscriber implements Flow.Subscriber<TempInfo> {
+    private Flow.Subscription subscription;
+
+    @Override
+    public void onSubscribe(Flow.Subscription subscription) {
+        this.subscription = subscription; // Subscription을 저장하고 첫 번째 요청을 전달
+        subscription.request(1L);
+    }
+
+    @Override
+    public void onNext(TempInfo item) {
+        System.out.println(item); // 수신한 온도 출력
+        subscription.request(1L); // 다음 정보를 요청
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        System.err.println(throwable.getMessage());
+    }
+
+    @Override
+    public void onComplete() {
+        System.out.println("Done!");
+    }
+}
+
+```
+
+````
+public static void main(String[] args) {
+    getTemperatures("Seoul").subscribe(new TempSubscriber());
+}
+
+public static Flow.Publisher<TempInfo> getTemperatures(String town) {
+    return subscriber -> subscriber.onSubscribe(
+            new TempSubscription(subscriber, town));
+}
+````
+
+<details><summary>실행 결과</summary>
+
+```bash
+TempInfo{town='Seoul', temp=87}
+TempInfo{town='Seoul', temp=98}
+Error! // 10분의 1 확률로 에러 발생 : 프로그램 종료
+```
+
+</details>
+
 ### 2.3 Transforming data with a Processor
 
+<img src="img_5.png"  width="80%"/>
+
+```java
+public class TempProcessor implements Flow.Processor<TempInfo, TempInfo> {
+
+    private Flow.Subscriber<? super TempInfo> subscriber;
+
+    @Override
+    public void subscribe(Flow.Subscriber<? super TempInfo> subscriber) {
+        this.subscriber = subscriber;
+    }
+
+    @Override
+    public void onSubscribe(Flow.Subscription subscription) {
+        subscriber.onSubscribe(subscription);
+    }
+
+    @Override
+    public void onNext(TempInfo item) {
+        // Fahrenheit to Celsius
+        subscriber.onNext(new TempInfo(item.getTown(), (item.getTemp() - 32) * 5 / 9));
+
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        subscriber.onError(throwable);
+    }
+
+    @Override
+    public void onComplete() {
+        subscriber.onComplete();
+    }
+}
+```
+
+```
+public static Flow.Publisher<TempInfo> getTemperatures(String town) {
+//        return subscriber -> subscriber.onSubscribe(
+//                new TempSubscription(subscriber, town));
+
+    return subscriber -> {
+        TempProcessor processor = new TempProcessor();
+        processor.subscribe(subscriber);
+        processor.onSubscribe(new TempSubscription(processor, town));
+    };
+}
+```
+
 ### 2.4 Why doesn't Java provide an implementation of Flow API?
+
+- `Flow` 는 구체를 제공하지 않음
+    - `List<T>` 인터페이스에 대한 다양한 구체 (e.g. `ArrayList<T>`, `LinkedList<T>`, `Vector<T>`)들을 제공함
+- 기존의 Akka, RxJava 라이브러리들이 서로 다른 용어로 reactive stream을 구현했기 때문
+    - Java 9에서는 `Flow` API를 통해 표준화를 시도함
 
 ## 3. Using the reactive library RxJava
 
