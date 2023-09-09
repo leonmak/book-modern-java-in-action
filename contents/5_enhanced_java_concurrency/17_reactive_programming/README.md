@@ -172,6 +172,7 @@ onSubscribe -> onNext* -> (onError | onComplete)?
 ### 2.2 Creating tour first reactive application
 
 - `Flow` API는 Akka, RxJava 같은 reactive library를 통해 구현됨
+- **구현 클래스를 제공하지 않음 (개발자가 직접 구현)**
 
 #### 예제 : temperature-reporting program
 
@@ -180,7 +181,7 @@ onSubscribe -> onNext* -> (onError | onComplete)?
 - `TempSubscriber` : `Subscriber` 구현
     - `TempInfo`를 구독하고, `Publisher`가 발행한 온도를 출력
 
-<img src="img_4.png"  width="90%"/>
+<img src="img_4.png"  width="70%"/>
 
 ```java
 public class TempInfo {
@@ -336,9 +337,9 @@ public static Flow.Publisher<TempInfo> getTemperatures(String town) {
 ### 2.4 Why doesn't Java provide an implementation of Flow API?
 
 - `Flow` 는 구체를 제공하지 않음
-    - `List<T>` 인터페이스에 대한 다양한 구체 (e.g. `ArrayList<T>`, `LinkedList<T>`, `Vector<T>`)들을 제공함
-- 기존의 Akka, RxJava 라이브러리들이 서로 다른 용어로 reactive stream을 구현했기 때문
-    - Java 9에서는 `Flow` API를 통해 표준화를 시도함
+    - 반면, `List<T>` 인터페이스에 대한 다양한 구체 (e.g. `ArrayList<T>`, `LinkedList<T>`, `Vector<T>`)들을 제공함
+- 이미 기존의 Akka, RxJava 라이브러리들이 서로 다른 용어로 reactive stream을 구현했기 때문
+    - Java 9에서는 `Flow` API를 통해 표준화를 시도한 것
 
 ## 3. Using the reactive library RxJava
 
