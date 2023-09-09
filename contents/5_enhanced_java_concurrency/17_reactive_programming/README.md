@@ -181,7 +181,7 @@ onSubscribe -> onNext* -> (onError | onComplete)?
 - `TempSubscriber` : `Subscriber` 구현
     - `TempInfo`를 구독하고, `Publisher`가 발행한 온도를 출력
 
-<img src="img_4.png"  width="70%"/>
+<img src="img_4.png"  width="60%"/>
 
 ```java
 public class TempInfo {
@@ -285,7 +285,7 @@ Error! // 10분의 1 확률로 에러 발생 : 프로그램 종료
 
 ### 2.3 Transforming data with a Processor
 
-<img src="img_5.png"  width="80%"/>
+<img src="img_6.png"  width="80%"/>
 
 ```java
 public class TempProcessor implements Flow.Processor<TempInfo, TempInfo> {
