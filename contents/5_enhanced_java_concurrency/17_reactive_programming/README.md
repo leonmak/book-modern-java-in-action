@@ -16,17 +16,15 @@
 
 ---
 
-#### 변화
+#### Reactive programming 니즈
 
 - _Big Data_ : petabytes 규모의 데이터가 메일 늘어남
 - _Heterogeneous environments_ <sup>다양한 환경</sup> : mobile, cloud-based clusters
 - _Use patterns_ : ms 단위의 response time 요구, 24/7 availability
 
-#### Reactive programming 필요성
-
 - mobile, IoT 기기의 트래픽이 늘어남에 따라 기존의 방식으로는 대응하기 어려움
 - Reactive programming은 다른 system 으로부터 발생한 데이터를 stream으로 조합하고, 처리, 비동기 가능
-- 큰 시스템 안의 많은 component에 적용할 수 있음
+- 큰 시스템 안에 많은 component에 적용할 수 있음
 
 ## 1. The Reactive Manifesto
 
@@ -37,17 +35,17 @@
 >
 > : Reactive application, system에 대한 정의와 목표
 >
-> - _Responsive_ : system이 요청에 대해 즉각적으로 응답, 사용자 신뢰도를 향상
-> - _Resilient_ : system이 failure를 맞아도 응답, component의 시공간 분리
-> - _Elastic_ : 다양한 workload에 반응하여 자동으로 resource를 조절
-> - _Message-driven_ : 비동기 메시지 전달을 통해 loose coupling, concurrency, scalability를 달성
+> - _**Responsive**_ : system이 요청에 대해 즉각적으로 응답, 사용자 신뢰도를 향상
+> - _**Resilient**_ : system이 failure를 맞아도 응답, component의 시공간 분리
+> - _**Elastic**_ : 다양한 workload에 반응하여 자동으로 resource를 조절
+> - _**Message-driven**_ : 비동기 메시지 전달을 통해 loose coupling, concurrency, scalability를 달성
 
 ### 1.1 Reactive at application level
 
 #### thread multiplexing <sup>다중화</sup>
 
-- component 들이 task를 비동기로 실행해야함
-- event streams 를 비동기, non-blocking으로 처리 -> multicore CPU 극대화
+- component 들은 task를 비동기로 실행해야함
+- event stream 들을 비동기, non-blocking으로 처리 -> multicore CPU 극대화
 - 비싼 자원 thread를 futures, actors, event loop을 통해 공유
     - thread 비용 최소화, 동시성 / 비동기 프로그래밍 추상화 구현 (low-level 문제를 해결, deadlock, race condtion, synchronization 등)
 - 주의점 : main event loop 안에서 작업은 non-blocking
@@ -63,9 +61,9 @@
 ### 1.2 Reactive at system level : _reactive system_
 
 - _reactive system_ : reactive applicatione들로 이루어진 software architecture
-    - 하나의 일관된, 복원력이 있는 platform, 서로 충분히 분리되어 fail에도 전체 system이 죽지 않음
+    - 하나의 일관된, 복원력이 있는 platform, 서로 충분히 분리되어 한 application의 fail에도 전체 system이 죽지 않음
     - reactive application : _event_ 기반의 단기적인 data streams 연산
-    - reactive system : applciation을 구성하고 _messeage_ 기반으로 통신
+    - reactive system : applciation간에 _messeage_ 기반으로 통신
 
 #### event vs message
 
@@ -134,20 +132,20 @@ public interface Processor<T, R> extends Subscriber<T>, Publisher<R> {
 
 #### Subscriber의 동작
 
-<img src="img_2.png"  width="80%"/>
+<img src="img_2.png"  width="90%"/>
 
 ````
 onSubscribe -> onNext* -> (onError | onComplete)?
 ````
 
 - `onSubscribe()` : 가장 처음 event
-    - `Subscriber`가 자신을 `Publisher`에 등록했을 때 호출
+    - `Subscriber`를 `Publisher`에 등록했을 때
     - `Subscription.request()` : `Publisher`가 `Subscriber`에게 event를 발행하도록 요청
     - `Subscription.cancel()` : `Subscriber`가 event를 더 이상 받지 않도록 요청
-- `onNext()` : 임의의 숫자만큼 실행 (평생 실행 가능)
+- `onNext()` : 임의의 숫자만큼 실행 (무한 실행 가능)
 - `onError()` : `Publisher`가 error를 발생시키면 실행
 - `onComplete()` : 마지막 event, 더 이상 발행될 event가 없음
-- `Processor` : event의 변환 단계를 나타냄 e.g. error 처리
+- `Processor` : event의 변환 단계 e.g. error 처리, 데이터 변환 처리 e.g. CSV -> JSON
     - error가 발생하면 `Subscriver`들에게 전파할지 복구할 건지
     - 마지막 `Subscriber`가 `cancel`하면 자신의 upstream에 대한 Subscription도 `cancel`
 
