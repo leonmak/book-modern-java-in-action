@@ -341,4 +341,80 @@ public static Flow.Publisher<TempInfo> getTemperatures(String town) {
 
 ## 3. Using the reactive library RxJava
 
+- Reactive Extensions (Rx) : reactive programming을 위한 API
+    - _Netflix_ 가 개발
+
+#### 구현 노출 최소화
+
+````
+// use Java 9 Flow API
+
+// good
+import java.util.concurrent.Flow;
+
+// bad
+import io.reactivex.Observable;
+
+// good
+import java.util.List;
+
+// bad
+import java.util.ArrayList;
+````
+
+- `Flow`의 구현체 `Observable`의 명시를 최소화
+- `AraayList` -> `LinkedList` 으로 변경해도 `List`를 사용하는 코드는 변경할 필요가 없음
+
+#### `io.reactive.Flowable` vs `io.reactive.Observable`
+
+- Java 9 `Flow.Publisher`의 두 구현체
+- `Flowable` : Java 9 `Flow`의 reactive pull 기반 Backpressure 기능 포함
+- `Observable` : Backpressure 지원 없었었음, 더 간단, 사용자 인터페이스 이벤트 (e.g. 마우스 클릭)에 적합
+- 1000개 이하의 event, GUI event 처리에는 `Observable` 권장
+    - backpressure가 불가능, 불필요 (e.g. 마우크 클릭에 backpressure 필요 없음)
+
+### 3.1 Creating and using an Observable
+
+````
+// Observable 생성 : "first", "second", "third" 3개의 String을 발행
+Observable<String> strings = Observable.just("first", "second", "third");
+
+// Observable 생성 : 0부터 무한히 증가하는 Long을 발행 (1초마다)
+Observable<Long> onePerSec = Observable.interval(1, TimeUnit.SECONDS);
+````
+
+- `just()` : factory method, 1개 이상의 elements를 가진 `Observable` 생성
+    - _Subscriber_ : `onNext("first")` -> `onNext("second")` -> `onNext("third")` -> `onComplete()`
+- `onePerSec` : 매 초마다 온도를 보고하는 용도로 사용
+    - _Subscriber_ : `onNext(0L)` -> `onNext(1L)` -> `onNext(2L)` -> `onNext(3L)` -> ... (무한히)
+
+```java
+package com.example.rxjava;
+
+// Flow API의 Subscriber 역할
+public interface Observer<T> {
+    void onSubscribe(Disposable d);
+
+    void onNext(T t);
+
+    void onError(Throwable t);
+
+    void onComplete();
+
+    // backpressure를 지원하지 않기 떄문에, request() 메서드가 없음
+}
+```
+
+#### `Flow`보다 유연 : 람다 지원
+
+````
+// `Observable`에게 `onNext()`를 람다로 전달 가능
+onePerSec.subscribe(i -> 
+    System.out.println(TempInfo.fetch( "New York" )));
+````
+
+- `onSubscribe()`, `onError()`, `onComplete()`는 생략하여 no-op으로 처리
+
+### 3.2 Transforming and combining Observables
+
 ## 4. Summary
