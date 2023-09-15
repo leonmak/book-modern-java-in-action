@@ -45,7 +45,7 @@ List<Member> memberAespa = members.stream()
 
 ### 1.1 Filtering with a predicate
 
-<img src="img.png"  width="70%"/>
+<img src="img.png"  width="80%"/>
 
 ````
 List<Member> memberIsDebut = members.stream()
@@ -58,7 +58,7 @@ List<Member> memberIsDebut = members.stream()
 
 ### 1.2 Filtering unique elements
 
-<img src="img_1.png"  width="70%"/>
+<img src="img_1.png"  width="80%"/>
 
 ````
 List<String> members = Arrays.asList("KARINA", "WINTER", "GISELLE", "NINGNING", "KARINA");
@@ -190,7 +190,7 @@ List<Integer> memberNameLengthAespa = memberList.stream()
 
 ### 3.2 Flattening streams
 
-- `flatMap()` : function을 인수로 받아서 새로운 stream을 반환
+- `flatMap()` : `Function`을 인수로 받아서 새로운 stream을 반환
   - function을 각 element에 적용한 결과로 구성된 stream 반환
   - **각 function의 결과 stream을 하나의 stream으로 연결**
 
@@ -204,21 +204,21 @@ String[] words = {"Hello", "World"};
 
 ````
 // 실패
-List<Stream<String>> wordUnique = words.stream()
-                                        .map(word -> word.split(""))        
-                                        .map(Arrays::stream)
+List<Stream<String>> wordUnique = words.stream() // return : Stream<String>
+                                        .map(word -> word.split("")) // return : Stream<String[]> 
+                                        .map(Arrays::stream) // return : Stream<Stream<String>>
                                         .distinct()
                                         .toList();
 ````
 
 #### USING FLATMAP
 
-<img src="img_2.png"  width="70%"/>
+<img src="img_2.png"  width="80%"/>
 
 ````
-List<String> wordUnique = words.stream()
-                                .map(word -> word.split(""))
-                                .flatMap(Arrays::stream)
+List<String> wordUnique = words.stream() // return : Stream<String>
+                                .map(word -> word.split("")) // return : Stream<String[]> 
+                                .flatMap(Arrays::stream) // return : Stream<String>
                                 .distinct()
                                 .toList();
 ````
@@ -325,7 +325,7 @@ memberList.stream()
 
 ### 5.1 Summing the elements
 
-<img src="img_3.png"  width="70%"/>
+<img src="img_3.png"  width="80%"/>
 
 ````
 List<Integer> nubmers = List.of(4, 5, 3, 9);
@@ -353,7 +353,7 @@ Optional<Integer> sum = nubmers.stream().reduce((a, b) -> (a + b));
 
 ### 5.2 Maximum and minimum
 
-<img src="img_4.png"  width="70%"/>
+<img src="img_4.png"  width="80%"/>
 
 ````
 Optional<Integer> max = nubmers.stream().reduce(Integer::max);
