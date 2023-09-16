@@ -375,6 +375,8 @@ import java.util.ArrayList;
 
 ### 3.1 Creating and using an Observable
 
+<img src="img_7.png"  width="80%"/>
+
 ````
 // Observable 생성 : "first", "second", "third" 3개의 String을 발행
 Observable<String> strings = Observable.just("first", "second", "third");
@@ -414,6 +416,98 @@ onePerSec.subscribe(i ->
 ````
 
 - `onSubscribe()`, `onError()`, `onComplete()`는 생략하여 no-op으로 처리
+
+````
+// Daemon thread로 실행 (main thread가 즉시 종료되면서 종료됨)
+onPerSec.subscribe(i->
+    System.out.println(TempInfo.fetch("New York")));
+````
+
+<details><summary>실행 결과</summary>
+
+```bash
+BUILD SUCCESSFUL in 3s
+2 actionable tasks: 2 executed
+```
+
+</details>
+
+````
+// 현재 스레드에서 실행 (이 경우, Main thread)
+onePerSec.blockingSubscribe(i -> 
+    System.out.println(TempInfo.fetch("New York"))
+);
+````
+
+<details><summary>실행 결과</summary>
+
+```bash
+TempInfo{town='New York', temp=81}
+TempInfo{town='New York', temp=87}
+TempInfo{town='New York', temp=68}
+io.reactivex.rxjava3.exceptions.OnErrorNotImplementedException: The exception was not handled due to missing onError handler in the subscribe() method call. Further reading: https://github.com/ReactiveX/RxJava/wiki/Error-Handling | java.lang.RuntimeException: Error!
+```
+
+</details>
+
+````
+/*
+* 1초 마다 한번씩 최대 5번 온도를 보고하는 Observable
+* */
+public static Observable<TempInfo> getTemperature(String town) {
+
+    return Observable.create(emitter -> // Observable을 생성
+            Observable.interval(1, TimeUnit.SECONDS)
+                    .subscribe(i -> {
+                        if (!emitter.isDisposed()) { // 구독이 해지되었는지 확인
+                            if (i >= 5) { // 5번 온도를 보고했으면 완료
+                                emitter.onComplete(); // 완료를 알림
+                            } else {
+                                try {
+                                    emitter.onNext(TempInfo.fetch(town)); // 온도를 Subscriber로 전달
+                                } catch (Exception e) {
+                                    emitter.onError(e);
+                                }
+                            }
+                        }
+                    }));
+}
+
+public interface Emitter<T> {
+    void onNext(T t);
+    void onError(Throwable t);
+    void onComplete();
+}
+
+public interface ObservableEmitter<@NonNull T> extends Emitter<T> {
+...
+}
+
+````
+
+- `Observable.create()` : `Observable`을 생성하는 factory method
+    - `@FunctionalInterface` `ObservableOnSubscribe<T>`를 인자로 받음
+    - `ObservableEmitter<T>`를 인자로 받는 `subscribe()`를 구현해야함
+
+````
+public static void main(String[] args) {
+        Observable<TempInfo> observable = getTemperature("New York");
+        observable.blockingSubscribe(new TempObserver());
+}
+````
+
+<details><summary>실행 결과</summary>
+
+```bash
+TempInfo{town='New York', temp=34}
+TempInfo{town='New York', temp=25}
+TempInfo{town='New York', temp=90}
+TempInfo{town='New York', temp=2}
+TempInfo{town='New York', temp=25}
+Done!
+```
+
+</details>
 
 ### 3.2 Transforming and combining Observables
 
