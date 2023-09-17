@@ -31,10 +31,10 @@
 
 #### 병렬 실행 주의점
 
-- 병렬화는 공짜가 아님
-- 집합을 나누고 다시 하나로 합치는 작업 필요
-- core 간의 communication (값의 이동)이 필요
-- 병렬리 빠르지 않은 경우도 있으므로, 정확하게 분석한 뒤 병렬화를 적용할 것
+- 병렬 실행 비용을 고려할 것
+- 집합을 나누고 다시 하나로 합치는 작업 필요 (overhead)
+- core 간의 communication (값의 이동)이 필요 (context switching)
+- 병렬이 빠르지 않은 경우도 있으므로, 정확하게 분석한 뒤 병렬화를 적용할 것
 
 ````
 public long interativeSum(long n) {
@@ -83,7 +83,7 @@ stream.parallel() // parallel stream으로 변환
 - parallel stream은 default로 `ForkJoinPool`을 사용
 - return `Runtime.getRuntime().availableProcessors()` : 사용 가능한 프로세서 수
 - 사용할 프로세서 수 직접 설정 : `System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "12")`
-    - global 설정₩
+    - global 설정
     - **비추**
 
 ### 1.2 Measuring stream performance
@@ -235,7 +235,7 @@ SideEffect parallel sum :5188848063192
 
 ## 2. The fork/join framework
 
-<img src="img_2.png"  width="80%"/>
+<img src="img_2.png"  width="90%"/>
 
 - 병렬화 가능한 task를 재귀적으로 작은 task로 분할하고, 결과를 합치는 프레임워크
 - `ExecutorService`의 구현체
@@ -403,7 +403,7 @@ public interface Spliterator<T> {
 
 ### 3.1 The splitting process
 
-<img src="img_5.png"  width="80%"/>
+<img src="img_5.png"  width="90%"/>
 
 1. step 1 : `trySplit()` 호출
     - `Spliterator`의 일부 요소를 분할하여 두번째 `Spliterator`를 생성
@@ -598,7 +598,7 @@ System.out.println("result2 = " + countWords(streamParallel));
 ## 4. Summary
 
 - Internal iteration은 stream을 명시적으로 parallel을 구현하지 않고 간결하게 구현할 수 있음
-- parallel이 무조건 빠르지 않음. 성능 측정을 해야함
+- parallel이 무조건 빠르지 않음. 성능 측정 필수
 - parallel stream이 유용한 경우
     - element가 많음
     - element를 처리하는데 오랜 시간이 걸림
