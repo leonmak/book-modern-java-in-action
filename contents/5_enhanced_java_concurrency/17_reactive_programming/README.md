@@ -568,3 +568,14 @@ Got problem: Error!
 </details>
 
 ## 4. Summary
+
+- data 전송량과 사용자의 기대가 올라감에 따라 reactive programming이 필요해짐
+- Reative Manifesto : responsive, resilient, elastic, message-driven
+- reactive programming은 1개 이상의 application에 적용 가능
+- reactive application은 비동기로 1개 이상의 event flow가 reative stream을 통해 처리
+- Netflix, Pivotal, Lightbend, Red Hat은 reactive programming을 지원하는 library를 개발, 표준화
+- backpressure mechanism을 built-in
+    - 느린 comsumer가 빠른 producer에게 압도당하지 않음
+- Java 9 _Flow_ API의 4가지 interface : `Publisher`, `Subscriber`, `Subscription`, `Processor`
+    - interface를 직접 구현하지 않고, 이미 구현한 reactive library를 사용하면 됨
+- RxJava : 가장 많이 사용되는 reactive library
