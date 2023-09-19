@@ -9,4 +9,4 @@
 3. [EFFECTIVE PROGRAMMING WITH STREAMS AND LAMBDAS](contents/3_effective_programming_with_streams_and_lambdas/README.md)
 4. [EVERYDAY JAVA](contents/4_everyday_java/README.md)
 5. [ENHANCED JAVA CONCURRENCY](contents/5_enhanced_java_concurrency/README.md)
-6. FUNCTIONAL PROGRAMMING AND FUTURE JAVA EVOLUTION
+6. [FUNCTIONAL PROGRAMMING AND FUTURE JAVA EVOLUTION](contents/6_functional_programming_and_future_java_evolution/README.md)
