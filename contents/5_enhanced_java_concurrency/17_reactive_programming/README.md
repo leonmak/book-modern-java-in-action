@@ -16,7 +16,7 @@
 
 ---
 
-#### Reactive programming 니즈
+#### Reactive programming 의 필요성
 
 - _Big Data_ : petabytes 규모의 데이터가 메일 늘어남
 - _Heterogeneous environments_ <sup>다양한 환경</sup> : mobile, cloud-based clusters
@@ -24,19 +24,19 @@
 
 - mobile, IoT 기기의 트래픽이 늘어남에 따라 기존의 방식으로는 대응하기 어려움
 - Reactive programming은 다른 system 으로부터 발생한 데이터를 stream으로 조합하고, 처리, 비동기 가능
-- 큰 시스템 안에 많은 component에 적용할 수 있음
+- 대형 시스템의 많은 component에 적용 가능
 
 ## 1. The Reactive Manifesto
 
 <img src="img.png"  width="80%"/>
 
 
-> #### The Reactive Manifesto - developed in 2013, 2014 by Jonas Bonér, Dave Farley, Roland Kuhn, and Martin Thompson
+> #### The Reactive Manifesto <sub>developed in 2013, 2014 by Jonas Bonér, Dave Farley, Roland Kuhn, and Martin Thompson</sub>
 >
 > : Reactive application, system에 대한 정의와 목표
 >
 > - _**Responsive**_ : system이 요청에 대해 즉각적으로 응답, 사용자 신뢰도를 향상
-> - _**Resilient**_ : system이 failure를 맞아도 응답, component의 시공간 분리
+> - _**Resilient**_ : system이 failure에도 응답, component의 시공간 분리
 > - _**Elastic**_ : 다양한 workload에 반응하여 자동으로 resource를 조절
 > - _**Message-driven**_ : 비동기 메시지 전달을 통해 loose coupling, concurrency, scalability를 달성
 
@@ -527,7 +527,6 @@ Done!
 <img src="img_8.png"  width="80%"/>
 
 ````
-
 // Flow.Processor을 구현할 필요 없음
 public static Observable<TempInfo> getCelsiusTemperature(String town) {
     return getTemperature(town) // return Observable<TempInfo>
