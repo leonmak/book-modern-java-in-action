@@ -511,4 +511,60 @@ Done!
 
 ### 3.2 Transforming and combining Observables
 
+> RxJava docs, `mergeDelayError`
+>
+> - Observalbe을 만드는 Observable을 flatten
+> - _Observer_가 모든 item을 성공적으로 받을 수 있음 (error interrupt 없이)
+> - Observable에 대한 동시 구독 수 제한
+
+#### marble diagram
+
+<img src="img_9.png"  width="80%"/>
+
+- `map()` : `Observable`의 item을 transform
+- `merge()` : `Observable`의 event를 combine
+
+<img src="img_8.png"  width="80%"/>
+
+````
+
+// Flow.Processor을 구현할 필요 없음
+public static Observable<TempInfo> getCelsiusTemperature(String town) {
+    return getTemperature(town) // return Observable<TempInfo>
+            .map(temp ->
+                    new TempInfo(temp.getTown(), (temp.getTemp() - 32) * 5 / 9)); // return Observable<TempInfo>
+}
+
+public static Observable<TempInfo> getTemperatureOnlyNegative(String town){
+    return getTemperature(town)
+            .filter(temp -> temp.getTemp() < 0);
+}
+
+````
+
+````
+public static Observable<TempInfo> getCelsiusTemperatures(String... towns){
+    return Observable.merge(Arrays.stream(towns) // return Stream<String>
+            .map(Client::getCelsiusTemperature) // return Stream<Observable<TempInfo>>
+            .collect(Collectors.toList())); // return List<Observable<TempInfo>> -> Observable<TempInfo>
+}
+
+...
+
+Observable<TempInfo> observable = getCelsiusTemperatures("Seoul", "New York", "Tokyo");
+observable.blockingSubscribe(new TempObserver());
+````
+
+<details><summary>실행 결과</summary>
+
+```bash
+TempInfo{town='Tokyo', temp=-2}
+TempInfo{town='New York', temp=36}
+TempInfo{town='Seoul', temp=33}
+TempInfo{town='New York', temp=25}
+Got problem: Error!
+```
+
+</details>
+
 ## 4. Summary
