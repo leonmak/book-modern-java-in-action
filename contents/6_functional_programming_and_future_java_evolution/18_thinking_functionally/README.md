@@ -42,7 +42,7 @@
 
 - 자신을 둘러산 class의 상태나 다른 객체의 상태를 수정하지 않고 `return`하는 function
 - side effect
-    - 생성자가 아닌 곳에서 field를 수정하는 것 e.g. setterl
+    - 생성자가 아닌 곳에서 field를 수정하는 것 e.g. setter
     - 예외 throws
     - I/O 수행 e.g. writing to a file
 
@@ -90,6 +90,108 @@ Optional<Transaction> findAespa = transactions.stream()
 - e.g. Java의 stream을 사용하면 복잡한 query를 what에만 집중하여 작성 가능
 
 ## 2. What's functional programming?
+
+<img src="img_1.png"  width="80%"/>
+
+<img src="img_2.png"  width="80%"/>
+
+- "What is functional programming?" -> "Programming with functions" -> "What is a function?"
+- _functional_ : mathematics, no side effect
+
+| pure functional programming   | functional-style programming |
+|-------------------------------|------------------------------|
+| side effect를 caller에게 전파하지 않음 | side effect를 caller에게 전파     |
+
+### 2.1 Functional-style Java
+
+- function, method는 local 변수만 수정할 수 있어야함
+- reference 타입의 field는 불변이어야함
+- funtion, method는 exception을 throw하지 않아야함
+    - `sqrt()`에서 exception을 던지지 않고 `Optional`을 return (pure functional programming)
+- debugging information을 출력할 수 있게 함
+    - 엄격하게 함수형은 아니지만, 실용적인 이유로 사용
+
+<img src="img_3.png"  width="50%"/>
+
+### 2.2 Referential transparency (참조 투명성)
+
+- function이 참조 투명하다
+- 같은 input에 대해 같은 output을 return
+    - e.g. `String.replace()`
+        - `"Karinal".replace('K', 'k')`는 항상 같은 결과를 return
+        - `this`를 수정하지 않음
+- 어디서, 언제 호출하건 같은 결과를 return
+    - e.g. `Random.nextInt()`, `Scanner.nextLine()`
+        - `Random.nextInt()`는 항상 다른 결과를 return
+        - `Scanner.nextLine()`은 항상 다른 결과를 return
+- save-instead-of-recompute optimization e.g. _memoization_, _caching_ 연산에 유용
+- Java에서 참조 투명성 : return한 객체의 동등성, 동일성이 모두 만족해야 참조 투명하다 함
+    - 즉, return type이 reference type이면 불변 객체여야함
+
+### 2.3 Object-oriented vs. functional-style programming
+
+| 주요 특성       | Object-oriented programming | Functional-style programming                 |
+|-------------|-----------------------------|----------------------------------------------|
+| keyword     | object, class, inheritance  | function, immutablitiy, first-class function |
+| 상태 변경       | 객체의 상태를 변경하는 메서드 호출         | 상태 변경 없이 새로운 값 생성                            |
+| side effect | 있음                          | 최소화하고, 예측가능하게 동작                             |
+| 가변 / 불변     | 가변                          | 불변                                           |
+| 데이터 변환      | 메서드를 통해 데이터 변환              | 함수를 통해 데이터 변환                                |
+| parallelism | 어려움                         | 쉬움                                           |
+| 예외 처리       | 예외 처리가 필요함                  | 예외 처리가 필요 없음                                 |
+| debugging   | 어려움                         | 쉬움                                           |
+| 가독성         | 복잡하고, 여려움                   | 단순하고, 쉬움                                     |
+
+- Java 프로그래머는 2가지를 적절히 혼합하여 사용
+
+### 2.4 Functional style in practice
+
+````
+/**
+ * List<Integer>를 받아서 Integer를 하나씩 뽑아서 List<List<Integer>>에 넣어서 리턴
+ * ex. {1, 4, 9} ->  {1, 4, 9}, {1, 4}, {1, 9}, {4, 9}, {1}, {4}, {9}, and {}
+ */
+static List<List<Integer>> subsets(List<Integer> list) {
+    if (list.isEmpty()) {
+        List<List<Integer>> ans = new ArrayList<>();
+        ans.add(Collections.emptyList());
+        return ans;
+    }
+
+    Integer fst = list.get(0); // 첫번째 요소
+    List<Integer> rest = list.subList(1, list.size()); // 첫번째 요소를 제외한 나머지 요소들
+
+    List<List<Integer>> subAns = subsets(rest); // 나머지 요소들로 만들 수 있는 모든 부분집합
+    List<List<Integer>> subAns2 = insertAll(fst, subAns); // 나머지 요소 부분 집합 + 첫번쨰 요소
+    return concat(subAns, subAns2);
+}
+
+static List<List<Integer>> insertAll(Integer fst, List<List<Integer>> lists) {
+    List<List<Integer>> result = new ArrayList<>();
+
+    for (List<Integer> list : lists) {
+        List<Integer> copyList = new ArrayList<>();
+        copyList.add(fst);
+        copyList.addAll(list);
+        result.add(copyList);
+    }
+
+    return result;
+}
+
+static List<List<Integer>> concat(List<List<Integer>> a, List<List<Integer>> b) {
+    // a.addAll(b);
+    // return a;
+
+    // Pure function : argument를 수정하지 않고 새로운 객체를 만들어서 리턴
+    List<List<Integer>> r = new ArrayList<>(a);
+    r.addAll(b);
+    return r;
+}
+````
+
+- `subsets()`, `insertAll()`, `concat()` 모두 pure function
+    - argument를 수정하지 않고 새로운 객체를 만들어서 리턴
 
 ## 3. Recursion vs iteration
 
