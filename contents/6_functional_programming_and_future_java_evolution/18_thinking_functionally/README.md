@@ -266,3 +266,9 @@ static long factorialHelper(long acc, long n) {
 
 ## 4. Summary
 
+- mutable data를 공유하는 것을 최소화 -> 유지보수성이 높아짐
+- Functional style programming은 side-deffect-free mehtod, declarative programming을 도모
+- Funcitonal-style method는 input과 output에만 관심이 있음
+- referentially transparent function : 같은 Input에 대해 항상 같은 output을 return
+    - `while` -> recursion
+- Tail recursion은 일반 재귀보다 더 효율적
