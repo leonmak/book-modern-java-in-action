@@ -198,6 +198,7 @@ static List<List<Integer>> concat(List<List<Integer>> a, List<List<Integer>> b) 
 - _Recursion_ : what-to-do style
     - pure functional programming
     - `while`, `for` loop 사용하지 않음
+    - 단점 : call stack에 모든 함수 호출이 쌓임 _StackOverflowError_
 
 ````
 // 문제 없는 코드
@@ -233,6 +234,7 @@ static long factorialIterative(long n) {
 }
 
 // Recursive factorial
+// n이 크면 StackOverflowError 발생
 static long factorialRecursive(long n) {
     return n == 1 ? 1 : n * factorialRecursive(n-1);
 }
@@ -243,6 +245,24 @@ static long factorialStreams(long n){
         .reduce(1, (long a, long b) -> a * b);
 }
 ````
+
+#### _tail-call optimization_
+
+<img src="img_4.png"  width="80%"/>
+
+````
+static long factorialTailRecursive(long n) {
+  return factorialHelper(1, n);
+}
+
+static long factorialHelper(long acc, long n) {
+  return n == 1 ? acc : factorialHelper(acc * n, n-1);
+}
+````
+
+- function 마지막에 recursive call이 일어남
+- compiler가 단일 stack frame을 재사용하게 선택할 수 있음
+- Scala, Groovy, Kotlin은 가능, Java 불가능
 
 ## 4. Summary
 
