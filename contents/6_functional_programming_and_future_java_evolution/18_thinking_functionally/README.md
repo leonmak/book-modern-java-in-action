@@ -195,5 +195,54 @@ static List<List<Integer>> concat(List<List<Integer>> a, List<List<Integer>> b) 
 
 ## 3. Recursion vs iteration
 
+- _Recursion_ : what-to-do style
+    - pure functional programming
+    - `while`, `for` loop 사용하지 않음
+
+````
+// 문제 없는 코드
+Interator<Idol> idolIterator = idols.iterator();
+
+while(idolIterator.hasNext()){
+    Idol idol = idolIterator.next();
+    
+    ... (do something)
+}
+
+// 문제 있는 코드, non-functional style, side effect, argument를 수정함
+public void whenExistKarina(List<Idol> idols, Idol karina){
+    
+    for(Idol idol : idols){
+        if(idol.getName().equals("Karina")){
+            karina = idol;
+        }
+    }
+}
+````
+
+- `whenExistKarina()` : `karina` args를 수정함
+
+````
+// Iterative factorial
+static long factorialIterative(long n) {
+    long r = 1;
+    for (int i = 1; i <= n; i++) {
+        r *= i;
+    }
+    return r;
+}
+
+// Recursive factorial
+static long factorialRecursive(long n) {
+    return n == 1 ? 1 : n * factorialRecursive(n-1);
+}
+
+// stream factorial
+static long factorialStreams(long n){
+    return LongStream.rangeClosed(1, n)
+        .reduce(1, (long a, long b) -> a * b);
+}
+````
+
 ## 4. Summary
 

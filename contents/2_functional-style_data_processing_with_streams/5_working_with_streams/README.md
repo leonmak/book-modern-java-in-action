@@ -321,7 +321,7 @@ memberList.stream()
 - intermediate operation, terminal operation
 - terminal operation > reduction operation :collection의 모든 element를 처리해서 값을 도출하는 operation
 - e.g. `sum()`, `max()`, `min()`, `count()`
--
+
 
 ### 5.1 Summing the elements
 
