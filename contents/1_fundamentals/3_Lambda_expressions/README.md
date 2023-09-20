@@ -450,11 +450,11 @@ memberList.sort(String::compareToIgnoreCase); // method reference
 Supplier<Member> member = () -> new Member(); // lamda
 Supplier<Member> member = Member::new; // constructor reference
 
-Function<String, Member> memberFunction = (name) -> new Member(name); // lamda
-Member karina = memberFunction.apply("karina");
+Function<String, Member> memberFunction1 = (name) -> new Member(name); // lamda
+Member karina = memberFunction1.apply("karina");
 
-Function<String, Member> karina2 = Member::new; // constructor reference
-Member karina = karina2.apply("karina"); 
+Function<String, Member> memberFunction2 = Member::new; // constructor reference
+Member karina = memberFunction2.apply("karina"); 
 ````
 
 ````

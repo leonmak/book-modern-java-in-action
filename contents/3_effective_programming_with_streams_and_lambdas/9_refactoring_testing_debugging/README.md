@@ -108,18 +108,19 @@ Map<Member.AgeLevel, List<Member>> byTeam = memberList.stream()
     .collect(groupingBy(Member::getAgeLevel));
     
 // lamda
-memberList.sort((Member m1, Member m2) -> m1.getAge().compareTo(m2.getAge()));
+memberList.sort((Member m1, Member m2) -> 
+    m1.getAge().compareTo(m2.getAge()));
 
 // method reference
 memberList.sort(comparing(Member::getAge));
 
 // lamda
 int totalAge = memberList.stream()
-  .map(Member::getAge).reduce(0, (a, b) -> a + b);
+    .map(Member::getAge).reduce(0, (a, b) -> a + b);
   
 // method reference + reduction operation + built-in helper method
 int totalAge = memberList.stream()
- .collect(summingInt(Member::getAge));
+    .collect(summingInt(Member::getAge));
 ````
 
 - helper static method : `comparing()`, `maxBy()`, ...
@@ -303,7 +304,7 @@ new OnlineBankingLambda().processCustomer(1337
   - event : state change 등
 - GUI 버튼 클릭
 - lamda로 변환이 힘든 경우
-  - observer의 세부내이 복잡할 때 (state, methods 등)
+  - observer의 세부내용이 복잡할 때 (state, methods 등)
 
 ````java
 interface Observer {
