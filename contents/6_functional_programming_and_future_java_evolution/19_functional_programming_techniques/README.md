@@ -245,6 +245,260 @@ public static Tree updateFunctional(String k, int newval, Tree t) {
 
 ## 3. Lazy evaluation with streams
 
+- stream은 한번만 소비되기 때문에, 재귀적으로 접근할 수 없음
+
+### 3.1 Self-defining stream
+
+````
+// n개의 소수를 생성하는 stream을 반환
+public static Stream<Integer> primes(int n) {
+    return Stream.iterate(2, i -> i + 1) // 2부터 1씩 증가하는 stream
+        .filter(MyMathUtils::isPrime) // 소수인지 확인
+        .limit(n); // n개의 소수만 반환
+}
+public static boolean isPrime(int candidate) {
+    int candidateRoot = (int) Math.sqrt((double) candidate);
+    return IntStream.rangeClosed(2, candidateRoot)
+       .noneMatch(i -> candidate % i == 0);
+}
+````
+
+- 문제점 : 생성할 때마다 매번 모든 숫자를 탐색해서 소수를 찾음
+    - 이미 소수로 판별된 숫자도 다시 탐색
+- 이상적인 시나리오
+    1. 소수를 선택할 숫자 Stream이 있음
+    2. stream으로부터 첫번째 element를 가져옴 (_2_)
+    3. stream 꼬리에서 소수가 아닌 element를 제거 (꼬리 : 첫번쨰 el을 제외한 나머지 stream)
+    4. 결과로 나오는 꼬리는 소수를 찾을 수 있는 Stream, 1로 돌아감 (재귀)
+
+#### STEP 1: GET A STREAM OF NUMBERS
+
+````
+// 2부터 1씩 증가하는 stream (무한한 크기)
+static Intstream numbers(){
+    return IntStream.iterate(2, n -> n + 1);
+}
+````
+
+#### STEP 2: TAKE THE HEAD
+
+````
+// stream의 첫번째 element를 가져옴
+static int head(IntStream numbers){
+    return numbers.findFirst().getAsInt();
+}
+````
+
+#### STEP 3: FILTER THE TAIL
+
+````
+// stream의 첫번째 element를 제외한 나머지 stream을 반환
+static IntStream tail(IntStream numbers){
+    return numbers.skip(1);
+}
+
+IntStream numbers = numbers(); // 2부터 1씩 증가하는 무한대 stream
+int head = head(numbers); // 첫번째 el : 2
+IntStream filtered = tail(numbers) // 2를 제외한 나머지 stream
+    .filter(n -> n % head != 0); // 소수만 남음
+````
+
+#### STEP 4: RECURSIVELY CREATE A STREAM OF PRIMES
+
+````
+// error : java.lang.IlleagalStateException: stream has already been operated upon or closed
+static IntStream primes(IntStream numbers) {
+    int head = head(numbers);
+    
+    return IntStream.concat(IntStream.of(head),
+        primes(tail(numbers)
+            .filter(n -> n % head != 0))); // 무한 재귀 
+}
+````
+
+#### BAD NEWS
+
+- `IlleagalStateException` : stream은 한번만 소비될 수 있음
+    - 위에서 `head`를 호출하면서 stream이 소비됨 (terminal operation)
+
+#### _LAZY EVALUATION (nonstrict evaluation, call by name)_
+
+- `concat()`이 2가지 `IntStream`을 인자로 받지만, 두번쨰 인자에서 재귀 호출로 무한재귀에 빠짐
+- `prime()`은 `limit()`과 같은 terminal operation을 만났을 때만 evaluation이 일어나야함
+- _Scala_ 에서 _Lazy Evaluation_ 을 지원함
+
+```scala
+def numbers(n: Int): Stream[Int] = n #:: numbers(n+1)
+def primes(numbers: Stream[Int]): Stream[Int] = {
+    numbers.head #:: primes(numbers.tail filter (n => n % numbers.head != 0))
+}
+```
+
+- `#::` : lazy concatenation operator
+    - argument가 stream을 소비할 때 evaluation이 일어남
+
+### 3.2 Your own lazy list
+
+<img src="img_4.png"  width="70%"/>
+
+- Stream은 operation sequence를 저장해두고, terminal operation을 만나면 연산을 시작
+- Lazy list : function value를 저장해두고, 호출하면 연산을 시작
+
+```java
+interface MyList<T> {
+    T head();
+
+    MyList<T> tail();
+
+    default boolean isEmpty() {
+        return true;
+    }
+}
+
+class MyLinkedList<T> implements MyList<T> {
+    private final T head;
+    private final MyList<T> tail;
+
+    public MyLinkedList(T head, MyList<T> tail) {
+        this.head = head;
+        this.tail = tail;
+    }
+
+    public T head() {
+        return head;
+    }
+
+    public MyList<T> tail() {
+        return tail;
+    }
+
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "MyLinkedList{" +
+                "head=" + head +
+                ", tail=" + tail +
+                '}';
+    }
+}
+
+class Empty<T> implements MyList<T> {
+    public T head() {
+        throw new UnsupportedOperationException();
+    }
+
+    public MyList<T> tail() {
+        throw new UnsupportedOperationException();
+    }
+
+}
+```
+
+````
+@Test
+@DisplayName("sample MyLinkedList")
+public void tst1() {
+    MyList<Integer> l 
+        = new MyLinkedList<>(5, new MyLinkedList<>(10, new Empty<>())); 5 -> 10 -> Empty
+}
+````
+
+#### CREATING A BASIC LAZY LIST
+
+- 한번에 tail을 메모리에 올리지 않는 것이 핵심
+
+```java
+class LazyList<T> implements MyList<T> {
+    final T head;
+    final Supplier<MyList<T>> tail;
+
+    public LazyList(T head, Supplier<MyList<T>> tail) {
+        this.head = head;
+        this.tail = tail;
+    }
+
+    public T head() {
+        return head;
+    }
+
+    public MyList<T> tail() {
+        return tail.get(); // Supplier를 통해 Lazy하게 계산
+    }
+
+    public boolean isEmpty() {
+        return false;
+    }
+}
+````
+
+````
+public LazyList<Integer> from(int n) {
+    return new LazyList<Integer>(n, () -> from(n + 1));
+}
+
+@Test
+@DisplayName("sample LazyList")
+public void tst2() {
+    LazyList<Integer> numbers = from(2);
+    int two = numbers.head();
+    int three = numbers.tail() // lazy : 3
+            .head();
+
+    int four = numbers.tail().tail() // lazy : 4
+            .head();
+
+    System.out.println(two + " " + three + " " + four); // 2 3 4
+}
+````
+
+#### GENERATING PRIMES AGAIN
+
+````
+public static MyList<Integer> primes(MyList<Integer> numbers) {
+    return new LazyList<>(numbers.head(),
+        () -> primes(
+            numbers.tail().filter(n -> n % numbers.head() != 0)
+    ));
+}
+````
+
+#### IMPLEMENTING A LAZY FILTER
+
+````
+public MyList<T> filter(Predicate<T> p) {
+    return isEmpty() ?
+        this :
+        p.test(head()) ?
+            new LazyList<>(head(), () -> tail().filter(p)) :
+            tail().filter(p);
+}
+````
+
+````
+LazyList<Integer> numbers = from(2);
+int two = primes(numbers).head();
+
+int three = primes(numbers).tail() // lazy : 3
+    .head();
+    
+int five = primes(numbers).tail().tail() // lazy : 5
+    .head();
+System.out.println(two + " " + three + " " + five); // 2 3 5
+````
+
+#### REVIEW
+
+- function을 자료구조 내에 배치, 필요할 때 lazy하게 계산
+    - e.g. 체스 게임 프로그래밍에서 모든 움직임 유형을 이진트리로 나타내고, 필요할 때마다 계산
+- 성능
+    - _lazy_ 가 항상 우수하지 않음
+    - 구현이 복잡하고, `Supplier` 같은 추가 필드가 필요
+    - 세부 구현 미흡 : `tail()` 호출마다 `Supplier` 호출 (비효율적)
+        - `alreadyComputed` flag 필드를 추가 선언 필요
+
 ## 4. Pattern matching
 
 ## 5. Miscellany
