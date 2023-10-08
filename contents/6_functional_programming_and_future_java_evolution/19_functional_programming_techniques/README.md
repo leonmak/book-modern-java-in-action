@@ -501,6 +501,155 @@ System.out.println(two + " " + three + " " + five); // 2 3 5
 
 ## 4. Pattern matching
 
+- `if-then-else`, `switch` 문은 data의 타입이 복잡해지면 장황해짐
+- _pattern matching_ 을 통해 극복
+
+````
+class Expr { ... }
+class Number extends Expr { int val; ... }
+class BinOp extends Expr { String opname; Expr left, right; ... }
+
+...
+// 5 + 0 -> 5 로 단순화
+Expr simplifyExpression(Expr expr) {
+    if (expr instanceof BinOp // instanceof : type check
+        && ((BinOp)expr).opname.equals("+")) // + 연산자인지 확인
+        && ((BinOp)expr).right instanceof Number // right가 Number인지 확인
+        && ... // 기타 등등
+        && ... ) {
+        
+        return (Binop)expr.left; // 단순화
+    }
+    ...
+}
+````
+
+- `simplifyExpression()`
+- `new BinOp("+", new Number(5), new Number(0))` : `Expr`의 instance
+    - `Nubmer(5)` 로 단순화할 때 코드가 복잡해짐
+
+### 4.1 Visitor design pattern
+
+- 특정 data type에 접근하는 알고리즘을 별도의 클래스에 캡슐화
+
+```java
+class BinOp extends Expr {
+    // ...
+    public Expr accept(SimplifyExprVisitor v) {
+        return v.visit(this);
+    }
+}
+
+public class SimplifyExprVisitor {
+    // ...
+    public Expr visit(BinOp e) {
+        if ("+".equals(e.opname)
+                && e.right instanceof Number
+            //   && …
+        ) {
+            return e.left;
+        }
+        return e;
+    }
+}
+
+```
+
+- `SimplifyExprVisitor` 타입의 instance를 input으로 받음
+
+### 4.2 Pattern matching to the rescue
+
+- Pattern matching : `switch` 문을 대체하는 구문
+    - Java에선 불가능, Scala 가능
+
+````
+def simplifyExpression(expr: Expr): Expr = expr match {
+    case BinOp("+", e, Number(0)) => e // Adding zero
+    case BinOp("*", e, Number(1)) => e // Multiplying by one
+    case BinOp("/", e, Number(1)) => e // Dividing by one
+    case _ => expr // Can't simplify expr
+}
+
+Expression match { case Pattern => Expression ... }
+````
+
+- `case _` : Java Switch 문의 `default` 와 같음
+- Java의 `case` 에는 기본형, enum, 기타 특정 래핑 클래스 타입만 가능
+
+#### FAKING PATTERN MATCHING IN JAVA
+
+- Java 8 lamda 를 사용하여 비슷하게 구현
+- single level 가능, multi level 불가능
+    - `BinOp(op, l, r)` or `Number(n)` 가능
+    - `BinOp("+", e, Number(0))` 불가능
+
+````
+static <T> T myIf(boolean b, Supplier<T> truecase, Supplier<T> falsecase) {
+ return b ? truecase.get() : falsecase.get();
+}
+
+myIf(condition, () -> e1, () -> e2);
+````
+
+- `T` : 조건문의 결과 타입
+
+````
+interface TriFunction<S, T, U, R>{
+    R apply(S s, T t, U u);
+}
+
+static <T> T patternMatchExpr(
+    Expr e,
+    TriFunction<String, Expr, Expr, T> binopcase,
+    Function<Integer, T> numcase,
+    Supplier<T> defaultcase) {
+        return
+            (e instanceof BinOp) ?
+                binopcase.apply(((BinOp)e).opname, ((BinOp)e).left,
+                  ((BinOp)e).right) : (e instanceof Number) ?
+                      numcase.apply(((Number)e).val) :
+                      defaultcase.get();
+}
+
+patternMatchExpr(e, (op, l, r) -> {return binopcode;},
+    (n) -> {return numcode;},
+    () -> {return defaultcode;});
+````
+
+````
+public static Expr simplify(Expr e) {
+    TriFunction<String, Expr, Expr, Expr> binopcase = (opname, left, right) -> {
+        if ("+".equals(opname)) {
+            if (left instanceof Number && ((Number) left).val == 0) {
+                return right;
+            }
+            if (right instanceof Number && ((Number) right).val == 0) {
+                return left;
+            }
+        }
+        if ("*".equals(opname)) {
+            if (left instanceof Number && ((Number) left).val == 1) {
+                return right;
+            }
+            if (right instanceof Number && ((Number) right).val == 1) {
+                return left;
+            }
+      }
+    return new BinOp(opname, left, right);
+};
+
+
+Function<Integer, Expr> numcase = val -> new Number(val);
+Supplier<Expr> defaultcase = () -> new Number(0);
+return patternMatchExpr(e, binopcase, numcase, defaultcase);
+````
+
+````
+Expr e = new BinOp("+", new Number(5), new Number(0));
+Expr match = simplify(e);
+System.out.println(match); // 5
+````
+
 ## 5. Miscellany
 
 ## 6. Summary
