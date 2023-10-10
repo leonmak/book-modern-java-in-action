@@ -730,3 +730,21 @@ System.out.println(repeat(3, (Integer x) -> 2*x).apply(10)); // 80
 ````
 
 ## 6. Summary
+
+- First-class function
+    - 인자로 전달 가능
+    - return type으로 사용 가능
+    - 자료구조에 저장 가능
+- higher-order function
+    - 1개 이상의 function을 parameter로 받거나,
+    - 또 다른 function을 return하는 function
+    - e.g. `Comparator.comparing`, `Comparator.addThen`, `Comparator.compose`
+- Currying : funtion을 모듈화, code를 재사용하는 테크닉
+- persistent data structure  : 변경 시 이전 버전을 보존
+    - 불필요한 방어적 복사 방지
+- Java Streams 는 self-defined 불가능
+- lazy list : `Supplier`를 사용하여 Java Stream 보다 풍부하게 연산
+    - lazy evaluation
+- pattern matching : `switch` 문을 대체하는 구문
+- 참조 투명성은 결과를 캐시할 수 있게 함
+- Combinators :  2개 이상의 function이나 다른 자료구조를 결합
