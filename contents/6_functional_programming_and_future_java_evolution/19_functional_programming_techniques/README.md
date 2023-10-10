@@ -652,4 +652,81 @@ System.out.println(match); // 5
 
 ## 5. Miscellany
 
+### 5.1 Caching or memoization
+
+- _memoization_ : cache (e.g. `HashMap`)를 사용
+- HashMap으로 메서드를 wrapping
+
+````
+final Map<Range,Integer> numberOfNodes = new HashMap<>();
+Integer computeNumberOfNodesUsingCache(Range range) {
+
+    // cache에 저장된 값이 있으면 바로 return
+    Integer result = numberOfNodes.get(range);
+    if (result != null){
+        return result;
+    }
+    
+    // cache에 저장된 값이 없으면 계산
+    result = computeNumberOfNodes(range);
+    numberOfNodes.put(range, result); // cache에 저장
+    
+    return result;
+}
+
+
+// Java 8 ComputeIfAbsent 사용
+Integer computeNumberOfNodesUsingCache(Range range) {
+    return numberOfNodes.computeIfAbsent(range,
+        this::computeNumberOfNodes); 
+}
+````
+
+#### 가변객체에 동시성이 추가되면 상황이 복잡해짐
+
+- `computeNumberOfNodesUsingCache()`는 참조투명
+- `numberOfNodes`
+    - 가변
+    - not thread-safe
+- lock과 함께 `Hashtable`을 사용하거나, `ConcurrentHashMap`을 사용
+    - **parrell 성능 떨어짐**
+
+### 5.2 What does "Return the same object" mean?
+
+functional programming에서는 `==` 대신 `equals()` 사용한다.
+
+````
+t2 = fupdate("Will", 26, t);
+t3 = fupdate("Will", 26, t);
+````
+
+- `t`, `t2`, `t3`는 서로 다른 객체를 참조
+- _referential transparency_ = 동일한 인수에 동일한 결과를 반환
+    - `t2 == t3` 는 _false_
+    - `t2.equals(t3)` 는 _true_
+- 따라서 functional programming에서는 `==` 대신 `equals()` 사용
+
+### 5.3 Combinators
+
+````
+CompletableFuture<Integer> a = new CompletableFuture<>();
+CompletableFuture<Integer> b = new CompletableFuture<>();
+CompletableFuture<Integer> c = a.thenCombine(b, (y, z) -> y + z);
+````
+
+- _combinator_ : `CompletableFuture` 의 `thenCombine()`과 같은 API
+    - 2개의 `CompletableFuture` + 1개의 `BifuFunction`으로 새로운 `CompletableFuture`를 만듦
+
+````
+static <A,B,C> Function<A,C> compose(Function<B,C> g, Function<A,B> f) {
+    return x -> g.apply(f.apply(x));
+}
+
+static <A> Function<A,A> repeat(int n, Function<A,A> f) {
+    return n==0 ? x -> x : compose(f, repeat(n-1, f));
+}
+
+System.out.println(repeat(3, (Integer x) -> 2*x).apply(10)); // 80
+````
+
 ## 6. Summary

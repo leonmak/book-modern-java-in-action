@@ -3,6 +3,8 @@ package org.example.part6;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.function.Function;
+
 public class Main19 {
 
     static class TrainJourney {
@@ -116,5 +118,24 @@ public class Main19 {
                                 new Tree(t.key, t.val, updateFunctional(k, newval, t.left), t.right) :
                                 new Tree(t.key, t.val, t.left, updateFunctional(k, newval, t.right));
     }
+
+
+    static <A, B, C> Function<A, C> compose(Function<B, C> g, Function<A, B> f) {
+        return x -> g.apply(f.apply(x));
+    }
+
+    static <A> Function<A, A> repeat(int n, Function<A, A> f) {
+        return n == 0 ? x -> x : compose(f, repeat(n - 1, f));
+    }
+
+    @Test
+    @DisplayName("repeat functional method")
+    public void tst3() {
+        Function<Integer, Integer> f = x -> x + 1;
+        Function<Integer, Integer> g = repeat(3, f);
+
+        System.out.println(repeat(3, (Integer x) -> 2 * x).apply(10)); // 80
+    }
+
 
 }
