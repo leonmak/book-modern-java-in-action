@@ -372,3 +372,10 @@ b2.isEmpty()  // compile error : The Box class doesn’t inherit from Sized.
 - Java Interface와 달리 traits는 object instantiation time에 composing
 
 ## 4. Summary
+
+- Java 와 Scala는 JVM에서 구동, 상호 운용 가능
+- Scala는 Java의 Collection과 더불어 Tuple 지원
+- Scala가 Java보다 풍부한 기능을 가짐
+    - function type, closure, built-int currying form
+- Scala의 class 는 묵시적으로 생성자, getter, setter 지원
+- Scala의 trait는 field, default method를 가질 수 있는 인터페이스
