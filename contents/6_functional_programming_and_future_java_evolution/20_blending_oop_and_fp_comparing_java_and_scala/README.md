@@ -317,4 +317,58 @@ println(r) // 20
 
 ## 3. Classes and traits
 
+- Scala의 클래스와 인터페이스가 Java 보다 유연함
+
+### 3.1 Less verbosity with Scala classes
+
+```scala
+class Hello {
+  def sayHelloToKarina(){
+    println("Hello Karina")
+  }
+}
+
+val h = new Hello()
+h.sayHelloToKarina() // Hello Karina
+```
+
+#### GETTERS AND SETTERS
+
+```scala
+class Idol(var name: String, var id; Int)
+val karina = new Idol("Karina", 1)
+println(karina.name) // Karina
+karina.id = 1000;
+println(karina.id) // 1000
+```
+
+- 생성자 명시 필요 없음
+
+### 3.2 Scala traits vs. Java interfaces
+
+- trait : Scala의 추상화 방법
+    - Java의 interface
+    - 추상 메서드, default 메서드 작성 가능
+    - 다중 상속 가능
+    - Java와 달리 추상 클래스를 field로 가질 수 있음
+- Java의 추상클래스와 달리 다중 상속 가능
+
+```scala
+trait Sized {
+  var size : Int = 0
+  def isEmpty() = size == 0
+}
+
+class Empty extends Sized
+println(new Empty().isEmpty()) // true
+
+class Box
+val b1 = new Box() with Sized // composing at object instantiation time
+println(b1.isEmpty()) // true
+val b2 = new Box()
+b2.isEmpty()  // compile error : The Box class doesn’t inherit from Sized.
+```
+
+- Java Interface와 달리 traits는 object instantiation time에 composing
+
 ## 4. Summary
