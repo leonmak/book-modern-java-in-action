@@ -194,6 +194,127 @@ def getCarName(optIdol: Option[Idol]): String = {
 
 ## 2. Functions
 
+- Java 의 _method_
+- Scala _Function types_
+- Anonymous functions
+- _currying_ : 함수를 여러개의 argument를 받는 함수로 분리
+
+### 2.1 First-class functions in Scala
+
+- Scala에서 Function은 _first-class value_
+    - paramter로 전달, 변수에 저장 가능
+
+```scala
+def isMentionedKarina(tweet: String): Boolean = tweet.contains("Karina")
+def isMentionedShort(tweet: String): Boolean = tweet.length() < 20
+
+// built-in filter
+val tweets = List("Karina is so cute"
+  , "Winter is so cool"
+  , "We all love aespa wow!")
+
+twwets.filter(isMentionedKarina).foreach(println)
+twwets.filter(isMentionedShort).foreach(println) 
+```
+
+```scala
+// filter의 signature
+def filter[T](p: (T) => Boolean): List[T]
+```
+
+- paramter `p` : _function type_ `(T) => Boolean`
+    - Java의 `Predicate<T>` 와 비슷
+
+### 2.2 Anonymous functions and closures
+
+- Java의 lamda expression과 비슷
+
+```scala
+//Java
+Function<Stirng, Boolean> isMentionedKarinaObj
+  = tweet -> tweet.contains("Karina")
+isMentionedKarinaObj.apply("Karina is so cute") // true
+
+//Scala
+val isMentionedKarinaObj : String => Bollean
+  = new Function1[String, Boolean] {
+    def apply(tweet: String): Boolean = tweet.contains("Karina")
+}
+
+isMentionedKarinaObj.apply("Karina is so cute") // true
+```
+
+- trait : Java의 functional interface와 비슷
+    - `Function0` : parameter가 없는 function
+    - `Function22` : parameter가 22개인 function
+
+```scala
+val isMentionedKarina : String => Boolean = tweet => tweet.contains("Karina")
+
+isMentionedKarina("Karina is so cute") // true
+```
+
+- compiler가 묵시적으로 `apply` method를 추가
+
+#### CLOSURES
+
+- `closure` : function의 instance
+    - non-local variable을 참조 가능
+- Java의 lamda expression은 method local variable 수정 불가능
+
+```scala
+def main(args: Array[String]) {
+  var count = 0
+  val inc = () => count+=1
+  inc()
+  println(count) // 1
+  inc()
+  println(count)  
+}
+
+// Java
+public static void main(String[] args) {
+    int count = 0;
+    Runnable inc = () -> count++; // compile error : count must be final or effectively final
+    inc.run();
+    System.out.println(count); 
+    inc.run();
+    System.out.println(count); 
+}
+```
+
+### 2.3 Currying
+
+````
+// Java
+static int multiply(int x, int y) {
+  return x * y;
+}
+int r = multiply(2, 10);
+
+// currying
+static Function<Integer, Integer> multiply(int x) {
+  return y -> x * y;
+}
+
+Stream.of(1, 3, 5, 7)
+  .map(multiply(2))
+  .forEach(System.out::println); // 2, 6, 10, 14
+````
+
+```scala
+def multiply(x : Int, y: Int) = x * y
+val r = multiply(2, 10)
+
+// currying
+def multiplyCurry(x : Int)(y : Int) = x * y
+val r = multiplyCurry(2)(10) 
+println(r) // 20
+```
+
+- `multiplyCurry(2)` : 매개변수 y를 받아서 x를 곱하는 함수를 반환
+- `multiplyCurry(2)(10)` : 2를 곱하는 함수에 10을 적용
+
 ## 3. Classes and traits
 
 ## 4. Summary
