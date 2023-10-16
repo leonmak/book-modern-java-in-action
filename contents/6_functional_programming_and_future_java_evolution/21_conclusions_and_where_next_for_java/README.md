@@ -91,6 +91,36 @@ Idol::isOlderThan20
 
 ## 3. Java 10 local variable type inference
 
+- compiler 가 타입을 추론해내는 것
+
+````
+Map<String, List<String>> myMap = new HashMap<String, List<String>>();
+Map<String, List<String>> myMap = new HashMap<>(); // Java 7
+
+Function<Integer, Boolean> myFunction = (Integer x) -> x > 10;
+Function<Integer, Boolean> myFunction = (x) -> x > 10;
+
+// Java 10
+// local variable type inference
+var myMap = new HashMap<String, List<String>>();
+
+var car = new Car(); // Car 타입으로 추론
+
+public class Vehicle {
+    private int wheels;
+
+    public Vehicle(int wheels) {
+        this.wheels = wheels;
+    }
+}
+
+public class Car extends Vehicle {
+    public Car() {
+        super(4);
+    }
+}
+````
+
 ## 4. What's ahead for Java?
 
 ## 5. Moving Java forward faster
