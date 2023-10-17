@@ -322,5 +322,20 @@ System.out.println(o1 == ox ? "yes" : "no"); // yes
 
 ## 5. Moving Java forward faster
 
+<img src="img_1.png"  width="70%"/>
+
+- Java의 파생언어 (kotlin)들이 Java와 차이를 많이 벌리고있음
+
+### Java의 release 주기는 6개월
+
+- 6개월마다 새로운 Java 버전이 나옴
+    - Java 10 : 2018년 3월, Java 11 : 2018년 9월
+- 이러한 빠른 개발주기가 언어 자체에 이점을 가져다 줄 수 있음
+
+#### Java의 LTS release 주기는 3년
+
+- Java 9는 LTS 아님
+- Java 11부터 LTS
+
 ## 6. The final word
 
