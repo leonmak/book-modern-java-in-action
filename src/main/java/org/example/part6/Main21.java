@@ -99,4 +99,18 @@ public class Main21 {
         System.out.println(o1 == o2 ? "yes" : "no"); // no
         System.out.println(o1 == ox ? "yes" : "no"); // yes
     }
+
+    @Test
+    @DisplayName("Java 12 switch")
+    public void tst5() {
+        List<String> names = List.of("karina", "sana", "ningning", "winter");
+
+        names.stream().forEach(name -> {
+            switch (name) {
+                case "karina", "ningning", "winter" -> System.out.println("aespa");
+                case "sana" -> System.out.println("twice");
+
+            }
+        });
+    }
 }

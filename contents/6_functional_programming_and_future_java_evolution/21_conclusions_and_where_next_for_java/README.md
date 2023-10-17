@@ -339,3 +339,27 @@ System.out.println(o1 == ox ? "yes" : "no"); // yes
 
 ## 6. The final word
 
+- Java 5, Java 8, Java 9에 걸쳐 큰 변화를 했음
+- Java 9
+    - module system
+    - reactive stream 프로토콜 표준화
+    - local variable type inference
+- Java 11
+    - `var` 를 람다 파라미터에서 사용 가능
+    - concurrency, reactive idea, HTTp client library를 추가
+- Java 12
+    - `switch` 문에 statement 뿐아니라 expression 사용 가능
+    - pattern matching
+
+````
+// Java 12
+List<String> names = List.of("karina", "sana", "ningning", "winter");
+
+names.stream().forEach(name -> {
+    switch (name) {
+        case "karina", "ningning", "winter" -> System.out.println("aespa");
+        case "sana" -> System.out.println("twice");
+
+    }
+});
+````
