@@ -95,7 +95,9 @@ Optional<Transaction> findAespa = transactions.stream()
 
 <img src="img_2.png"  width="80%"/>
 
-- "What is functional programming?" -> "Programming with functions" -> "What is a function?"
+- "What is functional programming?"
+    - -> "Programming with functions"
+        - -> "What is a function?"
 - _functional_ : mathematics, no side effect
 
 | pure functional programming   | functional-style programming |

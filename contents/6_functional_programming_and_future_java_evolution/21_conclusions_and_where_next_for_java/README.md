@@ -21,7 +21,7 @@
 ## 1. Review of Java 8 features
 
 - 코드가 빠르게 실행되어야함 (병렬)
-    - multicore processor 필요
+    - multicore processor 필요성 증가
 - 데이터 collection을 declarative style로 다룸
 
 ### 1.1 Behavior parameterization (lamdas and method references)
@@ -40,7 +40,7 @@ Idol::isOlderThan20
 
 ### 1.2 Streams
 
-- lamda를 사용하여 db query와 같이 collection을 다룸
+- lamda를 사용하여 db query처럼 collection을 다룸
 - Streams는 pipeline을 만들어 여러 연산을 한번의 탐색으로 처리
 - stream을 parallel로 처리할 수 있음
 
@@ -73,14 +73,14 @@ Idol::isOlderThan20
 - `Stream`의 `takeWhile()`, `dropWhile()` 등의 메서드 추가
 - `CompletableFuture`의 `completeOnTimeout()` 등의 메서드 추가
 
-### 메인은 module system을 제공한 것
+### module system
 
 - 패키지를 모듈로 묶어 캡슐화
 - 패키지의 접근제어는 오직 `public`이었음
     - 시스템을 적절하게 모듈화하는데 힘들었음 (무엇이 public 패키지이고, 무엇이 private 패키지인지)
 - 언어 수준에서 Java Runtime을 IoT, 클라우드 등의 환경에서 실행될 수 있도록 도와줌
 
-### Java Module system의 장점
+### Java Module system 장점
 
 - _Reliable configuration_ : 명시적으로 모듈간의 의존성을 정의
     - runtime이 아닌 build time에 의존성을 체크
@@ -91,7 +91,7 @@ Idol::isOlderThan20
 
 ## 3. Java 10 local variable type inference
 
-- compiler 가 타입을 추론해내는 것
+compiler 가 타입을 추론해내는 것
 
 ````
 Map<String, List<String>> myMap = new HashMap<String, List<String>>();
